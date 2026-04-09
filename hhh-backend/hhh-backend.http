@@ -1,6 +1,0 @@
-@hhh_backend_HostAddress = http://localhost:5077
-
-GET {{hhh_backend_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

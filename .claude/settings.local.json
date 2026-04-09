@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(dotnet build:*)",
+      "Bash(powershell -NoProfile -Command:*)",
+      "Bash(del /q \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.infrastructure\\\\Class1.cs\" \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.application.admin\\\\Class1.cs\")",
+      "Bash(dotnet sln:*)",
+      "Bash(dotnet add:*)",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File:*)",
+      "Bash(dotnet remove:*)"
+    ]
+  }
+}
