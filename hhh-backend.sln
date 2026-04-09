@@ -7,15 +7,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2.application", "2.applicat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3.infrastructure", "3.infrastructure", "{37E32BD5-9388-4E27-9C7A-9F6F6AAC26C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hhh.application.admin", "hhh.application.admin\hhh.application.admin.csproj", "{57D9BBA0-EC9F-4A94-A9F6-4C59B6D2585B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "hhh.application.admin", "hhh.application.admin\hhh.application.admin.csproj", "{57D9BBA0-EC9F-4A94-A9F6-4C59B6D2585B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hhh.infrastructure", "hhh.infrastructure\hhh.infrastructure.csproj", "{221A2789-67BA-491F-A558-E085B3CAD391}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "hhh.infrastructure", "hhh.infrastructure\hhh.infrastructure.csproj", "{221A2789-67BA-491F-A558-E085B3CAD391}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hhh.api.contracts", "hhh.api.contracts\hhh.api.contracts.csproj", "{BEED093B-47D9-47DA-8499-0183607AFD98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "hhh.api.contracts", "hhh.api.contracts\hhh.api.contracts.csproj", "{BEED093B-47D9-47DA-8499-0183607AFD98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hhh.api.contracts.admin", "hhh.api.contracts.admin\hhh.api.contracts.admin.csproj", "{8CD4DBDD-6B62-4F3A-9575-C177F996122D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "hhh.api.contracts.admin", "hhh.api.contracts.admin\hhh.api.contracts.admin.csproj", "{8CD4DBDD-6B62-4F3A-9575-C177F996122D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hhh.webapi.admin", "hhh.webapi.admin\hhh.webapi.admin.csproj", "{A4EF4FE3-84C7-461A-8C11-58AB9CA687C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "hhh.webapi.admin", "hhh.webapi.admin\hhh.webapi.admin.csproj", "{A4EF4FE3-84C7-461A-8C11-58AB9CA687C3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1.presentation", "1.presentation", "{C8881AD6-3D42-419B-8D2F-11D8D6091FEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +52,9 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{57D9BBA0-EC9F-4A94-A9F6-4C59B6D2585B} = {4B11176F-9A33-491F-9724-F00722CECB60}
 		{221A2789-67BA-491F-A558-E085B3CAD391} = {37E32BD5-9388-4E27-9C7A-9F6F6AAC26C6}
+		{BEED093B-47D9-47DA-8499-0183607AFD98} = {37E32BD5-9388-4E27-9C7A-9F6F6AAC26C6}
+		{8CD4DBDD-6B62-4F3A-9575-C177F996122D} = {37E32BD5-9388-4E27-9C7A-9F6F6AAC26C6}
+		{A4EF4FE3-84C7-461A-8C11-58AB9CA687C3} = {C8881AD6-3D42-419B-8D2F-11D8D6091FEC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3CB0CD3B-8F19-4A5B-8DD2-0BF15B4C7F66}
