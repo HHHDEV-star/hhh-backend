@@ -5,10 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace hhh.webapi.admin.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
-[Produces("application/json")]
-public class AuthController : ControllerBase
+public class AuthController : ApiControllerBase
 {
     private readonly IAuthService _authService;
 
@@ -26,8 +24,6 @@ public class AuthController : ControllerBase
     /// </remarks>
     [HttpPost("login")]
     [ProducesResponseType(typeof(ApiResponse<LoginResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Login(
         [FromBody] LoginRequest request,
         CancellationToken cancellationToken)

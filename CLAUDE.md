@@ -54,23 +54,25 @@ hhh.webapi.admin ──► hhh.application.admin ──► hhh.infrastructure
 ### Rules for each layer
 
 - **`hhh.api.contracts*`** — pure DTOs, no behaviour, no framework references. Anything on the wire between client and server lives here. Split: shared types in `hhh.api.contracts`, admin-only types in `hhh.api.contracts.admin`. Do not let these projects reference anything else.
-- **`hhh.infrastructure`** — owns `XoopsContext` and all 150+ scaffolded entities in `Dto/`, plus non-business technical implementations like `Auth/JwtTokenGenerator`. May reference `Microsoft.Extensions.*` abstractions. Do not put business rules here.
-- **`hhh.application.admin`** — use cases written as feature folders (`Auth/`, and future `Users/`, `Orders/`, …). Each feature owns its service interface, implementation, and a **domain `*Result` type** (see `LoginResult`) that represents success/failure without HTTP concerns. **Does not reference `Microsoft.AspNetCore.*`.** There is deliberately **no `Services/` folder** — cross-cutting technical helpers belong in `hhh.infrastructure`, not here.
-- **`hhh.webapi.admin`** — thin HTTP boundary. Controllers translate requests into service calls and map the service's `*Result.Code` into HTTP status codes via `ApiResponse<T>`. `Program.cs` wires JWT validation, CORS, Swagger Bearer and calls `AddInfrastructure()` + `AddAdminApplication()`.
+- **`hhh.infrastructure`** — owns `XoopsContext` and all ~150 scaffolded entities in `Dto/Xoops/` (namespace `hhh.infrastructure.Dto.Xoops`), plus non-business technical implementations like `Auth/JwtTokenGenerator`. May reference `Microsoft.Extensions.*` abstractions. Do not put business rules here. Additional databases will each get their own subfolder (`Dto/<DbName>/`) and their own `DbContext` in `Context/`.
+- **`hhh.application.admin`** — use cases written as feature folders (`Auth/`, `Users/`, …). Each feature owns its service interface, implementation, and any **domain `*Result` type** (see `LoginResult`) that represents success/failure without HTTP concerns. **Does not reference `Microsoft.AspNetCore.*`.** There is deliberately **no `Services/` folder** — cross-cutting technical helpers belong in `hhh.infrastructure`, not here. **Pragmatic rule**: create an application service only when there's real business logic — validation beyond DataAnnotations, cross-aggregate transactions, multi-DbContext orchestration, external side-effects, or reuse across multiple endpoints. Pure thin CRUD may call `XoopsContext` directly from a controller; do not mechanically create a Service-per-table.
+- **`hhh.webapi.admin`** — thin HTTP boundary. Controllers translate requests into service calls and map the service's `*Result.Code` into HTTP status codes via `ApiResponse<T>`. `Program.cs` wires JWT validation, CORS, Swagger Bearer and calls `AddInfrastructure(builder.Configuration)` + `AddAdminApplication()`.
 
 ## Key conventions
 
 ### Naming
 All new projects use **dot notation** (`hhh.<layer>.<scope>`). Do not introduce hyphens. The legacy `hhh-backend` name survives only in `hhh-backend.sln`.
 
-### Unified response envelope
-Every API endpoint returns `ApiResponse<T>` from `hhh.api.contracts/Common/ApiResponse.cs`:
+### Unified response envelope (hard rule)
+**Every** response body on this API is `ApiResponse<T>` from `hhh.api.contracts/Common/ApiResponse.cs`:
 
 ```json
 { "code": 200, "message": "success", "data": { ... } }
 ```
 
-Controllers never throw for "expected" failures (bad credentials, disabled account, validation). Services return a domain result; the controller maps the code:
+There is only one public type: the generic `ApiResponse<T>`. The non-generic `ApiResponse` is a **static helper** (`ApiResponse.Ok()`, `ApiResponse.Error(code, msg)`) that returns `ApiResponse<object>` — this keeps Swagger from generating two schemas for the error shape. Do not reintroduce a non-generic class.
+
+Success / expected-failure pattern (controllers never throw for expected failures):
 
 ```csharp
 var result = await _authService.LoginAsync(request, ct);
@@ -79,7 +81,17 @@ if (!result.IsSuccess)
 return Ok(ApiResponse<LoginResponse>.Success(result.Data!, result.Message));
 ```
 
-Model-state validation failures are also converted to `ApiResponse<object>` with `Code = 400` via `ConfigureApiBehaviorOptions` in `Program.cs`. Do not re-implement this per-controller.
+The format is enforced at **five** pipeline points — do not bypass or re-implement any of them:
+
+| Failure source | Where it's converted | Envelope code |
+|---|---|---|
+| Model validation (DataAnnotations) | `ConfigureApiBehaviorOptions.InvalidModelStateResponseFactory` in `Program.cs` | 400 |
+| `[Authorize]` / invalid or missing JWT | `JwtBearerEvents.OnChallenge` in `Program.cs` | 401 |
+| `[Authorize]` policy failure | `JwtBearerEvents.OnForbidden` in `Program.cs` | 403 |
+| Unmatched route / 405 / other empty-body status codes | `app.UseStatusCodePages(...)` in `Program.cs` | matches HTTP status |
+| Any unhandled exception | `app.UseExceptionHandler(...)` in `Program.cs` | 500 (message is hidden outside Development) |
+
+Controllers should still declare each possible status via `[ProducesResponseType(...)]` so Swagger shows them — the runtime body is guaranteed by `Program.cs` regardless. To avoid repeating the four common error attributes on every controller, all controllers inherit from **`ApiControllerBase`** (`hhh.webapi.admin/Controllers/ApiControllerBase.cs`), which carries class-level `[ApiController]`, `[Produces("application/json")]`, and `[ProducesResponseType(typeof(ApiResponse<object>), ...)]` for 400 / 401 / 403 / 500. Derived controllers only need to declare their own `[Route]`, optional `[Authorize]`, and the 2xx success type on each action.
 
 ### Feature folders, not "Services"
 Application-layer code is organised by feature (`Auth/`), not by technical role. When adding a new endpoint family:
@@ -101,9 +113,9 @@ Application-layer code is organised by feature (`Auth/`), not by technical role.
 
 ### `XoopsContext`
 - Scaffolded from the live MySQL database. Regenerating it will overwrite hand edits — avoid editing it directly.
-- Currently calls `OnConfiguring` with a **hardcoded connection string** (baked in by the scaffolder). This is the source of the single `CS1030 #warning` at build time; leave that warning alone until the connection string is externalised.
-- Registered via `services.AddDbContext<XoopsContext>()` with **no options** in `AddInfrastructure()` — this lets `OnConfiguring` take over. Don't pass `UseMySql(...)` here or you'll get a double-configure.
-- Entities live under `hhh.infrastructure/Dto/` (namespace `hhh.infrastructure.Dto`). The folder is called `Dto` for historical reasons but these are EF entities, not request/response DTOs.
+- Connection string comes from `appsettings.json` → `ConnectionStrings:Xoops`, server version from `MySql:Version`. `AddInfrastructure(IConfiguration)` reads both and wires `UseMySql(... , ServerVersion.Parse(...), x => x.UseNetTopologySuite())`.
+- The scaffolded `OnConfiguring` method has been **deleted** (along with its hardcoded credentials and the `#warning`). **Future scaffolds must pass `--no-onconfiguring`** or the hardcoded version will come back.
+- Entities live under `hhh.infrastructure/Dto/Xoops/` (namespace `hhh.infrastructure.Dto.Xoops`). The parent `Dto/` folder is kept for historical reasons but these are EF entities, not request/response DTOs. When a second database is added its entities go under `Dto/<DbName>/`.
 
 ## Gotchas
 
@@ -121,5 +133,5 @@ Set-Content  -LiteralPath $path -Value $content -NoNewline -Encoding UTF8
 
 Symptom is mojibake like `蝞∠?敺?餃隢?`. For rename/namespace updates touching a small number of files, prefer the Edit tool over PowerShell scripts — it handles encoding correctly.
 
-### Stale root-level artifacts
-The repo root still contains leftover `bin/Debug/` and `obj/Debug/` directories and an empty `hhh-admin/obj/` folder from the previous project rename (`hhh-backend` → `hhh-admin` → `hhh.webapi.admin`). These are not referenced by any csproj and can be safely deleted if they get in the way; they do not affect builds.
+### Scaffold regeneration
+Re-scaffolding `XoopsContext` with a plain `dotnet ef dbcontext scaffold ...` command will re-insert `OnConfiguring` with the hardcoded credentials and re-emit the `CS1030` warning. Always pass `--no-onconfiguring` when scaffolding, and place entities under `Dto/Xoops/` with namespace `hhh.infrastructure.Dto.Xoops`.
