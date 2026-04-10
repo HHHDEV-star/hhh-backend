@@ -1,5 +1,6 @@
 using hhh.application.admin.Admins;
 using hhh.application.admin.Auth;
+using hhh.application.admin.CalculatorRequests;
 using hhh.application.admin.Hawards;
 using hhh.application.admin.Hcases;
 using hhh.application.admin.Hdesigners;
@@ -23,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IHcaseService, HcaseService>();
         services.AddScoped<IHawardService, HawardService>();
         services.AddScoped<IHprizeService, HprizeService>();
+        services.AddScoped<ICalculatorRequestService, CalculatorRequestService>();
         return services;
     }
 }
