@@ -1,12 +1,14 @@
-namespace hhh.api.contracts.admin.Hpublishes;
+namespace hhh.api.contracts.Common;
 
 /// <summary>
-/// 出版列表分頁回應。
+/// 分頁查詢的共用回應格式。所有回傳分頁列表的 API 都使用這個類別,
+/// 不再為每個 feature 重複定義 Items/Total/Page/PageSize/TotalPages。
 /// </summary>
-public class HpublishListResponse
+/// <typeparam name="T">清單項目型別(通常是 <c>XxxListItem</c>)</typeparam>
+public class PagedResponse<T>
 {
     /// <summary>當頁資料</summary>
-    public IReadOnlyList<HpublishListItem> Items { get; set; } = Array.Empty<HpublishListItem>();
+    public IReadOnlyList<T> Items { get; set; } = Array.Empty<T>();
 
     /// <summary>符合條件的總筆數</summary>
     public long Total { get; set; }

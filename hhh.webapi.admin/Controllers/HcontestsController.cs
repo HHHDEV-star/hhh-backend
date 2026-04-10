@@ -2,6 +2,7 @@ using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Hcontests;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,7 +42,7 @@ public class HcontestsController : ApiControllerBase
     /// 排序白名單:id, year, classType, applytime, finalist, wp。
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<HcontestListResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<HcontestListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
         [FromQuery] HcontestListRequest request,
         CancellationToken cancellationToken)
@@ -81,13 +82,10 @@ public class HcontestsController : ApiControllerBase
             query = query.Where(h => h.Finalist == flag);
         }
 
-        var total = await query.LongCountAsync(cancellationToken);
-
+        // 排序白名單 ----------------------------------------------------------
         var ordered = ApplyOrdering(query, request.Sort, request.By);
 
-        var items = await ordered
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+        var response = await ordered
             .Select(h => new HcontestListItem
             {
                 Id = h.ContestId,
@@ -99,17 +97,9 @@ public class HcontestsController : ApiControllerBase
                 An = h.An,
                 Finalist = h.Finalist == 1,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
 
-        var response = new HcontestListResponse
-        {
-            Items = items,
-            Total = total,
-            Page = request.Page,
-            PageSize = request.PageSize,
-        };
-
-        return Ok(ApiResponse<HcontestListResponse>.Success(response));
+        return Ok(ApiResponse<PagedResponse<HcontestListItem>>.Success(response));
     }
 
     /// <summary>

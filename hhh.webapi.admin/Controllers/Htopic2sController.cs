@@ -2,6 +2,7 @@ using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Htopic2s;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,7 +42,7 @@ public class Htopic2sController : ApiControllerBase
     /// 排序白名單:id, title, onoff。
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<Htopic2ListResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<Htopic2ListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
         [FromQuery] Htopic2ListRequest request,
         CancellationToken cancellationToken)
@@ -66,13 +67,10 @@ public class Htopic2sController : ApiControllerBase
             query = query.Where(h => h.Onoff == flag);
         }
 
-        var total = await query.LongCountAsync(cancellationToken);
-
+        // 排序白名單 ----------------------------------------------------------
         var ordered = ApplyOrdering(query, request.Sort, request.By);
 
-        var items = await ordered
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+        var response = await ordered
             .Select(h => new Htopic2ListItem
             {
                 Id = h.Id,
@@ -85,17 +83,9 @@ public class Htopic2sController : ApiControllerBase
                 StrarrHcolumnId = h.StrarrHcolumnId,
                 Onoff = h.Onoff == 1,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
 
-        var response = new Htopic2ListResponse
-        {
-            Items = items,
-            Total = total,
-            Page = request.Page,
-            PageSize = request.PageSize,
-        };
-
-        return Ok(ApiResponse<Htopic2ListResponse>.Success(response));
+        return Ok(ApiResponse<PagedResponse<Htopic2ListItem>>.Success(response));
     }
 
     /// <summary>

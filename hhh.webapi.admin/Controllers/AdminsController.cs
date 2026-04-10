@@ -27,13 +27,13 @@ public class AdminsController : ApiControllerBase
     /// 排序白名單：id, account, name, email, createTime, isActive。
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<AdminListResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<AdminListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
         [FromQuery] AdminListRequest request,
         CancellationToken cancellationToken)
     {
         var data = await _adminService.GetListAsync(request, cancellationToken);
-        return Ok(ApiResponse<AdminListResponse>.Success(data));
+        return Ok(ApiResponse<PagedResponse<AdminListItem>>.Success(data));
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ public class AdminsController : ApiControllerBase
 
         return StatusCode(
             StatusCodes.Status201Created,
-            ApiResponse<object>.Created(new { id = result.AdminId }, result.Message));
+            ApiResponse<object>.Created(new { id = result.Data }, result.Message));
     }
 
     /// <summary>
@@ -134,7 +134,7 @@ public class AdminsController : ApiControllerBase
         }
 
         return Ok(ApiResponse<object>.Success(
-            new { id = result.AdminId }, result.Message));
+            new { id = result.Data }, result.Message));
     }
 
     /// <summary>
@@ -163,7 +163,7 @@ public class AdminsController : ApiControllerBase
         }
 
         return Ok(ApiResponse<object>.Success(
-            new { id = result.AdminId }, result.Message));
+            new { id = result.Data }, result.Message));
     }
 
     /// <summary>

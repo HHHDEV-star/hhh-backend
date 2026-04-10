@@ -1,6 +1,9 @@
+using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Admins;
+using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Admins;
@@ -14,20 +17,16 @@ public class AdminService : IAdminService
         _db = db;
     }
 
-    public async Task<AdminListResponse> GetListAsync(
+    public async Task<PagedResponse<AdminListItem>> GetListAsync(
         AdminListRequest request,
         CancellationToken cancellationToken = default)
     {
-        // 對應舊 PHP：SELECT * FROM admin WHERE id>0
+        // 對應舊 PHP:SELECT * FROM admin WHERE id>0
         var query = _db.Admins.AsNoTracking();
-
-        var total = await query.LongCountAsync(cancellationToken);
 
         var ordered = ApplyOrdering(query, request.Sort, request.By);
 
-        var items = await ordered
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+        return await ordered
             .Select(a => new AdminListItem
             {
                 Id = a.Id,
@@ -38,15 +37,7 @@ public class AdminService : IAdminService
                 CreateTime = a.CreateTime,
                 IsActive = a.IsActive == 1,
             })
-            .ToListAsync(cancellationToken);
-
-        return new AdminListResponse
-        {
-            Items = items,
-            Total = total,
-            Page = request.Page,
-            PageSize = request.PageSize,
-        };
+            .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
     }
 
     public async Task<AdminDetailResponse?> GetByIdAsync(
@@ -73,20 +64,20 @@ public class AdminService : IAdminService
         };
     }
 
-    public async Task<AdminMutationResult> CreateAsync(
+    public async Task<OperationResult<uint>> CreateAsync(
         CreateAdminRequest request,
         CancellationToken cancellationToken = default)
     {
-        // 帳號唯一性檢查（對應 admin.account unique index）
+        // 帳號唯一性檢查(對應 admin.account unique index)
         var accountTaken = await _db.Admins
             .AnyAsync(a => a.Account == request.Account, cancellationToken);
         if (accountTaken)
-            return AdminMutationResult.Fail(409, "帳號已被使用");
+            return OperationResult<uint>.Conflict("帳號已被使用");
 
         var admin = new Admin
         {
             Account = request.Account,
-            Pwd = request.Pwd, // 注意：相容舊系統，明文存。改 BCrypt 需同步修改 AuthService
+            Pwd = request.Pwd, // 注意:相容舊系統,明文存。改 BCrypt 需同步修改 AuthService
             Name = request.Name,
             Email = request.Email,
             Tel = request.Tel,
@@ -98,10 +89,10 @@ public class AdminService : IAdminService
         _db.Admins.Add(admin);
         await _db.SaveChangesAsync(cancellationToken);
 
-        return AdminMutationResult.Created(admin.Id);
+        return OperationResult<uint>.Created(admin.Id);
     }
 
-    public async Task<AdminMutationResult> UpdateAsync(
+    public async Task<OperationResult<uint>> UpdateAsync(
         uint id,
         UpdateAdminRequest request,
         CancellationToken cancellationToken = default)
@@ -110,7 +101,7 @@ public class AdminService : IAdminService
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
         if (admin is null)
-            return AdminMutationResult.Fail(404, "找不到管理者");
+            return OperationResult<uint>.NotFound("找不到管理者");
 
         admin.Name = request.Name;
         admin.Email = request.Email;
@@ -118,27 +109,27 @@ public class AdminService : IAdminService
         admin.AllowPage = JoinAllowPage(request.AllowPage);
         admin.IsActive = (sbyte)(request.IsActive ? 1 : 0);
 
-        // 只有 client 有送密碼才更新（對應原 PHP $exclude_keyword 的預期行為）
+        // 只有 client 有送密碼才更新(對應原 PHP $exclude_keyword 的預期行為)
         if (!string.IsNullOrEmpty(request.Pwd))
         {
-            admin.Pwd = request.Pwd; // 注意：相容舊系統，明文存
+            admin.Pwd = request.Pwd; // 注意:相容舊系統,明文存
         }
 
         await _db.SaveChangesAsync(cancellationToken);
-        return AdminMutationResult.Ok(id);
+        return OperationResult<uint>.Ok(id, "更新成功");
     }
 
-    public async Task<AdminMutationResult> UpdateProfileAsync(
+    public async Task<OperationResult<uint>> UpdateProfileAsync(
         uint id,
         UpdateAdminProfileRequest request,
         CancellationToken cancellationToken = default)
     {
-        // 對應舊版 admin_password.php：本人改自己的 name/email/tel/pwd
+        // 對應舊版 admin_password.php:本人改自己的 name/email/tel/pwd
         var admin = await _db.Admins
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
         if (admin is null)
-            return AdminMutationResult.Fail(404, "找不到管理者");
+            return OperationResult<uint>.NotFound("找不到管理者");
 
         admin.Name = request.Name;
         admin.Email = request.Email;
@@ -150,12 +141,12 @@ public class AdminService : IAdminService
         }
 
         await _db.SaveChangesAsync(cancellationToken);
-        return AdminMutationResult.Ok(id);
+        return OperationResult<uint>.Ok(id, "更新成功");
     }
 
     /// <summary>
-    /// 排序白名單：未列出的欄位會 fallback 到 Id。
-    /// 不信任 client 直接組 SQL ORDER BY 片段，避免 injection。
+    /// 排序白名單:未列出的欄位會 fallback 到 Id。
+    /// 不信任 client 直接組 SQL ORDER BY 片段,避免 injection。
     /// </summary>
     private static IOrderedQueryable<Admin> ApplyOrdering(
         IQueryable<Admin> query,
@@ -177,7 +168,7 @@ public class AdminService : IAdminService
     }
 
     /// <summary>
-    /// allow_page 在 DB 是逗號分隔字串；轉成陣列供前端使用。
+    /// allow_page 在 DB 是逗號分隔字串;轉成陣列供前端使用。
     /// </summary>
     private static IReadOnlyList<string> ParseAllowPage(string? raw)
     {
@@ -188,8 +179,8 @@ public class AdminService : IAdminService
     }
 
     /// <summary>
-    /// 前端傳入字串陣列，儲存時合併為逗號分隔字串。
-    /// 空陣列 / null 都視為空字串，與 PHP 表單「沒勾選 = 空值」行為一致。
+    /// 前端傳入字串陣列,儲存時合併為逗號分隔字串。
+    /// 空陣列 / null 都視為空字串,與 PHP 表單「沒勾選 = 空值」行為一致。
     /// </summary>
     private static string JoinAllowPage(IReadOnlyList<string>? pages)
     {

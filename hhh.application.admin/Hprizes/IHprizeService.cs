@@ -1,3 +1,4 @@
+using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Hprizes;
 using hhh.infrastructure.Storage;
 
@@ -11,7 +12,7 @@ public interface IHprizeService
     /// <summary>
     /// 取得獎品分頁列表（對應舊版 _hprize.php）。
     /// </summary>
-    Task<HprizeListResponse> GetListAsync(
+    Task<PagedResponse<HprizeListItem>> GetListAsync(
         HprizeListRequest request,
         CancellationToken cancellationToken = default);
 

@@ -1,6 +1,9 @@
+using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Hawards;
+using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,8 +23,8 @@ public class HawardService : IHawardService
     }
 
     /// <summary>
-    /// 獎項 LOGO 白名單（比照舊 PHP _hawards.php 的 award_name() 硬編碼 6 個選項）。
-    /// key = DB 儲存值（檔名），value = 顯示用中文名稱。
+    /// 獎項 LOGO 白名單(比照舊 PHP _hawards.php 的 award_name() 硬編碼 6 個選項)。
+    /// key = DB 儲存值(檔名),value = 顯示用中文名稱。
     /// </summary>
     private static readonly IReadOnlyDictionary<string, string> LogoCatalog =
         new Dictionary<string, string>(StringComparer.Ordinal)
@@ -34,13 +37,13 @@ public class HawardService : IHawardService
             ["award_6.png"] = "幸福空間亞洲設計傑出",
         };
 
-    public async Task<HawardListResponse> GetListAsync(
+    public async Task<PagedResponse<HawardListItem>> GetListAsync(
         HawardListRequest request,
         CancellationToken cancellationToken = default)
     {
-        // 對應舊 PHP：SELECT *, (SELECT name FROM _hdesigner...), (SELECT caption FROM _hcase...)
+        // 對應舊 PHP:SELECT *, (SELECT name FROM _hdesigner...), (SELECT caption FROM _hcase...)
         //             FROM _hawards WHERE ...
-        // 這邊改用 LINQ LEFT JOIN 做一次查詢，避免 N+1。
+        // 這邊改用 LINQ LEFT JOIN 做一次查詢,避免 N+1。
         var query =
             from h in _db.Hawards.AsNoTracking()
             join d in _db.Hdesigners.AsNoTracking()
@@ -85,9 +88,7 @@ public class HawardService : IHawardService
             query = query.Where(x => x.HcaseId == caseId);
         }
 
-        var total = await query.LongCountAsync(cancellationToken);
-
-        // 排序白名單（直接在 anonymous projection 上套用）------------------------
+        // 排序白名單(直接在 anonymous projection 上套用)------------------------
         var isAsc = string.Equals(request.By, "ASC", StringComparison.OrdinalIgnoreCase);
         var key = request.Sort?.ToLowerInvariant();
 
@@ -110,12 +111,8 @@ public class HawardService : IHawardService
                 : query.OrderByDescending(x => x.HawardsId),
         };
 
-        var page = await query
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .ToListAsync(cancellationToken);
-
-        var items = page
+        // ResolveLogoLabel 要跑 in-memory 查 dict,用 anonymous projection 先取回當頁,再 map
+        var paged = await query
             .Select(x => new HawardListItem
             {
                 Id = x.HawardsId,
@@ -125,18 +122,18 @@ public class HawardService : IHawardService
                 HcaseId = x.HcaseId,
                 HcaseCaption = x.HcaseCaption ?? string.Empty,
                 Logo = x.Logo,
-                LogoLabel = ResolveLogoLabel(x.Logo),
+                LogoLabel = string.Empty,
                 Onoff = x.Onoff == 1,
             })
-            .ToList();
+            .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
 
-        return new HawardListResponse
+        // 回填 LogoLabel(in-memory 查 dict)
+        foreach (var item in paged.Items)
         {
-            Items = items,
-            Total = total,
-            Page = request.Page,
-            PageSize = request.PageSize,
-        };
+            item.LogoLabel = ResolveLogoLabel(item.Logo);
+        }
+
+        return paged;
     }
 
     public async Task<HawardDetailResponse?> GetByIdAsync(
@@ -181,14 +178,14 @@ public class HawardService : IHawardService
         };
     }
 
-    public async Task<HawardMutationResult> CreateAsync(
+    public async Task<OperationResult<uint>> CreateAsync(
         CreateHawardRequest request,
         CancellationToken cancellationToken = default)
     {
         // logo 白名單
         if (!LogoCatalog.ContainsKey(request.Logo))
         {
-            return HawardMutationResult.Fail(400, "不支援的獎項 LOGO");
+            return OperationResult<uint>.BadRequest("不支援的獎項 LOGO");
         }
 
         // FK 存在性驗證
@@ -197,7 +194,7 @@ public class HawardService : IHawardService
             .AnyAsync(d => d.HdesignerId == request.HdesignerId, cancellationToken);
         if (!designerExists)
         {
-            return HawardMutationResult.Fail(400, "指定的設計師不存在");
+            return OperationResult<uint>.BadRequest("指定的設計師不存在");
         }
 
         var caseExists = await _db.Hcases
@@ -205,7 +202,7 @@ public class HawardService : IHawardService
             .AnyAsync(c => c.HcaseId == request.HcaseId, cancellationToken);
         if (!caseExists)
         {
-            return HawardMutationResult.Fail(400, "指定的個案不存在");
+            return OperationResult<uint>.BadRequest("指定的個案不存在");
         }
 
         var entity = new Haward
@@ -226,10 +223,10 @@ public class HawardService : IHawardService
             $"新增得獎記錄 id={entity.HawardsId} 設計師={request.HdesignerId} 個案={request.HcaseId} 獎項={request.AwardsName}",
             cancellationToken: cancellationToken);
 
-        return HawardMutationResult.Created(entity.HawardsId);
+        return OperationResult<uint>.Created(entity.HawardsId);
     }
 
-    public async Task<HawardMutationResult> UpdateAsync(
+    public async Task<OperationResult<uint>> UpdateAsync(
         uint id,
         UpdateHawardRequest request,
         CancellationToken cancellationToken = default)
@@ -238,14 +235,14 @@ public class HawardService : IHawardService
             .FirstOrDefaultAsync(x => x.HawardsId == id, cancellationToken);
 
         if (entity is null)
-            return HawardMutationResult.Fail(404, "找不到得獎記錄");
+            return OperationResult<uint>.NotFound("找不到得獎記錄");
 
         if (!LogoCatalog.ContainsKey(request.Logo))
         {
-            return HawardMutationResult.Fail(400, "不支援的獎項 LOGO");
+            return OperationResult<uint>.BadRequest("不支援的獎項 LOGO");
         }
 
-        // FK 只有在異動時才去查，避免每次 PUT 都多兩條 SELECT
+        // FK 只有在異動時才去查,避免每次 PUT 都多兩條 SELECT
         if (entity.HdesignerId != request.HdesignerId)
         {
             var designerExists = await _db.Hdesigners
@@ -253,7 +250,7 @@ public class HawardService : IHawardService
                 .AnyAsync(d => d.HdesignerId == request.HdesignerId, cancellationToken);
             if (!designerExists)
             {
-                return HawardMutationResult.Fail(400, "指定的設計師不存在");
+                return OperationResult<uint>.BadRequest("指定的設計師不存在");
             }
         }
 
@@ -264,7 +261,7 @@ public class HawardService : IHawardService
                 .AnyAsync(c => c.HcaseId == request.HcaseId, cancellationToken);
             if (!caseExists)
             {
-                return HawardMutationResult.Fail(400, "指定的個案不存在");
+                return OperationResult<uint>.BadRequest("指定的個案不存在");
             }
         }
 
@@ -282,10 +279,10 @@ public class HawardService : IHawardService
             $"修改得獎記錄 id={id} 設計師={request.HdesignerId} 個案={request.HcaseId} 獎項={request.AwardsName}",
             cancellationToken: cancellationToken);
 
-        return HawardMutationResult.Ok(id);
+        return OperationResult<uint>.Ok(id, "更新成功");
     }
 
-    public async Task<HawardMutationResult> DeleteAsync(
+    public async Task<OperationResult<uint>> DeleteAsync(
         uint id,
         CancellationToken cancellationToken = default)
     {
@@ -293,7 +290,7 @@ public class HawardService : IHawardService
             .FirstOrDefaultAsync(x => x.HawardsId == id, cancellationToken);
 
         if (entity is null)
-            return HawardMutationResult.Fail(404, "找不到得獎記錄");
+            return OperationResult<uint>.NotFound("找不到得獎記錄");
 
         _db.Hawards.Remove(entity);
         await _db.SaveChangesAsync(cancellationToken);
@@ -304,7 +301,7 @@ public class HawardService : IHawardService
             $"刪除得獎記錄 id={id} 設計師={entity.HdesignerId} 個案={entity.HcaseId}",
             cancellationToken: cancellationToken);
 
-        return HawardMutationResult.Deleted();
+        return OperationResult<uint>.Ok("刪除成功");
     }
 
     // ---------------------------------------------------------------------

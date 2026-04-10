@@ -1,4 +1,6 @@
+using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Users;
+using hhh.application.admin.Common;
 
 namespace hhh.application.admin.Users;
 
@@ -7,7 +9,7 @@ public interface IUserService
     /// <summary>
     /// 取得會員分頁列表（對應舊版 _users.php）
     /// </summary>
-    Task<UserListResponse> GetListAsync(
+    Task<PagedResponse<UserListItem>> GetListAsync(
         UserListRequest request,
         CancellationToken cancellationToken = default);
 
@@ -22,14 +24,14 @@ public interface IUserService
     /// <summary>
     /// 新增會員（對應舊版 _users_edit.php 的 POST 新增分支）
     /// </summary>
-    Task<UserMutationResult> CreateAsync(
+    Task<OperationResult<uint>> CreateAsync(
         CreateUserRequest request,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 更新會員（對應舊版 _users_edit.php 的 POST 更新分支）
     /// </summary>
-    Task<UserMutationResult> UpdateAsync(
+    Task<OperationResult<uint>> UpdateAsync(
         uint id,
         UpdateUserRequest request,
         CancellationToken cancellationToken = default);

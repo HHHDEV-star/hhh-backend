@@ -1,6 +1,9 @@
+using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Hcases;
+using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,12 +22,12 @@ public class HcaseService : IHcaseService
         _logWriter = logWriter;
     }
 
-    public async Task<HcaseListResponse> GetListAsync(
+    public async Task<PagedResponse<HcaseListItem>> GetListAsync(
         HcaseListRequest request,
         CancellationToken cancellationToken = default)
     {
-        // 對應舊 PHP：SELECT * FROM _hcase tb
-        //   + 跨 _hdesigner JOIN（取 title / name）
+        // 對應舊 PHP:SELECT * FROM _hcase tb
+        //   + 跨 _hdesigner JOIN(取 title / name)
         //   + 跨 _hcase_img 統計圖片數量
         var query = _db.Hcases.AsNoTracking();
 
@@ -35,13 +38,13 @@ public class HcaseService : IHcaseService
         }
 
         // 關鍵字搜尋 ----------------------------------------------------------
-        // 舊 PHP：跨 hcase_id / caption / location / style / type + 設計師 name/title
+        // 舊 PHP:跨 hcase_id / caption / location / style / type + 設計師 name/title
         if (!string.IsNullOrWhiteSpace(request.Q))
         {
             var q = request.Q.Trim();
             var like = $"%{q}%";
 
-            // 先找出符合條件的設計師 ID（name / title）
+            // 先找出符合條件的設計師 ID(name / title)
             var matchingDesignerIds = _db.Hdesigners
                 .Where(d => EF.Functions.Like(d.Name, like) || EF.Functions.Like(d.Title, like))
                 .Select(d => d.HdesignerId);
@@ -55,12 +58,10 @@ public class HcaseService : IHcaseService
                 matchingDesignerIds.Contains(h.HdesignerId));
         }
 
-        var total = await query.LongCountAsync(cancellationToken);
-
         var ordered = ApplyOrdering(query, request.Sort, request.By);
 
         // JOIN _hdesigner 取 title / name + 計算 _hcase_img 數量
-        var items = await (
+        return await (
             from h in ordered
             join d in _db.Hdesigners on h.HdesignerId equals d.HdesignerId into dj
             from d in dj.DefaultIfEmpty()
@@ -83,17 +84,7 @@ public class HcaseService : IHcaseService
                 Onoff = h.Onoff == 1,
                 CreatTime = h.CreatTime,
             })
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .ToListAsync(cancellationToken);
-
-        return new HcaseListResponse
-        {
-            Items = items,
-            Total = total,
-            Page = request.Page,
-            PageSize = request.PageSize,
-        };
+            .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
     }
 
     public async Task<HcaseDetailResponse?> GetByIdAsync(
@@ -146,15 +137,15 @@ public class HcaseService : IHcaseService
         return detail;
     }
 
-    public async Task<HcaseMutationResult> CreateAsync(
+    public async Task<OperationResult<uint>> CreateAsync(
         CreateHcaseRequest request,
         CancellationToken cancellationToken = default)
     {
-        // 設計師存在性檢查（避免孤兒 case）
+        // 設計師存在性檢查(避免孤兒 case)
         var designerExists = await _db.Hdesigners
             .AnyAsync(d => d.HdesignerId == request.HdesignerId, cancellationToken);
         if (!designerExists)
-            return HcaseMutationResult.Fail(404, "找不到指定的設計師");
+            return OperationResult<uint>.NotFound("找不到指定的設計師");
 
         var now = DateTime.UtcNow;
 
@@ -214,10 +205,10 @@ public class HcaseService : IHcaseService
             $"新增案例 id={entity.HcaseId} 標題={request.Caption} 設計師={request.HdesignerId}",
             cancellationToken: cancellationToken);
 
-        return HcaseMutationResult.Created(entity.HcaseId);
+        return OperationResult<uint>.Created(entity.HcaseId);
     }
 
-    public async Task<HcaseMutationResult> UpdateAsync(
+    public async Task<OperationResult<uint>> UpdateAsync(
         uint id,
         UpdateHcaseRequest request,
         CancellationToken cancellationToken = default)
@@ -226,15 +217,15 @@ public class HcaseService : IHcaseService
             .FirstOrDefaultAsync(h => h.HcaseId == id, cancellationToken);
 
         if (entity is null)
-            return HcaseMutationResult.Fail(404, "找不到個案");
+            return OperationResult<uint>.NotFound("找不到個案");
 
-        // 若切換所屬設計師，也要確認新設計師存在
+        // 若切換所屬設計師,也要確認新設計師存在
         if (entity.HdesignerId != request.HdesignerId)
         {
             var designerExists = await _db.Hdesigners
                 .AnyAsync(d => d.HdesignerId == request.HdesignerId, cancellationToken);
             if (!designerExists)
-                return HcaseMutationResult.Fail(404, "找不到指定的設計師");
+                return OperationResult<uint>.NotFound("找不到指定的設計師");
         }
 
         // 舊 PHP 行為：使用者手動改了 fee，就把 auto_count_fee 關掉
@@ -286,10 +277,10 @@ public class HcaseService : IHcaseService
             $"修改案例 id={id} 標題={request.Caption} 設計師={request.HdesignerId}",
             cancellationToken: cancellationToken);
 
-        return HcaseMutationResult.Ok(id);
+        return OperationResult<uint>.Ok(id, "更新成功");
     }
 
-    public async Task<HcaseMutationResult> UpdateSortOrderAsync(
+    public async Task<OperationResult<uint>> UpdateSortOrderAsync(
         UpdateHcaseSortOrderRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -297,15 +288,15 @@ public class HcaseService : IHcaseService
         var designer = await _db.Hdesigners
             .FirstOrDefaultAsync(d => d.HdesignerId == request.HdesignerId, cancellationToken);
         if (designer is null)
-            return HcaseMutationResult.Fail(404, "找不到指定的設計師");
+            return OperationResult<uint>.NotFound("找不到指定的設計師");
 
-        // 收集兩個陣列中出現的所有 hcase_id，確保全部屬於同一設計師
+        // 收集兩個陣列中出現的所有 hcase_id,確保全部屬於同一設計師
         var featuredIds = request.Featured.Select(i => i.Id).ToList();
         var normalIds = request.Normal.Select(i => i.Id).ToList();
         var allIds = featuredIds.Concat(normalIds).Distinct().ToList();
 
         if (allIds.Count == 0)
-            return HcaseMutationResult.Ok(message: "沒有要更新的個案");
+            return OperationResult<uint>.Ok("沒有要更新的個案");
 
         var entities = await _db.Hcases
             .Where(h => allIds.Contains(h.HcaseId) && h.HdesignerId == request.HdesignerId)
@@ -342,7 +333,7 @@ public class HcaseService : IHcaseService
             $"案例排序 設計師={request.HdesignerId} 首六={request.Featured.Count}筆 一般={request.Normal.Count}筆",
             cancellationToken: cancellationToken);
 
-        return HcaseMutationResult.Ok(message: "個案排序已更新");
+        return OperationResult<uint>.Ok("個案排序已更新");
     }
 
     // ---------------------------------------------------------------------

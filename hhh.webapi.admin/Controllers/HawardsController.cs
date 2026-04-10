@@ -27,13 +27,13 @@ public class HawardsController : ApiControllerBase
     /// 排序白名單：id, awardsName, hdesignerId, hcaseId, onoff。
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<HawardListResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<HawardListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
         [FromQuery] HawardListRequest request,
         CancellationToken cancellationToken)
     {
         var data = await _hawardService.GetListAsync(request, cancellationToken);
-        return Ok(ApiResponse<HawardListResponse>.Success(data));
+        return Ok(ApiResponse<PagedResponse<HawardListItem>>.Success(data));
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ public class HawardsController : ApiControllerBase
 
         return StatusCode(
             StatusCodes.Status201Created,
-            ApiResponse<object>.Created(new { id = result.HawardsId }, result.Message));
+            ApiResponse<object>.Created(new { id = result.Data }, result.Message));
     }
 
     /// <summary>
@@ -106,7 +106,7 @@ public class HawardsController : ApiControllerBase
         }
 
         return Ok(ApiResponse<object>.Success(
-            new { id = result.HawardsId }, result.Message));
+            new { id = result.Data }, result.Message));
     }
 
     /// <summary>

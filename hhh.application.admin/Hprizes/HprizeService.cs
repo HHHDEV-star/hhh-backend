@@ -1,6 +1,8 @@
+using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Hprizes;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using hhh.infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
@@ -26,11 +28,11 @@ public class HprizeService : IHprizeService
         _publicUrlPrefix = (storageOptions.Value.PublicUrlPrefix ?? "/uploads").TrimEnd('/');
     }
 
-    public async Task<HprizeListResponse> GetListAsync(
+    public async Task<PagedResponse<HprizeListItem>> GetListAsync(
         HprizeListRequest request,
         CancellationToken cancellationToken = default)
     {
-        // 對應舊 PHP：SELECT * FROM _hprize WHERE 1=1 ORDER BY ...
+        // 對應舊 PHP:SELECT * FROM _hprize WHERE 1=1 ORDER BY ...
         var query = _db.Hprizes.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(request.Q))
@@ -43,13 +45,9 @@ public class HprizeService : IHprizeService
                 EF.Functions.Like(h.Desc, like));
         }
 
-        var total = await query.LongCountAsync(cancellationToken);
-
         var ordered = ApplyOrdering(query, request.Sort, request.By);
 
-        var items = await ordered
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+        return await ordered
             .Select(h => new HprizeListItem
             {
                 Id = h.HprizeId,
@@ -58,15 +56,7 @@ public class HprizeService : IHprizeService
                 Desc = h.Desc,
                 CreatTime = h.CreatTime,
             })
-            .ToListAsync(cancellationToken);
-
-        return new HprizeListResponse
-        {
-            Items = items,
-            Total = total,
-            Page = request.Page,
-            PageSize = request.PageSize,
-        };
+            .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
     }
 
     public async Task<HprizeDetailResponse?> GetByIdAsync(

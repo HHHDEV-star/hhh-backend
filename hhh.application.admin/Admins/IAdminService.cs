@@ -1,4 +1,6 @@
+using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Admins;
+using hhh.application.admin.Common;
 
 namespace hhh.application.admin.Admins;
 
@@ -7,7 +9,7 @@ public interface IAdminService
     /// <summary>
     /// 取得管理者分頁列表（對應舊版 admin.php）
     /// </summary>
-    Task<AdminListResponse> GetListAsync(
+    Task<PagedResponse<AdminListItem>> GetListAsync(
         AdminListRequest request,
         CancellationToken cancellationToken = default);
 
@@ -22,14 +24,14 @@ public interface IAdminService
     /// <summary>
     /// 新增管理者（對應舊版 admin_edit.php 的 POST 新增分支）
     /// </summary>
-    Task<AdminMutationResult> CreateAsync(
+    Task<OperationResult<uint>> CreateAsync(
         CreateAdminRequest request,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 更新管理者（對應舊版 admin_edit.php 的 POST 更新分支）
     /// </summary>
-    Task<AdminMutationResult> UpdateAsync(
+    Task<OperationResult<uint>> UpdateAsync(
         uint id,
         UpdateAdminRequest request,
         CancellationToken cancellationToken = default);
@@ -38,7 +40,7 @@ public interface IAdminService
     /// 更新自己的 profile / 密碼（對應舊版 admin_password.php）。
     /// 與 UpdateAsync 的差別：不改 account / allow_page / is_active。
     /// </summary>
-    Task<AdminMutationResult> UpdateProfileAsync(
+    Task<OperationResult<uint>> UpdateProfileAsync(
         uint id,
         UpdateAdminProfileRequest request,
         CancellationToken cancellationToken = default);

@@ -1,6 +1,9 @@
+using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Hdesigners;
+using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,11 +22,11 @@ public class HdesignerService : IHdesignerService
         _logWriter = logWriter;
     }
 
-    public async Task<HdesignerListResponse> GetListAsync(
+    public async Task<PagedResponse<HdesignerListItem>> GetListAsync(
         HdesignerListRequest request,
         CancellationToken cancellationToken = default)
     {
-        // 對應舊 PHP：SELECT * FROM _hdesigner WHERE ...
+        // 對應舊 PHP:SELECT * FROM _hdesigner WHERE ...
         var query = _db.Hdesigners.AsNoTracking();
 
         // 關鍵字搜尋 ----------------------------------------------------------
@@ -33,20 +36,20 @@ public class HdesignerService : IHdesignerService
 
             if (request.SearchByIdOnly)
             {
-                // 舊 PHP：只比 hdesigner_id = $id
+                // 舊 PHP:只比 hdesigner_id = $id
                 if (uint.TryParse(q, out var id))
                 {
                     query = query.Where(h => h.HdesignerId == id);
                 }
                 else
                 {
-                    // 明確指定 id 模式但傳字串，直接回空集合
+                    // 明確指定 id 模式但傳字串,直接回空集合
                     query = query.Where(_ => false);
                 }
             }
             else
             {
-                // 舊 PHP：跨欄位 LIKE '%q%'（id / title / name / mail / website / phone / address）
+                // 舊 PHP:跨欄位 LIKE '%q%'(id / title / name / mail / website / phone / address)
                 var like = $"%{q}%";
                 query = query.Where(h =>
                     EF.Functions.Like(h.HdesignerId.ToString(), like) ||
@@ -59,13 +62,9 @@ public class HdesignerService : IHdesignerService
             }
         }
 
-        var total = await query.LongCountAsync(cancellationToken);
-
         var ordered = ApplyOrdering(query, request.Sort, request.By);
 
-        var items = await ordered
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+        return await ordered
             .Select(h => new HdesignerListItem
             {
                 Id = h.HdesignerId,
@@ -81,15 +80,7 @@ public class HdesignerService : IHdesignerService
                 MobileOrder = h.MobileOrder,
                 CreatTime = h.CreatTime,
             })
-            .ToListAsync(cancellationToken);
-
-        return new HdesignerListResponse
-        {
-            Items = items,
-            Total = total,
-            Page = request.Page,
-            PageSize = request.PageSize,
-        };
+            .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
     }
 
     public async Task<HdesignerDetailResponse?> GetByIdAsync(
@@ -106,7 +97,7 @@ public class HdesignerService : IHdesignerService
         return MapToDetail(h);
     }
 
-    public async Task<HdesignerMutationResult> CreateAsync(
+    public async Task<OperationResult<uint>> CreateAsync(
         CreateHdesignerRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -193,10 +184,10 @@ public class HdesignerService : IHdesignerService
             $"新增設計師 id={entity.HdesignerId} 名稱={request.Title} / {request.Name}",
             cancellationToken: cancellationToken);
 
-        return HdesignerMutationResult.Created(entity.HdesignerId);
+        return OperationResult<uint>.Created(entity.HdesignerId);
     }
 
-    public async Task<HdesignerMutationResult> UpdateAsync(
+    public async Task<OperationResult<uint>> UpdateAsync(
         uint id,
         UpdateHdesignerRequest request,
         CancellationToken cancellationToken = default)
@@ -205,7 +196,7 @@ public class HdesignerService : IHdesignerService
             .FirstOrDefaultAsync(x => x.HdesignerId == id, cancellationToken);
 
         if (h is null)
-            return HdesignerMutationResult.Fail(404, "找不到設計師");
+            return OperationResult<uint>.NotFound("找不到設計師");
 
         // 基本資料
         h.Title = request.Title;
@@ -273,10 +264,10 @@ public class HdesignerService : IHdesignerService
             $"修改設計師 id={id} 名稱={request.Title} / {request.Name}",
             cancellationToken: cancellationToken);
 
-        return HdesignerMutationResult.Ok(id);
+        return OperationResult<uint>.Ok(id, "更新成功");
     }
 
-    public async Task<HdesignerMutationResult> UpdateSortOrderAsync(
+    public async Task<OperationResult<uint>> UpdateSortOrderAsync(
         UpdateHdesignerSortOrderRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -305,10 +296,10 @@ public class HdesignerService : IHdesignerService
             $"設計師桌機版排序更新 {entities.Count}筆",
             cancellationToken: cancellationToken);
 
-        return HdesignerMutationResult.Ok(message: "桌機版排序已更新");
+        return OperationResult<uint>.Ok("桌機版排序已更新");
     }
 
-    public async Task<HdesignerMutationResult> UpdateMobileSortOrderAsync(
+    public async Task<OperationResult<uint>> UpdateMobileSortOrderAsync(
         UpdateHdesignerSortOrderRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -337,7 +328,7 @@ public class HdesignerService : IHdesignerService
             $"設計師手機版排序更新 {entities.Count}筆",
             cancellationToken: cancellationToken);
 
-        return HdesignerMutationResult.Ok(message: "手機版排序已更新");
+        return OperationResult<uint>.Ok("手機版排序已更新");
     }
 
     // ---------------------------------------------------------------------

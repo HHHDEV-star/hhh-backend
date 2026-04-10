@@ -2,6 +2,7 @@ using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.OperationLogs;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +35,7 @@ public class OperationLogsController : ApiControllerBase
     /// 排序白名單:id, creatTime, uname, pageName, action。
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<OperationLogListResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<OperationLogListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
         [FromQuery] OperationLogListRequest request,
         CancellationToken cancellationToken)
@@ -83,14 +84,10 @@ public class OperationLogsController : ApiControllerBase
             query = query.Where(h => h.CreatTime <= to);
         }
 
-        var total = await query.LongCountAsync(cancellationToken);
-
         // 排序白名單 ----------------------------------------------------------
-        query = ApplyOrdering(query, request.Sort, request.By);
+        var ordered = ApplyOrdering(query, request.Sort, request.By);
 
-        var items = await query
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+        var response = await ordered
             .Select(h => new OperationLogListItem
             {
                 Id = h.Id,
@@ -102,17 +99,9 @@ public class OperationLogsController : ApiControllerBase
                 Ip = h.Ip,
                 CreatTime = h.CreatTime,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
 
-        var response = new OperationLogListResponse
-        {
-            Items = items,
-            Total = total,
-            Page = request.Page,
-            PageSize = request.PageSize,
-        };
-
-        return Ok(ApiResponse<OperationLogListResponse>.Success(response));
+        return Ok(ApiResponse<PagedResponse<OperationLogListItem>>.Success(response));
     }
 
     /// <summary>

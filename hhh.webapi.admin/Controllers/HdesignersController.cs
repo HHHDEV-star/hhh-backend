@@ -28,13 +28,13 @@ public class HdesignersController : ApiControllerBase
     /// 排序白名單：id, title, name, dorder, mobileOrder, onoff, creatTime, updateTime。
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<HdesignerListResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<HdesignerListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
         [FromQuery] HdesignerListRequest request,
         CancellationToken cancellationToken)
     {
         var data = await _hdesignerService.GetListAsync(request, cancellationToken);
-        return Ok(ApiResponse<HdesignerListResponse>.Success(data));
+        return Ok(ApiResponse<PagedResponse<HdesignerListItem>>.Success(data));
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public class HdesignersController : ApiControllerBase
 
         return StatusCode(
             StatusCodes.Status201Created,
-            ApiResponse<object>.Created(new { id = result.HdesignerId }, result.Message));
+            ApiResponse<object>.Created(new { id = result.Data }, result.Message));
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ public class HdesignersController : ApiControllerBase
         }
 
         return Ok(ApiResponse<object>.Success(
-            new { id = result.HdesignerId }, result.Message));
+            new { id = result.Data }, result.Message));
     }
 
     /// <summary>

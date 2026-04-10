@@ -28,13 +28,13 @@ public class HcasesController : ApiControllerBase
     /// 排序白名單：id, caption, hdesignerId, viewed, corder, creatTime, updateTime, onoff, sdate, recommend。
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<HcaseListResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<HcaseListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
         [FromQuery] HcaseListRequest request,
         CancellationToken cancellationToken)
     {
         var data = await _hcaseService.GetListAsync(request, cancellationToken);
-        return Ok(ApiResponse<HcaseListResponse>.Success(data));
+        return Ok(ApiResponse<PagedResponse<HcaseListItem>>.Success(data));
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public class HcasesController : ApiControllerBase
 
         return StatusCode(
             StatusCodes.Status201Created,
-            ApiResponse<object>.Created(new { id = result.HcaseId }, result.Message));
+            ApiResponse<object>.Created(new { id = result.Data }, result.Message));
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public class HcasesController : ApiControllerBase
         }
 
         return Ok(ApiResponse<object>.Success(
-            new { id = result.HcaseId }, result.Message));
+            new { id = result.Data }, result.Message));
     }
 
     /// <summary>

@@ -1,6 +1,9 @@
+using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Users;
+using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Users;
@@ -14,21 +17,17 @@ public class UserService : IUserService
         _db = db;
     }
 
-    public async Task<UserListResponse> GetListAsync(
+    public async Task<PagedResponse<UserListItem>> GetListAsync(
         UserListRequest request,
         CancellationToken cancellationToken = default)
     {
-        // 基底查詢：對應舊 PHP 的 SELECT * FROM _users WHERE 1=1
-        // 目前沒有搜尋條件，保留 AsQueryable 以便之後加 filter
+        // 基底查詢:對應舊 PHP 的 SELECT * FROM _users WHERE 1=1
+        // 目前沒有搜尋條件,保留 AsQueryable 以便之後加 filter
         var query = _db.Users.AsNoTracking();
-
-        var total = await query.LongCountAsync(cancellationToken);
 
         var ordered = ApplyOrdering(query, request.Sort, request.By);
 
-        var items = await ordered
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+        return await ordered
             .Select(u => new UserListItem
             {
                 Id = u.Uid,
@@ -38,15 +37,7 @@ public class UserService : IUserService
                 Tel = u.UserIntrest,
                 Address = u.UserFrom,
             })
-            .ToListAsync(cancellationToken);
-
-        return new UserListResponse
-        {
-            Items = items,
-            Total = total,
-            Page = request.Page,
-            PageSize = request.PageSize,
-        };
+            .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
     }
 
     public async Task<UserDetailResponse?> GetByIdAsync(
@@ -69,22 +60,22 @@ public class UserService : IUserService
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<UserMutationResult> CreateAsync(
+    public async Task<OperationResult<uint>> CreateAsync(
         CreateUserRequest request,
         CancellationToken cancellationToken = default)
     {
-        // 帳號 / 信箱唯一性檢查（對應 _users 表上的 uname / email unique index）
+        // 帳號 / 信箱唯一性檢查(對應 _users 表上的 uname / email unique index)
         var accountTaken = await _db.Users
             .AnyAsync(u => u.Uname == request.Account, cancellationToken);
         if (accountTaken)
-            return UserMutationResult.Fail(409, "帳號已被使用");
+            return OperationResult<uint>.Conflict("帳號已被使用");
 
         var emailTaken = await _db.Users
             .AnyAsync(u => u.Email == request.Email, cancellationToken);
         if (emailTaken)
-            return UserMutationResult.Fail(409, "信箱已被使用");
+            return OperationResult<uint>.Conflict("信箱已被使用");
 
-        // 許多欄位是 NOT NULL 但沒有 DB 預設值，這裡以 Xoops 慣例填空字串 / 0，
+        // 許多欄位是 NOT NULL 但沒有 DB 預設值,這裡以 Xoops 慣例填空字串 / 0,
         // 讓 INSERT 不會因為缺欄位失敗。之後若前端需要更多欄位再擴充。
         var now = DateTime.UtcNow;
         var unixNow = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -98,7 +89,7 @@ public class UserService : IUserService
             Uname = request.Account,
             Name = request.Name,
             Email = request.Email,
-            Pass = request.Password, // 注意：相容舊系統，明文存。改 BCrypt 需同步修改 AuthService
+            Pass = request.Password, // 注意:相容舊系統,明文存。改 BCrypt 需同步修改 AuthService
             Url = string.Empty,
             UserAvatar = string.Empty,
             UserRegdate = unixNow,
@@ -123,10 +114,10 @@ public class UserService : IUserService
         _db.Users.Add(user);
         await _db.SaveChangesAsync(cancellationToken);
 
-        return UserMutationResult.Created(user.Uid);
+        return OperationResult<uint>.Created(user.Uid);
     }
 
-    public async Task<UserMutationResult> UpdateAsync(
+    public async Task<OperationResult<uint>> UpdateAsync(
         uint id,
         UpdateUserRequest request,
         CancellationToken cancellationToken = default)
@@ -135,13 +126,13 @@ public class UserService : IUserService
             .FirstOrDefaultAsync(u => u.Uid == id, cancellationToken);
 
         if (user is null)
-            return UserMutationResult.Fail(404, "找不到會員");
+            return OperationResult<uint>.NotFound("找不到會員");
 
-        // 信箱唯一檢查（排除自己）
+        // 信箱唯一檢查(排除自己)
         var emailTaken = await _db.Users
             .AnyAsync(u => u.Email == request.Email && u.Uid != id, cancellationToken);
         if (emailTaken)
-            return UserMutationResult.Fail(409, "信箱已被使用");
+            return OperationResult<uint>.Conflict("信箱已被使用");
 
         user.Name = request.Name;
         user.Email = request.Email;
@@ -149,20 +140,20 @@ public class UserService : IUserService
         user.UserFrom = request.Address ?? string.Empty;
         user.UpdateTime = DateTime.UtcNow;
 
-        // 只有 client 有送密碼才更新（對應原 PHP 的預期行為，
-        // 原 PHP 因 $exclude_keyword 寫成 "pwd" 但 input name="pass" 而 bug）
+        // 只有 client 有送密碼才更新(對應原 PHP 的預期行為,
+        // 原 PHP 因 $exclude_keyword 寫成 "pwd" 但 input name="pass" 而 bug)
         if (!string.IsNullOrEmpty(request.Password))
         {
-            user.Pass = request.Password; // 注意：相容舊系統
+            user.Pass = request.Password; // 注意:相容舊系統
         }
 
         await _db.SaveChangesAsync(cancellationToken);
-        return UserMutationResult.Ok(id);
+        return OperationResult<uint>.Ok(id, "更新成功");
     }
 
     /// <summary>
-    /// 排序白名單：未列出的欄位會 fallback 到 Uid。
-    /// 不信任 client 直接組 SQL ORDER BY 片段，避免 injection。
+    /// 排序白名單:未列出的欄位會 fallback 到 Uid。
+    /// 不信任 client 直接組 SQL ORDER BY 片段,避免 injection。
     /// </summary>
     private static IOrderedQueryable<User> ApplyOrdering(
         IQueryable<User> query,

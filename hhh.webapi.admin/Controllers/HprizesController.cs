@@ -34,13 +34,13 @@ public class HprizesController : ApiControllerBase
     /// 排序白名單：id, title, creatTime。
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<HprizeListResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<HprizeListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
         [FromQuery] HprizeListRequest request,
         CancellationToken cancellationToken)
     {
         var data = await _hprizeService.GetListAsync(request, cancellationToken);
-        return Ok(ApiResponse<HprizeListResponse>.Success(data));
+        return Ok(ApiResponse<PagedResponse<HprizeListItem>>.Success(data));
     }
 
     /// <summary>
@@ -117,7 +117,7 @@ public class HprizesController : ApiControllerBase
         return StatusCode(
             StatusCodes.Status201Created,
             ApiResponse<object>.Created(
-                new { id = result.HprizeId, logo = uploaded.PublicUrl },
+                new { id = result.Data, logo = uploaded.PublicUrl },
                 result.Message));
     }
 
@@ -177,7 +177,7 @@ public class HprizesController : ApiControllerBase
         }
 
         return Ok(ApiResponse<object>.Success(
-            new { id = result.HprizeId, logo = uploaded?.PublicUrl },
+            new { id = result.Data, logo = uploaded?.PublicUrl },
             result.Message));
     }
 
