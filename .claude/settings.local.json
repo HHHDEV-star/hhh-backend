@@ -12,7 +12,8 @@
       "Bash(dotnet --version)",
       "Bash(dotnet --list-sdks)",
       "Bash(where dotnet:*)",
-      "Bash(where msbuild:*)"
+      "Bash(where msbuild:*)",
+      "Bash(dotnet ef:*)"
     ]
   }
 }

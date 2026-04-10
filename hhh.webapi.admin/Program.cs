@@ -3,9 +3,12 @@ using System.Text.Json;
 using hhh.api.contracts.Common;
 using hhh.application.admin;
 using hhh.infrastructure;
+using hhh.infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -214,6 +217,25 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// ---------------------------------------------------------------------------
+// 靜態檔案：把 Storage:LocalUploadRoot 掛到 Storage:PublicUrlPrefix
+// 讓 /uploads/xxx 可以直接存取已上傳的圖檔
+// ---------------------------------------------------------------------------
+{
+    var storageOptions = app.Services.GetRequiredService<IOptions<StorageOptions>>().Value;
+    var uploadRoot = Path.IsPathRooted(storageOptions.LocalUploadRoot)
+        ? Path.GetFullPath(storageOptions.LocalUploadRoot)
+        : Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, storageOptions.LocalUploadRoot));
+    Directory.CreateDirectory(uploadRoot);
+
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(uploadRoot),
+        RequestPath = storageOptions.PublicUrlPrefix.TrimEnd('/'),
+        ServeUnknownFileTypes = false,
+    });
+}
 
 app.UseCors(CorsPolicy);
 
