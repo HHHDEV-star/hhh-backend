@@ -1,17 +1,22 @@
 using hhh.api.contracts.admin.Hdesigners;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Hdesigners;
 
 public class HdesignerService : IHdesignerService
 {
-    private readonly XoopsContext _db;
+    private const string PageName = "設計師";
 
-    public HdesignerService(XoopsContext db)
+    private readonly XoopsContext _db;
+    private readonly IOperationLogWriter _logWriter;
+
+    public HdesignerService(XoopsContext db, IOperationLogWriter logWriter)
     {
         _db = db;
+        _logWriter = logWriter;
     }
 
     public async Task<HdesignerListResponse> GetListAsync(
@@ -182,6 +187,12 @@ public class HdesignerService : IHdesignerService
         _db.Hdesigners.Add(entity);
         await _db.SaveChangesAsync(cancellationToken);
 
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Create,
+            $"新增設計師 id={entity.HdesignerId} 名稱={request.Title} / {request.Name}",
+            cancellationToken: cancellationToken);
+
         return HdesignerMutationResult.Created(entity.HdesignerId);
     }
 
@@ -255,6 +266,13 @@ public class HdesignerService : IHdesignerService
         h.UpdateTime = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Update,
+            $"修改設計師 id={id} 名稱={request.Title} / {request.Name}",
+            cancellationToken: cancellationToken);
+
         return HdesignerMutationResult.Ok(id);
     }
 
@@ -280,6 +298,13 @@ public class HdesignerService : IHdesignerService
         }
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Update,
+            $"設計師桌機版排序更新 {entities.Count}筆",
+            cancellationToken: cancellationToken);
+
         return HdesignerMutationResult.Ok(message: "桌機版排序已更新");
     }
 
@@ -305,6 +330,13 @@ public class HdesignerService : IHdesignerService
         }
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Update,
+            $"設計師手機版排序更新 {entities.Count}筆",
+            cancellationToken: cancellationToken);
+
         return HdesignerMutationResult.Ok(message: "手機版排序已更新");
     }
 

@@ -1,6 +1,7 @@
 using hhh.api.contracts.admin.Hprizes;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Logging;
 using hhh.infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -9,12 +10,19 @@ namespace hhh.application.admin.Hprizes;
 
 public class HprizeService : IHprizeService
 {
+    private const string PageName = "獎品";
+
     private readonly XoopsContext _db;
+    private readonly IOperationLogWriter _logWriter;
     private readonly string _publicUrlPrefix;
 
-    public HprizeService(XoopsContext db, IOptions<StorageOptions> storageOptions)
+    public HprizeService(
+        XoopsContext db,
+        IOperationLogWriter logWriter,
+        IOptions<StorageOptions> storageOptions)
     {
         _db = db;
+        _logWriter = logWriter;
         _publicUrlPrefix = (storageOptions.Value.PublicUrlPrefix ?? "/uploads").TrimEnd('/');
     }
 
@@ -99,6 +107,12 @@ public class HprizeService : IHprizeService
         _db.Hprizes.Add(entity);
         await _db.SaveChangesAsync(cancellationToken);
 
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Create,
+            $"新增獎品 id={entity.HprizeId} 標題={request.Title}",
+            cancellationToken: cancellationToken);
+
         return HprizeMutationResult.Created(entity.HprizeId);
     }
 
@@ -126,6 +140,13 @@ public class HprizeService : IHprizeService
         }
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Update,
+            $"修改獎品 id={id} 標題={request.Title}" + (newLogo is not null ? " (含新 logo)" : ""),
+            cancellationToken: cancellationToken);
+
         return HprizeMutationResult.Ok(id, oldLogoRelativePath: oldRelativePath);
     }
 
@@ -140,9 +161,16 @@ public class HprizeService : IHprizeService
             return HprizeMutationResult.Fail(404, "找不到獎品");
 
         var oldRelativePath = TryGetManagedRelativePath(entity.Logo);
+        var oldTitle = entity.Title;
 
         _db.Hprizes.Remove(entity);
         await _db.SaveChangesAsync(cancellationToken);
+
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Delete,
+            $"刪除獎品 id={id} 標題={oldTitle}",
+            cancellationToken: cancellationToken);
 
         return HprizeMutationResult.Deleted(oldLogoRelativePath: oldRelativePath);
     }

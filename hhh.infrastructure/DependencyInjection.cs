@@ -1,5 +1,6 @@
 using hhh.infrastructure.Auth;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Logging;
 using hhh.infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -40,6 +41,11 @@ public static class DependencyInjection
         // 檔案上傳（本機磁碟實作）
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
         services.AddSingleton<IImageUploadService, LocalImageUploadService>();
+
+        // 操作紀錄寫入（對應舊 PHP 的 _save_log()）
+        // 注意：IOperationContextAccessor 由 Web host 層（hhh.webapi.admin）註冊，
+        //       infrastructure 不直接依賴 Microsoft.AspNetCore.Http。
+        services.AddScoped<IOperationLogWriter, OperationLogWriter>();
 
         return services;
     }

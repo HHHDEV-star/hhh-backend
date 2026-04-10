@@ -3,7 +3,9 @@ using System.Text.Json;
 using hhh.api.contracts.Common;
 using hhh.application.admin;
 using hhh.infrastructure;
+using hhh.infrastructure.Logging;
 using hhh.infrastructure.Storage;
+using hhh.webapi.admin.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -65,8 +67,12 @@ builder.Services.AddSwaggerGen(c =>
 // ---------------------------------------------------------------------------
 // Layered DI
 // ---------------------------------------------------------------------------
-builder.Services.AddInfrastructure(builder.Configuration);  // DbContext + JWT token generator
+builder.Services.AddInfrastructure(builder.Configuration);  // DbContext + JWT token generator + IOperationLogWriter
 builder.Services.AddAdminApplication();                     // AuthService, UserService
+
+// HTTP 上下文 + 操作紀錄 context accessor（infrastructure 只定義抽象，Web host 在這裡綁定實作）
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IOperationContextAccessor, HttpOperationContextAccessor>();
 
 // ---------------------------------------------------------------------------
 // JWT Authentication (presentation concern — stays in Web host)

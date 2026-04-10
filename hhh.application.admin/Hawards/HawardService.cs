@@ -1,17 +1,22 @@
 using hhh.api.contracts.admin.Hawards;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Hawards;
 
 public class HawardService : IHawardService
 {
-    private readonly XoopsContext _db;
+    private const string PageName = "設計師獲獎";
 
-    public HawardService(XoopsContext db)
+    private readonly XoopsContext _db;
+    private readonly IOperationLogWriter _logWriter;
+
+    public HawardService(XoopsContext db, IOperationLogWriter logWriter)
     {
         _db = db;
+        _logWriter = logWriter;
     }
 
     /// <summary>
@@ -215,6 +220,12 @@ public class HawardService : IHawardService
         _db.Hawards.Add(entity);
         await _db.SaveChangesAsync(cancellationToken);
 
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Create,
+            $"新增得獎記錄 id={entity.HawardsId} 設計師={request.HdesignerId} 個案={request.HcaseId} 獎項={request.AwardsName}",
+            cancellationToken: cancellationToken);
+
         return HawardMutationResult.Created(entity.HawardsId);
     }
 
@@ -264,6 +275,13 @@ public class HawardService : IHawardService
         entity.Onoff = (byte)(request.Onoff ? 1 : 0);
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Update,
+            $"修改得獎記錄 id={id} 設計師={request.HdesignerId} 個案={request.HcaseId} 獎項={request.AwardsName}",
+            cancellationToken: cancellationToken);
+
         return HawardMutationResult.Ok(id);
     }
 
@@ -279,6 +297,12 @@ public class HawardService : IHawardService
 
         _db.Hawards.Remove(entity);
         await _db.SaveChangesAsync(cancellationToken);
+
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Delete,
+            $"刪除得獎記錄 id={id} 設計師={entity.HdesignerId} 個案={entity.HcaseId}",
+            cancellationToken: cancellationToken);
 
         return HawardMutationResult.Deleted();
     }

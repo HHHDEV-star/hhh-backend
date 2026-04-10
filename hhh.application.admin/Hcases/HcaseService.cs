@@ -1,17 +1,22 @@
 using hhh.api.contracts.admin.Hcases;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Hcases;
 
 public class HcaseService : IHcaseService
 {
-    private readonly XoopsContext _db;
+    private const string PageName = "案例";
 
-    public HcaseService(XoopsContext db)
+    private readonly XoopsContext _db;
+    private readonly IOperationLogWriter _logWriter;
+
+    public HcaseService(XoopsContext db, IOperationLogWriter logWriter)
     {
         _db = db;
+        _logWriter = logWriter;
     }
 
     public async Task<HcaseListResponse> GetListAsync(
@@ -203,6 +208,12 @@ public class HcaseService : IHcaseService
         _db.Hcases.Add(entity);
         await _db.SaveChangesAsync(cancellationToken);
 
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Create,
+            $"新增案例 id={entity.HcaseId} 標題={request.Caption} 設計師={request.HdesignerId}",
+            cancellationToken: cancellationToken);
+
         return HcaseMutationResult.Created(entity.HcaseId);
     }
 
@@ -268,6 +279,13 @@ public class HcaseService : IHcaseService
         entity.UpdateTime = now;
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Update,
+            $"修改案例 id={id} 標題={request.Caption} 設計師={request.HdesignerId}",
+            cancellationToken: cancellationToken);
+
         return HcaseMutationResult.Ok(id);
     }
 
@@ -317,6 +335,13 @@ public class HcaseService : IHcaseService
         designer.UpdateTime = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        await _logWriter.WriteAsync(
+            PageName,
+            OperationAction.Update,
+            $"案例排序 設計師={request.HdesignerId} 首六={request.Featured.Count}筆 一般={request.Normal.Count}筆",
+            cancellationToken: cancellationToken);
+
         return HcaseMutationResult.Ok(message: "個案排序已更新");
     }
 
