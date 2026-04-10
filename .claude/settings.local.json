@@ -14,7 +14,15 @@
       "Bash(where dotnet:*)",
       "Bash(where msbuild:*)",
       "Bash(dotnet ef:*)",
-      "Bash(Remove-Item:*)"
+      "Bash(Remove-Item:*)",
+      "Bash(dotnet msbuild:*)",
+      "Bash(echo \"EXIT=$?\")",
+      "Read(//tmp/**)",
+      "Bash(bash -c ':*)",
+      "Bash(ps -W)",
+      "Bash(bash)",
+      "Bash(mkdir -p hhh.webapi.admin/Controllers/Brokers)",
+      "Bash(mv hhh.webapi.admin/Controllers/BrokersController.cs hhh.webapi.admin/Controllers/Brokers/BrokersController.cs)"
     ]
   }
 }
