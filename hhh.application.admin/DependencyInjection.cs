@@ -1,5 +1,6 @@
 using hhh.application.admin.Admins;
 using hhh.application.admin.Auth;
+using hhh.application.admin.Hdesigners;
 using hhh.application.admin.Users;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<IHdesignerService, HdesignerService>();
         return services;
     }
 }
