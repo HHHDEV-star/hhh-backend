@@ -81,6 +81,23 @@ if (!result.IsSuccess)
 return Ok(ApiResponse<LoginResponse>.Success(result.Data!, result.Message));
 ```
 
+**Success path rules** (apply to every controller action, not just Auth):
+
+1. Always build the body with the static factory — `ApiResponse<T>.Success(...)` for 200, `ApiResponse<T>.Created(...)` for 201. **Never** `new ApiResponse<T> { Code = ..., Message = ..., Data = ... }` inline. If 201/204 isn't covered by a factory, add a new factory rather than hand-rolling the object.
+2. The `message` argument always comes from the service's `result.Message`. **Do not** hardcode Chinese strings like `"更新成功"` in the controller — put them as the default on the domain `*Result` helper (e.g. `UserMutationResult.Ok(uid, message = "更新成功")`) so the controller stays HTTP-only and the text is owned by the use case.
+3. For 201 Created, pair the factory with `StatusCode(StatusCodes.Status201Created, ApiResponse<object>.Created(...))`. Do not use `Ok(...)` for a create.
+
+Canonical 201 example:
+
+```csharp
+var result = await _userService.CreateAsync(request, ct);
+if (!result.IsSuccess)
+    return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+return StatusCode(
+    StatusCodes.Status201Created,
+    ApiResponse<object>.Created(new { id = result.UserId }, result.Message));
+```
+
 The format is enforced at **five** pipeline points — do not bypass or re-implement any of them:
 
 | Failure source | Where it's converted | Envelope code |
@@ -92,6 +109,75 @@ The format is enforced at **five** pipeline points — do not bypass or re-imple
 | Any unhandled exception | `app.UseExceptionHandler(...)` in `Program.cs` | 500 (message is hidden outside Development) |
 
 Controllers should still declare each possible status via `[ProducesResponseType(...)]` so Swagger shows them — the runtime body is guaranteed by `Program.cs` regardless. To avoid repeating the four common error attributes on every controller, all controllers inherit from **`ApiControllerBase`** (`hhh.webapi.admin/Controllers/ApiControllerBase.cs`), which carries class-level `[ApiController]`, `[Produces("application/json")]`, and `[ProducesResponseType(typeof(ApiResponse<object>), ...)]` for 400 / 401 / 403 / 500. Derived controllers only need to declare their own `[Route]`, optional `[Authorize]`, and the 2xx success type on each action.
+
+### RESTful routing (hard rule for every admin endpoint)
+**Every endpoint under `hhh.webapi.admin` must follow RESTful conventions.** The URL describes **which resource**, the HTTP verb describes **what to do**. Do not put actions in the URL.
+
+**Resource naming**
+- Always **plural, lowercase** nouns: `/api/users`, `/api/orders`, `/api/banners`.
+- Multi-word segments use **kebab-case**: `/api/banner-clients`, `/api/builder-products`. Do not use camelCase or PascalCase in URLs even though C# class names are PascalCase.
+- `[Route("api/[controller]")]` is allowed — the `[controller]` token resolves to the pluralised controller name (e.g. `UsersController` → `users`). If the resulting URL is wrong, override with an explicit string `[Route("api/banner-clients")]`.
+- C# method names are free — they do **not** appear in URLs. `GetList`, `Index`, `Find` are all fine because the `[HttpGet(...)]` attribute decides the route.
+
+**Standard CRUD mapping** — implement these before adding anything custom:
+
+| Intent | HTTP + URL | Controller action |
+|---|---|---|
+| List (paged, filtered) | `GET /api/users` | `[HttpGet]` |
+| Single item | `GET /api/users/{id:int}` | `[HttpGet("{id:int}")]` |
+| Create | `POST /api/users` | `[HttpPost]` |
+| Full update | `PUT /api/users/{id:int}` | `[HttpPut("{id:int}")]` |
+| Partial update | `PATCH /api/users/{id:int}` | `[HttpPatch("{id:int}")]` |
+| Delete | `DELETE /api/users/{id:int}` | `[HttpDelete("{id:int}")]` |
+
+**Search, filter, sort, paging** all go into query string on the list endpoint — never create a separate `/search` endpoint:
+
+```
+GET /api/users?keyword=john&status=active&page=1&pageSize=20&sort=id&by=DESC
+```
+
+**Banned patterns** (will be rejected in review):
+
+| Do NOT write | Write instead |
+|---|---|
+| `GET /api/users/getList` | `GET /api/users` |
+| `GET /api/getUserById?id=5` | `GET /api/users/5` |
+| `POST /api/users/create` | `POST /api/users` |
+| `POST /api/deleteUser?id=5` | `DELETE /api/users/5` |
+| `/api/user` (singular) | `/api/users` (plural) |
+| `/api/UserList` / `/api/userList` | `/api/users` |
+
+**Non-CRUD operations** (e.g. stop/start, approve, send email, reset password, cancel order): treat them as a sub-resource or, if that really does not fit, a **verb suffix in kebab-case** on a specific resource instance. Verbs only at the end of the path, never in the middle.
+
+```
+POST   /api/users/{id:int}/deactivate             # 停用帳號
+POST   /api/users/{id:int}/password-reset         # 重設密碼
+POST   /api/orders/{id:int}/cancel                # 取消訂單
+POST   /api/banners/{id:int}/publish              # 上架
+```
+
+**Sanctioned exception — auth / session endpoints.** `/api/auth/*` is allowed to use the controller/action style because "login" and "logout" do not map to any single resource. Keep this exception limited to authentication; do not extend it to other controllers.
+
+```
+POST /api/auth/login       ← OK (sanctioned exception)
+POST /api/auth/logout      ← OK
+POST /api/auth/refresh     ← OK
+POST /api/users/login      ← NOT OK: put it under /api/auth
+```
+
+**Status codes** — pair them with the envelope code so both agree:
+
+| Scenario | HTTP | Envelope `code` |
+|---|---|---|
+| List / single item fetched | 200 | 200 |
+| Created successfully | 201 (preferred) or 200 | matches HTTP |
+| Deleted successfully, nothing to return | 204 or 200 with `data: null` | matches HTTP |
+| Validation failed | 400 | 400 |
+| Auth missing/invalid | 401 | 401 |
+| Forbidden by policy | 403 | 403 |
+| Resource not found | 404 | 404 |
+| Conflict (e.g. duplicate key) | 409 | 409 |
+| Unhandled exception | 500 | 500 |
 
 ### Feature folders, not "Services"
 Application-layer code is organised by feature (`Auth/`), not by technical role. When adding a new endpoint family:

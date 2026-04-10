@@ -13,6 +13,13 @@ public class ApiResponse<T>
     public static ApiResponse<T> Success(T data, string message = "success")
         => new() { Code = 200, Message = message, Data = data };
 
+    /// <summary>
+    /// 201 Created 專用成功工廠。語意與 <see cref="Success"/> 一致，只是 HTTP status = 201。
+    /// 用於 POST 建立資源的成功回傳，與 controller 的 <c>StatusCode(201, ...)</c> 搭配。
+    /// </summary>
+    public static ApiResponse<T> Created(T data, string message = "success")
+        => new() { Code = 201, Message = message, Data = data };
+
     public static ApiResponse<T> Fail(int code, string message)
         => new() { Code = code, Message = message, Data = default };
 }
