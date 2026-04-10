@@ -43,6 +43,22 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "HHH Admin Web API", Version = "v1" });
 
+    // 掛載三個專案的 XML 文件,讓 controller / DTO 上的 <summary> 顯示到 Swagger UI
+    // 三個 csproj 都要開 <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    foreach (var xmlName in new[]
+    {
+        "hhh.webapi.admin.xml",
+        "hhh.api.contracts.xml",
+        "hhh.api.contracts.admin.xml",
+    })
+    {
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlName);
+        if (File.Exists(xmlPath))
+        {
+            c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+        }
+    }
+
     var securityScheme = new OpenApiSecurityScheme
     {
         Name = "Authorization",

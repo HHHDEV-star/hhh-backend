@@ -5,6 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>hhh.webapi.admin</RootNamespace>
+    <!-- 產生 XML 文件讓 Swagger 讀取 controller / action 註解 -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- CS1591: 不強制每個 public member 都要寫 XML 註解 -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
