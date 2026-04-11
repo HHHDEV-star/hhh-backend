@@ -4,7 +4,7 @@ using hhh.application.admin.Reports.VideoReports;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace hhh.webapi.admin.Controllers.Reports;
+namespace hhh.webapi.admin.Controllers;
 
 /// <summary>
 /// 報表

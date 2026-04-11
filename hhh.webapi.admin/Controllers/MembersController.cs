@@ -4,7 +4,7 @@ using hhh.application.admin.Members.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace hhh.webapi.admin.Controllers.Members;
+namespace hhh.webapi.admin.Controllers;
 
 /// <summary>
 /// 會員管理

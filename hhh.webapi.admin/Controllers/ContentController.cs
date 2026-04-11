@@ -6,7 +6,7 @@ using hhh.application.admin.Content.Htopic2s;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace hhh.webapi.admin.Controllers.Content;
+namespace hhh.webapi.admin.Controllers;
 
 /// <summary>
 /// 內容

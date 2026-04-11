@@ -7,7 +7,7 @@ using hhh.application.admin.Platform.OperationLogs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace hhh.webapi.admin.Controllers.Platform;
+namespace hhh.webapi.admin.Controllers;
 
 /// <summary>
 /// 平台管理

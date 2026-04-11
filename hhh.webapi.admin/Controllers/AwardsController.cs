@@ -9,7 +9,7 @@ using hhh.infrastructure.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace hhh.webapi.admin.Controllers.Awards;
+namespace hhh.webapi.admin.Controllers;
 
 /// <summary>
 /// 競賽獎項

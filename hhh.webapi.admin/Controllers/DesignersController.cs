@@ -6,7 +6,7 @@ using hhh.application.admin.Designers.Hdesigners;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace hhh.webapi.admin.Controllers.Designers;
+namespace hhh.webapi.admin.Controllers;
 
 /// <summary>
 /// 設計師

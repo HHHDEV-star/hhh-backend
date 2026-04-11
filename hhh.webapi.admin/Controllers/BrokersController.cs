@@ -8,7 +8,7 @@ using hhh.application.admin.Brokers.Renovations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace hhh.webapi.admin.Controllers.Brokers;
+namespace hhh.webapi.admin.Controllers;
 
 /// <summary>
 /// 經紀人

@@ -6,7 +6,7 @@ using hhh.application.admin.Editorial.Columns;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace hhh.webapi.admin.Controllers.Editorial;
+namespace hhh.webapi.admin.Controllers;
 
 /// <summary>
 /// 編輯部

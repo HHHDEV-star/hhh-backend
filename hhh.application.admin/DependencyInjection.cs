@@ -11,10 +11,17 @@ using hhh.application.admin.Designers.Hcases;
 using hhh.application.admin.Designers.Hdesigners;
 using hhh.application.admin.Editorial.Cases;
 using hhh.application.admin.Editorial.Columns;
+using hhh.application.admin.Main.Execute;
+using hhh.application.admin.Main.Search;
+using hhh.application.admin.Main.Youtube;
 using hhh.application.admin.Members.Users;
 using hhh.application.admin.Platform.Admins;
 using hhh.application.admin.Platform.OperationLogs;
 using hhh.application.admin.Reports.VideoReports;
+using hhh.application.admin.Tags;
+using hhh.application.admin.Rss.LineToday;
+using hhh.application.admin.Rss.Msn;
+using hhh.application.admin.Rss.Yahoo;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace hhh.application.admin;
@@ -40,6 +47,11 @@ public static class DependencyInjection
         services.AddScoped<IHdesignerService, HdesignerService>();
         services.AddScoped<IHcaseService, HcaseService>();
 
+        // Main
+        services.AddScoped<IYoutubeService, YoutubeService>();
+        services.AddScoped<ISearchService, SearchService>();
+        services.AddScoped<IExecuteFormService, ExecuteFormService>();
+
         // Editorial - 編輯部
         services.AddScoped<IEditorialCaseService, EditorialCaseService>();
         services.AddScoped<IEditorialColumnService, EditorialColumnService>();
@@ -55,6 +67,14 @@ public static class DependencyInjection
 
         // Reports - 報表
         services.AddScoped<IVideoReportService, VideoReportService>();
+
+        // Tags - 標籤管理
+        services.AddScoped<ITagService, TagService>();
+
+        // Rss - RSS 排程
+        services.AddScoped<IRssYahooService, RssYahooService>();
+        services.AddScoped<IRssMsnService, RssMsnService>();
+        services.AddScoped<IRssLineTodayService, RssLineTodayService>();
 
         // Brokers - 經紀人
         services.AddScoped<ICalculatorService, CalculatorService>();
