@@ -9,6 +9,8 @@ using hhh.application.admin.Content.Hpublishes;
 using hhh.application.admin.Content.Htopic2s;
 using hhh.application.admin.Designers.Hcases;
 using hhh.application.admin.Designers.Hdesigners;
+using hhh.application.admin.Editorial.Cases;
+using hhh.application.admin.Editorial.Columns;
 using hhh.application.admin.Members.Users;
 using hhh.application.admin.Platform.Admins;
 using hhh.application.admin.Platform.OperationLogs;
@@ -37,6 +39,10 @@ public static class DependencyInjection
         // Designers - 設計師
         services.AddScoped<IHdesignerService, HdesignerService>();
         services.AddScoped<IHcaseService, HcaseService>();
+
+        // Editorial - 編輯部
+        services.AddScoped<IEditorialCaseService, EditorialCaseService>();
+        services.AddScoped<IEditorialColumnService, EditorialColumnService>();
 
         // Awards - 競賽獎項
         services.AddScoped<IHawardService, HawardService>();
