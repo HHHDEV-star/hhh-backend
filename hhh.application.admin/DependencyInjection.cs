@@ -23,6 +23,8 @@ using hhh.application.admin.Rss.LineToday;
 using hhh.application.admin.Social.Briefs;
 using hhh.application.admin.Social.Decorations;
 using hhh.application.admin.Social.Forums;
+using hhh.application.admin.Social.Precises;
+using hhh.application.admin.Social.Products;
 using hhh.application.admin.Rss.Msn;
 using hhh.application.admin.Rss.Yahoo;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,6 +77,8 @@ public static class DependencyInjection
         services.AddScoped<IBriefService, BriefService>();
         services.AddScoped<IDecorationService, DecorationService>();
         services.AddScoped<IForumService, ForumService>();
+        services.AddScoped<IPreciseService, PreciseService>();
+        services.AddScoped<IProductService, ProductService>();
 
         // Tags - 標籤管理
         services.AddScoped<ITagService, TagService>();

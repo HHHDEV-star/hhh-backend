@@ -5,7 +5,7 @@ using hhh.application.admin.Tags;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace hhh.webapi.admin.Controllers.Tags;
+namespace hhh.webapi.admin.Controllers;
 
 /// <summary>
 /// Tags

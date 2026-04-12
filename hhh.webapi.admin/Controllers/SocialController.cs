@@ -2,9 +2,13 @@ using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Social.Briefs;
 using hhh.api.contracts.admin.Social.Decorations;
 using hhh.api.contracts.admin.Social.Forums;
+using hhh.api.contracts.admin.Social.Precises;
+using hhh.api.contracts.admin.Social.Products;
 using hhh.application.admin.Social.Briefs;
 using hhh.application.admin.Social.Decorations;
 using hhh.application.admin.Social.Forums;
+using hhh.application.admin.Social.Precises;
+using hhh.application.admin.Social.Products;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +24,8 @@ namespace hhh.webapi.admin.Controllers;
 ///  - 屋主上傳名片:hhh-api/.../third/v1/Events.php → brief_get
 ///  - 全室裝修收名單:hhh-api/.../third/v1/Decoration.php → lists_get / index_post
 ///  - 討論區:hhh-api/.../base/v1/Forum.php → 後台管理 endpoints
+///  - 精準名單白皮書:hhh-api/.../third/v1/Precise.php
+///  - 產品:hhh-api/.../base/v1/Product.php
 /// </remarks>
 [Route("api/social")]
 [Authorize]
@@ -29,15 +35,21 @@ public class SocialController : ApiControllerBase
     private readonly IBriefService _briefService;
     private readonly IDecorationService _decorationService;
     private readonly IForumService _forumService;
+    private readonly IPreciseService _preciseService;
+    private readonly IProductService _productService;
 
     public SocialController(
         IBriefService briefService,
         IDecorationService decorationService,
-        IForumService forumService)
+        IForumService forumService,
+        IPreciseService preciseService,
+        IProductService productService)
     {
         _briefService = briefService;
         _decorationService = decorationService;
         _forumService = forumService;
+        _preciseService = preciseService;
+        _productService = productService;
     }
 
     // =========================================================================
@@ -196,6 +208,95 @@ public class SocialController : ApiControllerBase
         uint uid, [FromBody] UpdateForumBlockRequest request, CancellationToken cancellationToken)
     {
         var result = await _forumService.UpdateBlockAsync(uid, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+        return Ok(ApiResponse<object>.Success(new { }, result.Message));
+    }
+
+    // =========================================================================
+    // 精準名單白皮書 (precises)
+    // =========================================================================
+
+    /// <summary>取得精準名單列表(全量,id DESC)</summary>
+    /// <remarks>對應舊版 PHP:Precise/lists_get → precise_model::lists()。</remarks>
+    [HttpGet("precises")]
+    [ProducesResponseType(typeof(ApiResponse<List<PreciseListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPreciseList(CancellationToken cancellationToken)
+    {
+        var data = await _preciseService.GetListAsync(cancellationToken);
+        return Ok(ApiResponse<List<PreciseListItem>>.Success(data));
+    }
+
+    /// <summary>新增精準名單</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Precise/index_post → precise_model::insert()。
+    /// 舊版必填:identity、email、name、company、mobile。
+    /// identity 僅接受:designer / supplier。
+    /// </remarks>
+    [HttpPost("precises")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> CreatePrecise(
+        [FromBody] CreatePreciseRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _preciseService.CreateAsync(request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return StatusCode(StatusCodes.Status201Created,
+            ApiResponse<object>.Created(new { id = result.Data }, result.Message));
+    }
+
+    // =========================================================================
+    // 產品 (products)
+    // =========================================================================
+
+    /// <summary>取得產品後台列表</summary>
+    /// <remarks>對應舊版 Product/index_get → product_model::get_product_lists()。全量 id DESC。</remarks>
+    [HttpGet("products")]
+    [ProducesResponseType(typeof(ApiResponse<List<ProductListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetProductList(CancellationToken cancellationToken)
+    {
+        var data = await _productService.GetListAsync(cancellationToken);
+        return Ok(ApiResponse<List<ProductListItem>>.Success(data));
+    }
+
+    /// <summary>更新產品(上下架/分類)</summary>
+    /// <remarks>
+    /// 對應舊版 Product/index_put → product_model::update_product_data()。
+    /// 舊版必填:onoff、cate1、cate2。舊版是 batch,本 API 改成 single record。
+    /// </remarks>
+    [HttpPut("products/{id:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateProduct(
+        uint id, [FromBody] UpdateProductRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _productService.UpdateAsync(id, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+        return Ok(ApiResponse<object>.Success(new { }, result.Message));
+    }
+
+    /// <summary>取得產品 SEO 列表</summary>
+    /// <remarks>對應舊版 Product/seo_get → product_model::get_product_lists_seo()。</remarks>
+    [HttpGet("products/seo")]
+    [ProducesResponseType(typeof(ApiResponse<List<ProductSeoItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetProductSeoList(CancellationToken cancellationToken)
+    {
+        var data = await _productService.GetSeoListAsync(cancellationToken);
+        return Ok(ApiResponse<List<ProductSeoItem>>.Success(data));
+    }
+
+    /// <summary>更新產品 SEO 圖片</summary>
+    /// <remarks>對應舊版 Product/seoimage_put → product_model::update_product_seo_image()。舊版是 batch。</remarks>
+    [HttpPut("products/{id:int}/seo-image")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateProductSeoImage(
+        uint id, [FromBody] UpdateProductSeoImageRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _productService.UpdateSeoImageAsync(id, request, cancellationToken);
         if (!result.IsSuccess)
             return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
         return Ok(ApiResponse<object>.Success(new { }, result.Message));
