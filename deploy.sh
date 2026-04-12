@@ -5,8 +5,8 @@ IMAGE_NAME="hhh-admin-api"
 CONTAINER_NAME="hhh_admin_api"
 PORT=6000
 EC2_HOST="18.177.57.10"
-SSH_KEY="$1"
-SSH_USER="$2"
+SSH_KEY="/var/jenkins_home/.ssh/ec2-key.pem"
+SSH_USER="ubuntu"
 
 echo "🔨 Building Docker image..."
 docker build -t ${IMAGE_NAME}:latest .
@@ -20,8 +20,12 @@ scp -i "$SSH_KEY" -o StrictHostKeyChecking=no \
   "${SSH_USER}@${EC2_HOST}:/tmp/${IMAGE_NAME}.tar.gz"
 
 echo "🚀 Deploying on EC2..."
-ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "${SSH_USER}@${EC2_HOST}" bash << EOF
+ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "${SSH_USER}@${EC2_HOST}" bash << 'EOF'
   set -eux
+  IMAGE_NAME="hhh-admin-api"
+  CONTAINER_NAME="hhh_admin_api"
+  PORT=6000
+
   echo "📥 Loading image..."
   docker load < /tmp/${IMAGE_NAME}.tar.gz
   rm -f /tmp/${IMAGE_NAME}.tar.gz
