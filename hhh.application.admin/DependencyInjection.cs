@@ -26,6 +26,7 @@ using hhh.application.admin.Social.Forums;
 using hhh.application.admin.Social.Precises;
 using hhh.application.admin.Social.Products;
 using hhh.application.admin.Rss.Msn;
+using hhh.application.admin.Rss.Transfer;
 using hhh.application.admin.Rss.Yahoo;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -87,6 +88,7 @@ public static class DependencyInjection
         services.AddScoped<IRssYahooService, RssYahooService>();
         services.AddScoped<IRssMsnService, RssMsnService>();
         services.AddScoped<IRssLineTodayService, RssLineTodayService>();
+        services.AddScoped<IRssTransferService, RssTransferService>();
 
         // Brokers - 經紀人
         services.AddScoped<ICalculatorService, CalculatorService>();

@@ -1,8 +1,9 @@
 using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Rss;
-using hhh.application.admin.Rss.Yahoo;
-using hhh.application.admin.Rss.Msn;
 using hhh.application.admin.Rss.LineToday;
+using hhh.application.admin.Rss.Msn;
+using hhh.application.admin.Rss.Transfer;
+using hhh.application.admin.Rss.Yahoo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,8 @@ namespace hhh.webapi.admin.Controllers;
 ///
 /// 對應舊版:
 ///  - PHP:hhh-api/.../third/v1/Rss.php
-///  - 後台 view:rss_yahoo.php / rss_msn.php / rss_linetoday.php
+///  - 後台 view:rss_yahoo.php / rss_msn.php / rss_linetoday.php / rss_lists.php
+///  - Transfer:hhh-api/.../third/v1/Transfer.php → logs_get
 /// </remarks>
 [Route("api/rss")]
 [Authorize]
@@ -27,15 +29,18 @@ public class RssController : ApiControllerBase
     private readonly IRssYahooService _yahooService;
     private readonly IRssMsnService _msnService;
     private readonly IRssLineTodayService _lineTodayService;
+    private readonly IRssTransferService _transferService;
 
     public RssController(
         IRssYahooService yahooService,
         IRssMsnService msnService,
-        IRssLineTodayService lineTodayService)
+        IRssLineTodayService lineTodayService,
+        IRssTransferService transferService)
     {
         _yahooService = yahooService;
         _msnService = msnService;
         _lineTodayService = lineTodayService;
+        _transferService = transferService;
     }
 
     // =========================================================================
@@ -159,5 +164,43 @@ public class RssController : ApiControllerBase
             return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
 
         return Ok(ApiResponse<object>.Success(new { id = result.Data }, result.Message));
+    }
+
+    // =========================================================================
+    // Transfer Logs (transfer-logs) — 轉接紀錄
+    // =========================================================================
+
+    /// <summary>取得 RSS 轉接紀錄</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Transfer/logs_get → transfer_model::read()
+    /// 後台 view:rss_lists.php。至少帶一個日期參數才查(防全撈)。
+    /// type 會從英文轉成中文(brand→廠商 等),url 由 type + num 計算。
+    /// </remarks>
+    [HttpGet("transfer-logs")]
+    [ProducesResponseType(typeof(ApiResponse<List<RssTransferLogItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTransferLogs(
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        CancellationToken cancellationToken)
+    {
+        var data = await _transferService.GetLogsAsync(startDate, endDate, cancellationToken);
+        return Ok(ApiResponse<List<RssTransferLogItem>>.Success(data));
+    }
+
+    /// <summary>取得 RSS 轉接統計</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Transfer/statistics_get → transfer_model::statistics()
+    /// 後台 view:rss_statistics.php。GROUP BY type, num + COUNT(*)。
+    /// type 轉中文,url 由 type + num 計算。可選帶日期區間。
+    /// </remarks>
+    [HttpGet("transfer-statistics")]
+    [ProducesResponseType(typeof(ApiResponse<List<RssTransferStatItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTransferStatistics(
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        CancellationToken cancellationToken)
+    {
+        var data = await _transferService.GetStatisticsAsync(startDate, endDate, cancellationToken);
+        return Ok(ApiResponse<List<RssTransferStatItem>>.Success(data));
     }
 }
