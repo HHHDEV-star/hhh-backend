@@ -2,6 +2,7 @@ using hhh.application.admin.Auth;
 using hhh.application.admin.Awards.Hawards;
 using hhh.application.admin.Awards.Hcontests;
 using hhh.application.admin.Awards.Hprizes;
+using hhh.application.admin.CallIns;
 using hhh.application.admin.Brokers.Calculators;
 using hhh.application.admin.Brokers.CalculatorRequests;
 using hhh.application.admin.Brokers.Renovations;
@@ -28,6 +29,7 @@ using hhh.application.admin.Social.Products;
 using hhh.application.admin.Rss.Msn;
 using hhh.application.admin.Rss.Transfer;
 using hhh.application.admin.Rss.Yahoo;
+using hhh.application.admin.Website;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace hhh.application.admin;
@@ -89,6 +91,12 @@ public static class DependencyInjection
         services.AddScoped<IRssMsnService, RssMsnService>();
         services.AddScoped<IRssLineTodayService, RssLineTodayService>();
         services.AddScoped<IRssTransferService, RssTransferService>();
+
+        // Website - 建商/建案
+        services.AddScoped<IBuilderProductService, BuilderProductService>();
+
+        // CallIn - 0809 來電
+        services.AddScoped<ICallinDataService, CallinDataService>();
 
         // Brokers - 經紀人
         services.AddScoped<ICalculatorService, CalculatorService>();

@@ -22,7 +22,10 @@
       "Bash(ps -W)",
       "Bash(bash)",
       "Bash(mkdir -p hhh.webapi.admin/Controllers/Brokers)",
-      "Bash(mv hhh.webapi.admin/Controllers/BrokersController.cs hhh.webapi.admin/Controllers/Brokers/BrokersController.cs)"
+      "Bash(mv hhh.webapi.admin/Controllers/BrokersController.cs hhh.webapi.admin/Controllers/Brokers/BrokersController.cs)",
+      "Bash(Get-ChildItem -Path \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.infrastructure\\\\Dto\\\\Xoops\" -Filter \"*BuilderProduct*\")",
+      "Bash(Select-Object Name)",
+      "Bash(ls -la \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.webapi.admin\\\\Controllers\"\" | grep -i \"rss|designer \")"
     ]
   }
 }
