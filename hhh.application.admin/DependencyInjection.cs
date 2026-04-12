@@ -20,6 +20,9 @@ using hhh.application.admin.Platform.OperationLogs;
 using hhh.application.admin.Reports.VideoReports;
 using hhh.application.admin.Tags;
 using hhh.application.admin.Rss.LineToday;
+using hhh.application.admin.Social.Briefs;
+using hhh.application.admin.Social.Decorations;
+using hhh.application.admin.Social.Forums;
 using hhh.application.admin.Rss.Msn;
 using hhh.application.admin.Rss.Yahoo;
 using Microsoft.Extensions.DependencyInjection;
@@ -67,6 +70,11 @@ public static class DependencyInjection
 
         // Reports - 報表
         services.AddScoped<IVideoReportService, VideoReportService>();
+
+        // Social
+        services.AddScoped<IBriefService, BriefService>();
+        services.AddScoped<IDecorationService, DecorationService>();
+        services.AddScoped<IForumService, ForumService>();
 
         // Tags - 標籤管理
         services.AddScoped<ITagService, TagService>();
