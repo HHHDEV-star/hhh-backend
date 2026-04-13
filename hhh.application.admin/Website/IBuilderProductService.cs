@@ -2,7 +2,7 @@ using hhh.api.contracts.admin.Website;
 using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 
-namespace hhh.application.admin.Website.BuilderProduct;
+namespace hhh.application.admin.Website;
 
 /// <summary>
 /// 建案管理 service（含建案圖片 + 設定封面）。
