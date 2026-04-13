@@ -7,7 +7,7 @@ using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
-namespace hhh.application.admin.Website;
+namespace hhh.application.admin.Website.BuilderProduct;
 
 /// <summary>
 /// 建案管理 service（含建案圖片 + 設定封面）。

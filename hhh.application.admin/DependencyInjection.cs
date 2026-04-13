@@ -20,6 +20,8 @@ using hhh.application.admin.Platform.Admins;
 using hhh.application.admin.Platform.OperationLogs;
 using hhh.application.admin.Reports.VideoReports;
 using hhh.application.admin.Tags;
+using hhh.application.admin.WebSite.DecoImages;
+using hhh.application.admin.WebSite.DecoRecords;
 using hhh.application.admin.Rss.LineToday;
 using hhh.application.admin.Social.Briefs;
 using hhh.application.admin.Social.Decorations;
@@ -97,6 +99,10 @@ public static class DependencyInjection
 
         // CallIn - 0809 來電
         services.AddScoped<ICallinDataService, CallinDataService>();
+
+        // WebSite
+        services.AddScoped<IDecoRecordService, DecoRecordService>();
+        services.AddScoped<IDecoImageService, DecoImageService>();
 
         // Brokers - 經紀人
         services.AddScoped<ICalculatorService, CalculatorService>();
