@@ -1,3 +1,4 @@
+using hhh.application.admin.Advertise.Ads;
 using hhh.application.admin.Auth;
 using hhh.application.admin.Awards.Hawards;
 using hhh.application.admin.Awards.Hcontests;
@@ -43,6 +44,9 @@ public static class DependencyInjection
     /// </summary>
     public static IServiceCollection AddAdminApplication(this IServiceCollection services)
     {
+        // Advertise - 廣告
+        services.AddScoped<IAdService, AdService>();
+
         // Auth (cross-cutting)
         services.AddScoped<IAuthService, AuthService>();
 
