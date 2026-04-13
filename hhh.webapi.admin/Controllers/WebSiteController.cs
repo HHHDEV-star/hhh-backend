@@ -1,12 +1,16 @@
 using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Website;
+using hhh.api.contracts.admin.WebSite.DecoImages;
+using hhh.api.contracts.admin.WebSite.DecoRecords;
+using hhh.application.admin.Website;
+using hhh.application.admin.WebSite.DecoImages;
+using hhh.application.admin.WebSite.DecoRecords;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
 using hhh.infrastructure.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using hhh.application.admin.Website;
 
 namespace hhh.webapi.admin.Controllers;
 
@@ -29,15 +33,21 @@ public class WebSiteController : ApiControllerBase
     private readonly XoopsContext _db;
     private readonly IBuilderProductService _builderProductService;
     private readonly IOperationLogWriter _logWriter;
+    private readonly IDecoRecordService _decoRecordService;
+    private readonly IDecoImageService _decoImageService;
 
     public WebSiteController(
         XoopsContext db,
         IBuilderProductService builderProductService,
-        IOperationLogWriter logWriter)
+        IOperationLogWriter logWriter,
+        IDecoRecordService decoRecordService,
+        IDecoImageService decoImageService)
     {
         _db = db;
         _builderProductService = builderProductService;
         _logWriter = logWriter;
+        _decoRecordService = decoRecordService;
+        _decoImageService = decoImageService;
     }
 
     // =========================================================================
@@ -477,5 +487,74 @@ public class WebSiteController : ApiControllerBase
             return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
 
         return Ok(ApiResponse<object>.Success(new { id = result.Data }, result.Message));
+    }
+
+    // =========================================================================
+    // 查證照 (deco-records)
+    // =========================================================================
+
+    /// <summary>取得查證照列表(全量,register_number DESC)</summary>
+    /// <remarks>對應舊版 PHP:Deco/backend_get → deco_model::get_deco_lists_backend()。</remarks>
+    [HttpGet("deco-records")]
+    [ProducesResponseType(typeof(ApiResponse<List<DecoRecordListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDecoRecordList(CancellationToken cancellationToken)
+    {
+        var data = await _decoRecordService.GetListAsync(cancellationToken);
+        return Ok(ApiResponse<List<DecoRecordListItem>>.Success(data));
+    }
+
+    /// <summary>更新查證照紀錄</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Deco/backend_put → deco_model::update_deco_record_backend()。
+    /// 舊版是 batch,本 API 改成 single record(bldsno 走 URL)。
+    /// </remarks>
+    [HttpPut("deco-records/{bldsno:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateDecoRecord(
+        int bldsno,
+        [FromBody] UpdateDecoRecordRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _decoRecordService.UpdateAsync(bldsno, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+        return Ok(ApiResponse<object>.Success(new { }, result.Message));
+    }
+
+    // =========================================================================
+    // 查證照圖片審核 (deco-images)
+    // =========================================================================
+
+    /// <summary>取得查證照圖片審核列表</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Deco/images_get → deco_model::get_deco_img_list()。
+    /// JOIN deco_record 帶出公司資料。ORDER BY onoff ASC(未審核在前)。
+    /// </remarks>
+    [HttpGet("deco-images")]
+    [ProducesResponseType(typeof(ApiResponse<List<DecoImageListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDecoImageList(CancellationToken cancellationToken)
+    {
+        var data = await _decoImageService.GetListAsync(cancellationToken);
+        return Ok(ApiResponse<List<DecoImageListItem>>.Success(data));
+    }
+
+    /// <summary>更新查證照圖片審核狀態</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Deco/images_onoff_put → deco_model::set_deco_img_onoff()。
+    /// 舊版是 batch,本 API 改成 single record(id 走 URL)。
+    /// </remarks>
+    [HttpPut("deco-images/{id:int}/onoff")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateDecoImageOnoff(
+        uint id,
+        [FromBody] UpdateDecoImageOnoffRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _decoImageService.UpdateOnoffAsync(id, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+        return Ok(ApiResponse<object>.Success(new { }, result.Message));
     }
 }
