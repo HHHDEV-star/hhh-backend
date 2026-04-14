@@ -1,4 +1,5 @@
 using hhh.application.admin.Advertise.Ads;
+using hhh.application.admin.Agents;
 using hhh.application.admin.Auth;
 using hhh.application.admin.Awards.Hawards;
 using hhh.application.admin.Awards.Hcontests;
@@ -32,8 +33,14 @@ using hhh.application.admin.Social.Products;
 using hhh.application.admin.Rss.Msn;
 using hhh.application.admin.Rss.Transfer;
 using hhh.application.admin.Rss.Yahoo;
+using hhh.application.admin.Marketing;
+using hhh.application.admin.Planning;
 using Microsoft.Extensions.DependencyInjection;
 using hhh.application.admin.Website;
+using hhh.application.admin.Website.Contacts;
+using hhh.application.admin.Website.HomepageInnerSets;
+using hhh.application.admin.Website.Keywords;
+using hhh.application.admin.Website.SiteSetup;
 
 namespace hhh.application.admin;
 
@@ -98,8 +105,22 @@ public static class DependencyInjection
         services.AddScoped<IRssLineTodayService, RssLineTodayService>();
         services.AddScoped<IRssTransferService, RssTransferService>();
 
-        // Website - 建商/建案
+        // Planning - 節目企劃（YouTube 進階管理）
+        services.AddHttpClient<IYoutubeManagementService, YoutubeManagementService>();
+        services.AddScoped<IProgramVideoService, ProgramVideoService>();
+
+        // Marketing - 行銷管理
+        services.AddScoped<ICaseSeoService, CaseSeoService>();
+        services.AddScoped<IColumnSeoService, ColumnSeoService>();
+        services.AddScoped<IProductSeoService, ProductSeoService>();
+
+        // Website - 建商/建案/關鍵字/首頁區塊元素/全域設定/聯絡我們
+        services.AddScoped<IBuilderService, BuilderService>();
         services.AddScoped<IBuilderProductService, BuilderProductService>();
+        services.AddScoped<IKeywordService, KeywordService>();
+        services.AddScoped<IHomepageInnerSetService, HomepageInnerSetService>();
+        services.AddScoped<ISiteSetupService, SiteSetupService>();
+        services.AddScoped<IContactService, ContactService>();
 
         // CallIn - 0809 來電
         services.AddScoped<ICallinDataService, CallinDataService>();
@@ -108,10 +129,13 @@ public static class DependencyInjection
         services.AddScoped<IDecoRecordService, DecoRecordService>();
         services.AddScoped<IDecoImageService, DecoImageService>();
 
-        // Brokers - 經紀人
+        // Brokers - 經紀人（計算器/裝修）
         services.AddScoped<ICalculatorService, CalculatorService>();
         services.AddScoped<ICalculatorRequestService, CalculatorRequestService>();
         services.AddScoped<IRenovationService, RenovationService>();
+
+        // Agents - 幸福經紀人表單
+        services.AddScoped<IAgentService, AgentService>();
 
         return services;
     }

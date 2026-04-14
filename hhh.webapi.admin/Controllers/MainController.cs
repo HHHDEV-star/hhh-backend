@@ -1,10 +1,8 @@
 using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Main.Execute;
 using hhh.api.contracts.admin.Main.Search;
-using hhh.api.contracts.admin.Main.Youtube;
 using hhh.application.admin.Main.Execute;
 using hhh.application.admin.Main.Search;
-using hhh.application.admin.Main.Youtube;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +15,6 @@ namespace hhh.webapi.admin.Controllers.Main;
 /// 後台「Main」業務類別下所有 endpoint 集中於此 controller。
 ///
 /// 對應舊版:
-///  - Youtube:hhh-api/.../third/v1/Youtube.php、hhh-backstage/.../event/modify_youtube.php
 ///  - Search:hhh-api/.../base/v1/Search.php、hhh-backstage/.../event/keyword.php + searchall.php
 ///  - Execute:hhh-api/.../base/v1/Execute.php、hhh-backstage/.../event/execute.php
 /// </remarks>
@@ -26,98 +23,15 @@ namespace hhh.webapi.admin.Controllers.Main;
 [Tags("Main")]
 public class MainController : ApiControllerBase
 {
-    private readonly IYoutubeService _youtubeService;
     private readonly ISearchService _searchService;
     private readonly IExecuteFormService _executeFormService;
 
     public MainController(
-        IYoutubeService youtubeService,
         ISearchService searchService,
         IExecuteFormService executeFormService)
     {
-        _youtubeService = youtubeService;
         _searchService = searchService;
         _executeFormService = executeFormService;
-    }
-
-    // =========================================================================
-    // Youtube (youtube)
-    // =========================================================================
-
-    /// <summary>取得 Youtube 影片列表</summary>
-    /// <remarks>
-    /// 對應舊版 PHP:Youtube/index_get → youtube_model::get_youtube_list()
-    /// 篩選 is_del=0 且 channel_id 在白名單內,ORDER BY yid DESC,全量回傳。
-    /// </remarks>
-    [HttpGet("youtube")]
-    [ProducesResponseType(typeof(ApiResponse<List<YoutubeListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetYoutubeList(CancellationToken cancellationToken)
-    {
-        var data = await _youtubeService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<YoutubeListItem>>.Success(data));
-    }
-
-    /// <summary>新增 Youtube 影片</summary>
-    /// <remarks>
-    /// 對應舊版 PHP:Youtube/index_post → youtube_model::insert()
-    /// 舊版必填:hdesigner_id、hbrand_id、builder_id、channel_id、title、description。
-    /// 寫入時系統自動設定 onoff='Y'、is_del=false、create_time=now、update_time=now。
-    ///
-    /// 注意:舊版是 batch(POST 帶 request[]),本 API 改成 single record(REST 標準)。
-    /// </remarks>
-    [HttpPost("youtube")]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateYoutube(
-        [FromBody] CreateYoutubeRequest request,
-        CancellationToken cancellationToken)
-    {
-        var result = await _youtubeService.CreateAsync(request, cancellationToken);
-        if (!result.IsSuccess)
-            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
-
-        return StatusCode(StatusCodes.Status201Created,
-            ApiResponse<object>.Created(new { yid = result.Data }, result.Message));
-    }
-
-    /// <summary>更新 Youtube 影片</summary>
-    /// <remarks>
-    /// 對應舊版 PHP:Youtube/index_put → youtube_model::update()
-    /// 舊版必填:yid(URL)、onoff。
-    ///
-    /// 注意:舊版是 batch(PUT 帶 request[]),本 API 改成 single record。
-    /// </remarks>
-    [HttpPut("youtube/{yid:int}")]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateYoutube(
-        uint yid,
-        [FromBody] UpdateYoutubeRequest request,
-        CancellationToken cancellationToken)
-    {
-        var result = await _youtubeService.UpdateAsync(yid, request, cancellationToken);
-        if (!result.IsSuccess)
-            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
-
-        return Ok(ApiResponse<object>.Success(new { yid = result.Data }, result.Message));
-    }
-
-    /// <summary>刪除 Youtube 影片</summary>
-    /// <remarks>
-    /// 對應舊版 PHP:Youtube/index_delete → youtube_model::delete()
-    /// 注意:舊版是 hard DELETE(非 soft delete),本 API 保留此行為。
-    ///
-    /// 注意:舊版是 batch(DELETE 帶 request[]),本 API 改成 single record。
-    /// </remarks>
-    [HttpDelete("youtube/{yid:int}")]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteYoutube(uint yid, CancellationToken cancellationToken)
-    {
-        var result = await _youtubeService.DeleteAsync(yid, cancellationToken);
-        if (!result.IsSuccess)
-            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
-
-        return Ok(ApiResponse<object>.Success(new { }, result.Message));
     }
 
     // =========================================================================

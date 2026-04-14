@@ -1,8 +1,16 @@
 using hhh.api.contracts.Common;
+using hhh.api.contracts.admin.Main.Search;
 using hhh.api.contracts.admin.Website;
+using hhh.api.contracts.admin.Website.Contacts;
+using hhh.api.contracts.admin.Website.HomepageInnerSets;
+using hhh.api.contracts.admin.Website.SiteSetup;
 using hhh.api.contracts.admin.WebSite.DecoImages;
 using hhh.api.contracts.admin.WebSite.DecoRecords;
 using hhh.application.admin.Website;
+using hhh.application.admin.Website.HomepageInnerSets;
+using hhh.application.admin.Website.Contacts;
+using hhh.application.admin.Website.Keywords;
+using hhh.application.admin.Website.SiteSetup;
 using hhh.application.admin.WebSite.DecoImages;
 using hhh.application.admin.WebSite.DecoRecords;
 using hhh.infrastructure.Context;
@@ -35,19 +43,31 @@ public class WebSiteController : ApiControllerBase
     private readonly IOperationLogWriter _logWriter;
     private readonly IDecoRecordService _decoRecordService;
     private readonly IDecoImageService _decoImageService;
+    private readonly IKeywordService _keywordService;
+    private readonly IHomepageInnerSetService _homepageInnerSetService;
+    private readonly ISiteSetupService _siteSetupService;
+    private readonly IContactService _contactService;
 
     public WebSiteController(
         XoopsContext db,
         IBuilderProductService builderProductService,
         IOperationLogWriter logWriter,
         IDecoRecordService decoRecordService,
-        IDecoImageService decoImageService)
+        IDecoImageService decoImageService,
+        IKeywordService keywordService,
+        IHomepageInnerSetService homepageInnerSetService,
+        ISiteSetupService siteSetupService,
+        IContactService contactService)
     {
         _db = db;
         _builderProductService = builderProductService;
         _logWriter = logWriter;
         _decoRecordService = decoRecordService;
         _decoImageService = decoImageService;
+        _keywordService = keywordService;
+        _homepageInnerSetService = homepageInnerSetService;
+        _siteSetupService = siteSetupService;
+        _contactService = contactService;
     }
 
     // =========================================================================
@@ -556,5 +576,162 @@ public class WebSiteController : ApiControllerBase
         if (!result.IsSuccess)
             return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
         return Ok(ApiResponse<object>.Success(new { }, result.Message));
+    }
+
+    // =========================================================================
+    // 熱門關鍵字 (keywords)
+    // =========================================================================
+
+    /// <summary>取得熱門關鍵字統計</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Search/hot_keyword_get → search_model::get_search_history_lists($input)
+    /// (keyword.php 頁面)
+    ///
+    /// GROUP BY keyword, SUM(today_count) DESC。
+    /// 可選篩選: sdate/edate(日期區間)、keyword(精確比對)。
+    /// </remarks>
+    [HttpGet("keywords")]
+    [ProducesResponseType(typeof(ApiResponse<List<SearchKeywordItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHotKeywords(
+        [FromQuery] HotKeywordQuery query,
+        CancellationToken cancellationToken)
+    {
+        var data = await _keywordService.GetHotKeywordsAsync(query, cancellationToken);
+        return Ok(ApiResponse<List<SearchKeywordItem>>.Success(data));
+    }
+
+    // =========================================================================
+    // 首頁區塊元素 (homepage-inner-sets)
+    // =========================================================================
+
+    /// <summary>取得首頁區塊元素列表</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Homepage/innerset_get（9.06）→ homepage_model::get_innerset()
+    /// JOIN outer_site_set 帶出區塊標題/排序,並依 theme_type 查各表取得 caption/link。
+    /// color=1 表示該區塊 onoff=Y 筆數超過 max_row。
+    /// </remarks>
+    [HttpGet("homepage-inner-sets")]
+    [ProducesResponseType(typeof(ApiResponse<List<HomepageInnerSetListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHomepageInnerSetList(CancellationToken cancellationToken)
+    {
+        var data = await _homepageInnerSetService.GetListAsync(cancellationToken);
+        return Ok(ApiResponse<List<HomepageInnerSetListItem>>.Success(data));
+    }
+
+    /// <summary>新增首頁區塊元素</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Homepage/innerset_post（9.07）
+    /// 舊版是 batch,本 API 改成 single record。
+    /// </remarks>
+    [HttpPost("homepage-inner-sets")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> CreateHomepageInnerSet(
+        [FromBody] CreateHomepageInnerSetRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _homepageInnerSetService.CreateAsync(request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return StatusCode(StatusCodes.Status201Created,
+            ApiResponse<object>.Created(new { psId = result.Data }, result.Message));
+    }
+
+    /// <summary>修改首頁區塊元素</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Homepage/innerset_put（9.10）
+    /// 舊版是 batch,本 API 改成 single record。
+    /// </remarks>
+    [HttpPut("homepage-inner-sets/{psId:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateHomepageInnerSet(
+        uint psId,
+        [FromBody] UpdateHomepageInnerSetRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _homepageInnerSetService.UpdateAsync(psId, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(new { psId = result.Data }, result.Message));
+    }
+
+    /// <summary>刪除首頁區塊元素(hard delete)</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Homepage/innerset_del_put（9.19）
+    /// 舊版是 batch,本 API 改成 single record。
+    /// </remarks>
+    [HttpDelete("homepage-inner-sets/{psId:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteHomepageInnerSet(
+        uint psId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _homepageInnerSetService.DeleteAsync(psId, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(new { }, result.Message));
+    }
+
+    // =========================================================================
+    // 全域設定 (site-setup) — singleton resource, id=1
+    // =========================================================================
+
+    /// <summary>取得全域設定</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Homepage/site_get（9.18）→ homepage_model::get_site_setup()
+    /// site_setup 表只有一筆(id=1),回傳 youtube_id、youtube_title、all_search_tag、forum_filter。
+    /// </remarks>
+    [HttpGet("site-setup")]
+    [ProducesResponseType(typeof(ApiResponse<SiteSetupResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetSiteSetup(CancellationToken cancellationToken)
+    {
+        var data = await _siteSetupService.GetAsync(cancellationToken);
+        if (data is null)
+            return StatusCode(StatusCodes.Status404NotFound,
+                ApiResponse.Error(StatusCodes.Status404NotFound, "找不到全域設定"));
+
+        return Ok(ApiResponse<SiteSetupResponse>.Success(data));
+    }
+
+    /// <summary>更新全域設定</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Homepage/site_put（9.19）→ homepage_model::set_site_setup()
+    /// 更新 youtube_id、youtube_title、all_search_tag、forum_filter。
+    /// </remarks>
+    [HttpPut("site-setup")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateSiteSetup(
+        [FromBody] UpdateSiteSetupRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _siteSetupService.UpdateAsync(request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(new { }, result.Message));
+    }
+
+    // =========================================================================
+    // 聯絡我們 (contacts)
+    // =========================================================================
+
+    /// <summary>取得聯絡我們列表</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Contact/index_get（6.1）→ contact_model::get()
+    /// 篩選 phone LIKE '0%'(本地號碼),ORDER BY id DESC。
+    /// 後台唯讀,不提供新增/修改/刪除(前台才有 POST)。
+    /// </remarks>
+    [HttpGet("contacts")]
+    [ProducesResponseType(typeof(ApiResponse<List<ContactListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetContactList(CancellationToken cancellationToken)
+    {
+        var data = await _contactService.GetListAsync(cancellationToken);
+        return Ok(ApiResponse<List<ContactListItem>>.Success(data));
     }
 }
