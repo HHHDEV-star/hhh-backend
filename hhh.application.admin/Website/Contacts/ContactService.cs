@@ -1,7 +1,11 @@
 using hhh.api.contracts.admin.Website.Contacts;
+<<<<<<< HEAD
 using hhh.api.contracts.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Extensions;
+=======
+using hhh.infrastructure.Context;
+>>>>>>> origin/main
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Website.Contacts;
@@ -16,8 +20,13 @@ public class ContactService : IContactService
     }
 
     /// <inheritdoc />
+<<<<<<< HEAD
     public async Task<PagedResponse<ContactListItem>> GetListAsync(
         ListQuery query, CancellationToken cancellationToken = default)
+=======
+    public async Task<List<ContactListItem>> GetListAsync(
+        CancellationToken cancellationToken = default)
+>>>>>>> origin/main
     {
         // 對應 PHP: contact_model::get()
         // SELECT * FROM contact WHERE phone LIKE '0%' ORDER BY id DESC
@@ -40,6 +49,10 @@ public class ContactService : IContactService
                 Send = c.Send,
                 SendTime = c.SendTime,
             })
+<<<<<<< HEAD
             .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
+=======
+            .ToListAsync(cancellationToken);
+>>>>>>> origin/main
     }
 }

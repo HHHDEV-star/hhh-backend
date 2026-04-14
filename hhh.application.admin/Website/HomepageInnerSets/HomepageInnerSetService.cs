@@ -1,5 +1,8 @@
 using hhh.api.contracts.admin.Website.HomepageInnerSets;
+<<<<<<< HEAD
 using hhh.api.contracts.Common;
+=======
+>>>>>>> origin/main
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
@@ -23,8 +26,13 @@ public class HomepageInnerSetService : IHomepageInnerSetService
     }
 
     /// <inheritdoc />
+<<<<<<< HEAD
     public async Task<PagedResponse<HomepageInnerSetListItem>> GetListAsync(
         ListQuery query, CancellationToken cancellationToken = default)
+=======
+    public async Task<List<HomepageInnerSetListItem>> GetListAsync(
+        CancellationToken cancellationToken = default)
+>>>>>>> origin/main
     {
         // 對應 PHP: homepage_model::get_innerset()
         // 1. 計算每個 outer_set 中 onoff='Y' 的筆數
@@ -106,8 +114,13 @@ public class HomepageInnerSetService : IHomepageInnerSetService
                 .ToDictionaryAsync(d => d.HdesignerId, d => d.Name, cancellationToken)
             : new Dictionary<uint, string>();
 
+<<<<<<< HEAD
         // 4. 組裝結果(先全量組裝,再手動分頁——因為 enrichment 需 in-memory)
         var allItems = new List<HomepageInnerSetListItem>(rows.Count);
+=======
+        // 4. 組裝結果
+        var result = new List<HomepageInnerSetListItem>(rows.Count);
+>>>>>>> origin/main
         foreach (var r in rows)
         {
             string? caption = null;
@@ -151,7 +164,11 @@ public class HomepageInnerSetService : IHomepageInnerSetService
             countByOuterSet.TryGetValue(r.OuterSet, out var countAll);
             var color = countAll > r.MaxRow ? 1 : 0;
 
+<<<<<<< HEAD
             allItems.Add(new HomepageInnerSetListItem
+=======
+            result.Add(new HomepageInnerSetListItem
+>>>>>>> origin/main
             {
                 PsId = r.PsId,
                 MappingId = r.MappingId,
@@ -169,6 +186,7 @@ public class HomepageInnerSetService : IHomepageInnerSetService
             });
         }
 
+<<<<<<< HEAD
         var paged = allItems
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
@@ -181,6 +199,9 @@ public class HomepageInnerSetService : IHomepageInnerSetService
             Page = query.Page,
             PageSize = query.PageSize,
         };
+=======
+        return result;
+>>>>>>> origin/main
     }
 
     /// <inheritdoc />

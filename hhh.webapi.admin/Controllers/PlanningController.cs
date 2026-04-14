@@ -41,11 +41,19 @@ public class PlanningController : ApiControllerBase
     /// 篩選 is_del=0 且 channel_id 在白名單內，ORDER BY yid DESC，全量回傳。
     /// </remarks>
     [HttpGet("youtube")]
+<<<<<<< HEAD
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<YoutubeListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetYoutubeList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
         var data = await _youtubeService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<YoutubeListItem>>.Success(data));
+=======
+    [ProducesResponseType(typeof(ApiResponse<List<YoutubeListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetYoutubeList(CancellationToken cancellationToken)
+    {
+        var data = await _youtubeService.GetListAsync(cancellationToken);
+        return Ok(ApiResponse<List<YoutubeListItem>>.Success(data));
+>>>>>>> origin/main
     }
 
     /// <summary>新增 YouTube 影片</summary>

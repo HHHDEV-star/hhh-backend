@@ -611,11 +611,19 @@ public class WebSiteController : ApiControllerBase
     /// color=1 表示該區塊 onoff=Y 筆數超過 max_row。
     /// </remarks>
     [HttpGet("homepage-inner-sets")]
+<<<<<<< HEAD
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<HomepageInnerSetListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHomepageInnerSetList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
         var data = await _homepageInnerSetService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<HomepageInnerSetListItem>>.Success(data));
+=======
+    [ProducesResponseType(typeof(ApiResponse<List<HomepageInnerSetListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHomepageInnerSetList(CancellationToken cancellationToken)
+    {
+        var data = await _homepageInnerSetService.GetListAsync(cancellationToken);
+        return Ok(ApiResponse<List<HomepageInnerSetListItem>>.Success(data));
+>>>>>>> origin/main
     }
 
     /// <summary>新增首頁區塊元素</summary>
@@ -728,10 +736,18 @@ public class WebSiteController : ApiControllerBase
     /// 後台唯讀,不提供新增/修改/刪除(前台才有 POST)。
     /// </remarks>
     [HttpGet("contacts")]
+<<<<<<< HEAD
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ContactListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetContactList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
         var data = await _contactService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<ContactListItem>>.Success(data));
+=======
+    [ProducesResponseType(typeof(ApiResponse<List<ContactListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetContactList(CancellationToken cancellationToken)
+    {
+        var data = await _contactService.GetListAsync(cancellationToken);
+        return Ok(ApiResponse<List<ContactListItem>>.Success(data));
+>>>>>>> origin/main
     }
 }
