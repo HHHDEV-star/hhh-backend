@@ -1,4 +1,5 @@
 using hhh.api.contracts.admin.Website;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 
 namespace hhh.application.admin.Website;
@@ -9,8 +10,9 @@ namespace hhh.application.admin.Website;
 /// </summary>
 public interface IBuilderService
 {
-    /// <summary>建商列表（全量，不分頁）</summary>
-    Task<List<BuilderListItem>> GetListAsync(
+    /// <summary>建商分頁列表（支援 onoff 篩選 + keyword 跨欄位搜尋）</summary>
+    Task<PagedResponse<BuilderListItem>> GetListAsync(
+        BuilderListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>取得單筆建商完整資料</summary>

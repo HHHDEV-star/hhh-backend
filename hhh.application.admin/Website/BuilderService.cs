@@ -1,7 +1,9 @@
 using hhh.api.contracts.admin.Website;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,11 +23,30 @@ public class BuilderService : IBuilderService
     }
 
     /// <inheritdoc />
-    public async Task<List<BuilderListItem>> GetListAsync(
+    public async Task<PagedResponse<BuilderListItem>> GetListAsync(
+        BuilderListQuery query,
         CancellationToken cancellationToken = default)
     {
-        return await _db.Builders
-            .AsNoTracking()
+        var q = _db.Builders.AsNoTracking().AsQueryable();
+
+        // 上線狀態篩選(不帶 = 全部)
+        if (query.Onoff is { } onoff)
+        {
+            q = q.Where(b => b.Onoff == onoff);
+        }
+
+        // 關鍵字搜尋:公司名稱 / 電話 / 地址 / Email
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(b =>
+                EF.Functions.Like(b.Title, like) ||
+                EF.Functions.Like(b.Phone, like) ||
+                EF.Functions.Like(b.Address, like) ||
+                EF.Functions.Like(b.Email, like));
+        }
+
+        return await q
             .OrderByDescending(b => b.BuilderId)
             .Select(b => new BuilderListItem
             {
@@ -38,7 +59,7 @@ public class BuilderService : IBuilderService
                 Address = b.Address,
                 CreatTime = b.CreatTime,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     /// <inheritdoc />

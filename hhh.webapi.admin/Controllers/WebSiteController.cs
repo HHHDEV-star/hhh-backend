@@ -39,6 +39,7 @@ public class WebSiteController : ApiControllerBase
     private const string BuilderPageName = "建商";
 
     private readonly XoopsContext _db;
+    private readonly IBuilderService _builderService;
     private readonly IBuilderProductService _builderProductService;
     private readonly IOperationLogWriter _logWriter;
     private readonly IDecoRecordService _decoRecordService;
@@ -50,6 +51,7 @@ public class WebSiteController : ApiControllerBase
 
     public WebSiteController(
         XoopsContext db,
+        IBuilderService builderService,
         IBuilderProductService builderProductService,
         IOperationLogWriter logWriter,
         IDecoRecordService decoRecordService,
@@ -60,6 +62,7 @@ public class WebSiteController : ApiControllerBase
         IContactService contactService)
     {
         _db = db;
+        _builderService = builderService;
         _builderProductService = builderProductService;
         _logWriter = logWriter;
         _decoRecordService = decoRecordService;
@@ -74,32 +77,19 @@ public class WebSiteController : ApiControllerBase
     // Builders 建商（thin CRUD，直接戳 XoopsContext）
     // =========================================================================
 
-    /// <summary>取得建商列表</summary>
+    /// <summary>取得建商分頁列表</summary>
     /// <remarks>
     /// 對應舊版 PHP: Builder/lists_get（13.01）
-    /// 小資料集,不分頁。
+    /// 支援 onoff 篩選(0=關/1=開,不帶=全部) + keyword 跨欄位搜尋(公司名稱/電話/地址/Email)。
     /// </remarks>
-    [HttpGet("builders")]
-    [ProducesResponseType(typeof(ApiResponse<List<BuilderListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetBuilderList(CancellationToken cancellationToken)
+    [HttpGet("builders/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<BuilderListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetBuilderList(
+        [FromQuery] BuilderListQuery query,
+        CancellationToken cancellationToken)
     {
-        var data = await _db.Builders
-            .AsNoTracking()
-            .OrderByDescending(b => b.BuilderId)
-            .Select(b => new BuilderListItem
-            {
-                Id = b.BuilderId,
-                Logo = b.Logo,
-                Title = b.Title,
-                Onoff = b.Onoff,
-                Phone = b.Phone,
-                Email = b.Email,
-                Address = b.Address,
-                CreatTime = b.CreatTime,
-            })
-            .ToListAsync(cancellationToken);
-
-        return Ok(ApiResponse<List<BuilderListItem>>.Success(data));
+        var data = await _builderService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<BuilderListItem>>.Success(data));
     }
 
     /// <summary>取得單筆建商完整資料</summary>
