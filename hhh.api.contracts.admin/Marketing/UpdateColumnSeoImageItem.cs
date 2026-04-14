@@ -1,0 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace hhh.api.contracts.admin.Marketing;
+
+/// <summary>批次更新專欄 SEO 圖片單筆項目</summary>
+public class UpdateColumnSeoImageItem
+{
+    /// <summary>專欄 ID</summary>
+    [Required]
+    public uint HcolumnId { get; set; }
+
+    /// <summary>SEO 圖片 URL</summary>
+    [Required]
+    [StringLength(128)]
+    public string SeoImage { get; set; } = string.Empty;
+}
