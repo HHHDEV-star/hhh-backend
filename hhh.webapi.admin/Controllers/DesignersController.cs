@@ -46,7 +46,7 @@ public class DesignersController : ApiControllerBase
     /// searchByIdOnly=true 時 q 僅比對 hdesigner_id 精準值。
     /// 排序白名單:id, title, name, dorder, mobileOrder, onoff, creatTime, updateTime。
     /// </remarks>
-    [HttpGet("hdesigners")]
+    [HttpGet("hdesigners/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<HdesignerListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHdesignerList(
         [FromQuery] HdesignerListRequest request,
@@ -155,7 +155,7 @@ public class DesignersController : ApiControllerBase
     /// hdesignerId:只看某位設計師底下的個案。
     /// 排序白名單:id, caption, hdesignerId, viewed, corder, creatTime, updateTime, onoff, sdate, recommend。
     /// </remarks>
-    [HttpGet("hcases")]
+    [HttpGet("hcases/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<HcaseListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHcaseList(
         [FromQuery] HcaseListRequest request,

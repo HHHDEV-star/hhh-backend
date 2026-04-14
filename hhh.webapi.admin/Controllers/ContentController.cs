@@ -45,7 +45,7 @@ public class ContentController : ApiControllerBase
     /// q 跨欄位:id / title / author / type / desc。
     /// 排序白名單:id, title, author, type, pdate, viewed, recommend。
     /// </remarks>
-    [HttpGet("hpublishes")]
+    [HttpGet("hpublishes/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<HpublishListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHpublishList(
         [FromQuery] HpublishListRequest request,
@@ -126,7 +126,7 @@ public class ContentController : ApiControllerBase
 
     /// <summary>取得議題 2 分頁列表</summary>
     /// <remarks>對應舊版 /backend/_htopic2.php。q / onoff 過濾。排序白名單:id, title, onoff。</remarks>
-    [HttpGet("htopic2s")]
+    [HttpGet("htopic2s/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<Htopic2ListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHtopic2List(
         [FromQuery] Htopic2ListRequest request,

@@ -42,7 +42,7 @@ public class PlatformController : ApiControllerBase
 
     /// <summary>取得管理者分頁列表</summary>
     /// <remarks>對應舊版 /backend/admin.php。排序白名單:id, account, name, email, createTime, isActive。</remarks>
-    [HttpGet("admins")]
+    [HttpGet("admins/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<AdminListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAdminList(
         [FromQuery] AdminListRequest request,
@@ -166,7 +166,7 @@ public class PlatformController : ApiControllerBase
     /// 支援 q / uname / action / pageName / from / to / page / pageSize / sort / by。
     /// 預設依 creatTime DESC 排序。排序白名單:id, creatTime, uname, pageName, action。
     /// </remarks>
-    [HttpGet("operation-logs")]
+    [HttpGet("operation-logs/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<OperationLogListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetOperationLogList(
         [FromQuery] OperationLogListRequest request,

@@ -33,7 +33,7 @@ public class TagsController : ApiControllerBase
 
     /// <summary>取得個案標籤列表</summary>
     /// <remarks>至少帶一個條件(hdesignerId 或 searchTag),否則回空陣列(防全撈)。</remarks>
-    [HttpGet("hcases")]
+    [HttpGet("hcases/list")]
     [ProducesResponseType(typeof(ApiResponse<List<TagHcaseItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHcaseTags(
         [FromQuery] uint? hdesignerId,

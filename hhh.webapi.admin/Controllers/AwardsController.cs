@@ -57,7 +57,7 @@ public class AwardsController : ApiControllerBase
     /// q 跨欄位:hawards_id / awards_name / hdesigner_id / hcase_id / 設計師 name / 個案 caption。
     /// 排序白名單:id, awardsName, hdesignerId, hcaseId, onoff。
     /// </remarks>
-    [HttpGet("hawards")]
+    [HttpGet("hawards/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<HawardListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHawardList(
         [FromQuery] HawardListRequest request,
@@ -138,7 +138,7 @@ public class AwardsController : ApiControllerBase
 
     /// <summary>取得獎品分頁列表</summary>
     /// <remarks>對應舊版 /backend/_hprize.php。q 跨欄位:hprize_id / title / desc。排序白名單:id, title, creatTime。</remarks>
-    [HttpGet("hprizes")]
+    [HttpGet("hprizes/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<HprizeListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHprizeList(
         [FromQuery] HprizeListRequest request,
@@ -302,7 +302,7 @@ public class AwardsController : ApiControllerBase
     /// q 跨欄位:contest_id / class_type / year / c1 / c2 / c3 / c9。
     /// 排序白名單:id, year, classType, applytime, finalist, wp。
     /// </remarks>
-    [HttpGet("hcontests")]
+    [HttpGet("hcontests/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<HcontestListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHcontestList(
         [FromQuery] HcontestListRequest request,

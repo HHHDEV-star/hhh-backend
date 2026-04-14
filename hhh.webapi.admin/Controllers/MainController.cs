@@ -100,7 +100,7 @@ public class MainController : ApiControllerBase
 
     /// <summary>取得執行表單列表</summary>
     /// <remarks>對應舊版 Execute/index_get(no exf_id)。篩 is_delete='N',exf_id DESC。</remarks>
-    [HttpGet("execute-forms")]
+    [HttpGet("execute-forms/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ExecuteFormListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetExecuteFormList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {

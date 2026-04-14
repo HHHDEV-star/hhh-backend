@@ -53,9 +53,9 @@ public class BrokersController : ApiControllerBase
     /// 業務規則:只回傳 contact_status='Y'(同意被聯繫)的紀錄,依 id DESC 排序、
     /// 全量回傳給前端 Kendo Grid 自行分頁。
     /// </remarks>
-    [HttpGet("calculators")]
+    [HttpGet("calculators/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<CalculatorListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCalculators([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetCalculatorList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
         var data = await _calculatorService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<CalculatorListItem>>.Success(data));
@@ -82,9 +82,9 @@ public class BrokersController : ApiControllerBase
     /// 注意:沿用舊功能採「全量回傳 + 前端 Kendo Grid 自行分頁」,
     /// 不做 server-side paging。回傳會同時帶 searchCount(篩選後)與 allCount(全表)。
     /// </remarks>
-    [HttpGet("calculator-requests")]
+    [HttpGet("calculator-requests/list")]
     [ProducesResponseType(typeof(ApiResponse<CalculatorRequestListResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCalculatorRequests(
+    public async Task<IActionResult> GetCalculatorRequestList(
         [FromQuery] CalculatorRequestListQuery query,
         CancellationToken cancellationToken)
     {
@@ -110,9 +110,9 @@ public class BrokersController : ApiControllerBase
     /// 注意:後端資料表為 legacy 拼錯的 renovation_reuqest,但 .NET 公開路由
     /// 與 DTO 都用乾淨命名 renovations / Renovation,不擴散拼錯。
     /// </remarks>
-    [HttpGet("renovations")]
+    [HttpGet("renovations/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<RenovationListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetRenovations([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetRenovationList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
         var data = await _renovationService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<RenovationListItem>>.Success(data));

@@ -61,7 +61,7 @@ public class SocialController : ApiControllerBase
     /// 對應舊版 PHP:Events/brief_get → events_model::brief_lists()
     /// SELECT * FROM brief ORDER BY brief_id DESC,無 paging、無 filter。
     /// </remarks>
-    [HttpGet("briefs")]
+    [HttpGet("briefs/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<BriefListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetBriefList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
@@ -78,7 +78,7 @@ public class SocialController : ApiControllerBase
     /// 對應舊版 PHP:Decoration/lists_get → decoration_model::lists()
     /// SELECT * FROM decoration ORDER BY id DESC,無 paging、無 filter。
     /// </remarks>
-    [HttpGet("decorations")]
+    [HttpGet("decorations/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<DecorationListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDecorationList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
@@ -113,7 +113,7 @@ public class SocialController : ApiControllerBase
 
     /// <summary>取得後台文章列表</summary>
     /// <remarks>對應舊版 Forum/article_back_list_get → forum_model::get_article_for_back()。JOIN _users 帶 uname/email。</remarks>
-    [HttpGet("forum-articles")]
+    [HttpGet("forum-articles/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ForumArticleBackItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetForumArticleList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
@@ -219,7 +219,7 @@ public class SocialController : ApiControllerBase
 
     /// <summary>取得精準名單列表(全量,id DESC)</summary>
     /// <remarks>對應舊版 PHP:Precise/lists_get → precise_model::lists()。</remarks>
-    [HttpGet("precises")]
+    [HttpGet("precises/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<PreciseListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPreciseList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
@@ -253,7 +253,7 @@ public class SocialController : ApiControllerBase
 
     /// <summary>取得產品後台列表</summary>
     /// <remarks>對應舊版 Product/index_get → product_model::get_product_lists()。全量 id DESC。</remarks>
-    [HttpGet("products")]
+    [HttpGet("products/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProductList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {

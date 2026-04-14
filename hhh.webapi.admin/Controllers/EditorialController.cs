@@ -48,7 +48,7 @@ public class EditorialController : ApiControllerBase
     /// 依 sdate DESC、hcase_id DESC 排序。
     /// 列表會 JOIN _hdesigner 帶出 designerTitle。
     /// </remarks>
-    [HttpGet("cases")]
+    [HttpGet("cases/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<EditorialCaseListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCaseList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
@@ -135,7 +135,7 @@ public class EditorialController : ApiControllerBase
     /// 對應舊版 PHP:Column.php → index_get(no id) → column_model::get_column_lists()
     /// 依 sdate DESC、hcolumn_id DESC 排序。
     /// </remarks>
-    [HttpGet("columns")]
+    [HttpGet("columns/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<EditorialColumnListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetColumnList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {

@@ -36,7 +36,7 @@ public class AdvertiseController : ApiControllerBase
     /// 對應舊版 Homepage/had_get → homepage_model::get_ad_all_lists()。
     /// 可選帶 type 篩選廣告類型。ORDER BY adid DESC。
     /// </remarks>
-    [HttpGet("ads")]
+    [HttpGet("ads/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<AdListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAdList(
         [FromQuery] string? type, [FromQuery] ListQuery query, CancellationToken cancellationToken)

@@ -40,7 +40,7 @@ public class PlanningController : ApiControllerBase
     /// 對應舊版 PHP: Youtube/index_get（10.1）
     /// 篩選 is_del=0 且 channel_id 在白名單內，ORDER BY yid DESC，全量回傳。
     /// </remarks>
-    [HttpGet("youtube")]
+    [HttpGet("youtube/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<YoutubeListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetYoutubeList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {

@@ -36,7 +36,7 @@ public class MembersController : ApiControllerBase
     /// 對應舊版 /backend/_users.php。
     /// 支援 page / pageSize / sort / by。排序白名單:id, uname, email, name, regdate, lastLogin。
     /// </remarks>
-    [HttpGet("users")]
+    [HttpGet("users/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<UserListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUserList(
         [FromQuery] UserListRequest request,

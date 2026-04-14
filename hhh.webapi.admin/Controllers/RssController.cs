@@ -48,7 +48,7 @@ public class RssController : ApiControllerBase
     // =========================================================================
 
     /// <summary>取得 Yahoo RSS 排程列表</summary>
-    [HttpGet("yahoo")]
+    [HttpGet("yahoo/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssScheduleItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetYahooList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
@@ -89,7 +89,7 @@ public class RssController : ApiControllerBase
     // =========================================================================
 
     /// <summary>取得 MSN RSS 排程列表</summary>
-    [HttpGet("msn")]
+    [HttpGet("msn/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssScheduleItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMsnList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
@@ -130,7 +130,7 @@ public class RssController : ApiControllerBase
     // =========================================================================
 
     /// <summary>取得 LineToday RSS 排程列表</summary>
-    [HttpGet("line-today")]
+    [HttpGet("line-today/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssLineTodayItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetLineTodayList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
@@ -176,9 +176,9 @@ public class RssController : ApiControllerBase
     /// 後台 view:rss_lists.php。至少帶一個日期參數才查(防全撈)。
     /// type 會從英文轉成中文(brand→廠商 等),url 由 type + num 計算。
     /// </remarks>
-    [HttpGet("transfer-logs")]
+    [HttpGet("transfer-logs/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssTransferLogItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetTransferLogs(
+    public async Task<IActionResult> GetTransferLogList(
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] ListQuery query,

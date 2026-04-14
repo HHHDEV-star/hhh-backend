@@ -26,7 +26,12 @@
       "Bash(Get-ChildItem -Path \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.infrastructure\\\\Dto\\\\Xoops\" -Filter \"*BuilderProduct*\")",
       "Bash(Select-Object Name)",
       "Bash(ls -la \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.webapi.admin\\\\Controllers\"\" | grep -i \"rss|designer \")",
-      "Bash(cmd /c dir \"C:\\\\Users\\\\thomaschen\\\\Downloads\\\\hhh_backend\"\")"
+      "Bash(cmd /c dir \"C:\\\\Users\\\\thomaschen\\\\Downloads\\\\hhh_backend\"\")",
+      "Bash(grep -B1 \"PagedResponse<\" hhh.webapi.admin/Controllers/**/*.cs hhh.webapi.admin/Controllers/*.cs)",
+      "Bash(grep -A1 \"PagedResponse<\" hhh.webapi.admin/Controllers/**/*.cs hhh.webapi.admin/Controllers/*.cs)",
+      "Bash(grep -rn \"PagedResponse<\" hhh.webapi.admin/Controllers/**/*.cs hhh.webapi.admin/Controllers/*.cs)",
+      "Bash(grep -B3 \"PagedResponse<\" hhh.webapi.admin/Controllers/**/*.cs hhh.webapi.admin/Controllers/*.cs)",
+      "Bash(grep -rn 'HttpGet.*list' hhh.webapi.admin/Controllers/**/*.cs hhh.webapi.admin/Controllers/*.cs)"
     ]
   }
 }

@@ -307,7 +307,7 @@ public class WebSiteController : ApiControllerBase
     /// 支援 q / builderId / onoff / page / pageSize / sort / by 查詢參數。
     /// 排序白名單: id, name, builderId, city, onoff, updateTime。
     /// </remarks>
-    [HttpGet("builder-products")]
+    [HttpGet("builder-products/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<BuilderProductListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetBuilderProductList(
         [FromQuery] BuilderProductListRequest request,
@@ -515,7 +515,7 @@ public class WebSiteController : ApiControllerBase
 
     /// <summary>取得查證照列表(全量,register_number DESC)</summary>
     /// <remarks>對應舊版 PHP:Deco/backend_get → deco_model::get_deco_lists_backend()。</remarks>
-    [HttpGet("deco-records")]
+    [HttpGet("deco-records/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<DecoRecordListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDecoRecordList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
@@ -551,7 +551,7 @@ public class WebSiteController : ApiControllerBase
     /// 對應舊版 PHP:Deco/images_get → deco_model::get_deco_img_list()。
     /// JOIN deco_record 帶出公司資料。ORDER BY onoff ASC(未審核在前)。
     /// </remarks>
-    [HttpGet("deco-images")]
+    [HttpGet("deco-images/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<DecoImageListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDecoImageList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
@@ -610,7 +610,7 @@ public class WebSiteController : ApiControllerBase
     /// JOIN outer_site_set 帶出區塊標題/排序,並依 theme_type 查各表取得 caption/link。
     /// color=1 表示該區塊 onoff=Y 筆數超過 max_row。
     /// </remarks>
-    [HttpGet("homepage-inner-sets")]
+    [HttpGet("homepage-inner-sets/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<HomepageInnerSetListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHomepageInnerSetList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
@@ -727,7 +727,7 @@ public class WebSiteController : ApiControllerBase
     /// 篩選 phone LIKE '0%'(本地號碼),ORDER BY id DESC。
     /// 後台唯讀,不提供新增/修改/刪除(前台才有 POST)。
     /// </remarks>
-    [HttpGet("contacts")]
+    [HttpGet("contacts/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ContactListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetContactList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
