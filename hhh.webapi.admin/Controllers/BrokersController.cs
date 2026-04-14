@@ -54,11 +54,11 @@ public class BrokersController : ApiControllerBase
     /// 全量回傳給前端 Kendo Grid 自行分頁。
     /// </remarks>
     [HttpGet("calculators")]
-    [ProducesResponseType(typeof(ApiResponse<List<CalculatorListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCalculators(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<CalculatorListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCalculators([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _calculatorService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<CalculatorListItem>>.Success(data));
+        var data = await _calculatorService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<CalculatorListItem>>.Success(data));
     }
 
     // -------------------------------------------------------------------------
@@ -111,10 +111,10 @@ public class BrokersController : ApiControllerBase
     /// 與 DTO 都用乾淨命名 renovations / Renovation,不擴散拼錯。
     /// </remarks>
     [HttpGet("renovations")]
-    [ProducesResponseType(typeof(ApiResponse<List<RenovationListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetRenovations(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<RenovationListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetRenovations([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _renovationService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<RenovationListItem>>.Success(data));
+        var data = await _renovationService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<RenovationListItem>>.Success(data));
     }
 }

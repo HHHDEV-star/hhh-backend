@@ -1,4 +1,5 @@
 using hhh.api.contracts.admin.Editorial.Cases;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 
 namespace hhh.application.admin.Editorial.Cases;
@@ -23,7 +24,7 @@ public interface IEditorialCaseService
     /// 取得個案列表(無 paging,全量回傳)
     /// 對應舊版 case_model::get_case_lists()
     /// </summary>
-    Task<List<EditorialCaseListItem>> GetListAsync(CancellationToken cancellationToken = default);
+    Task<PagedResponse<EditorialCaseListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 取得單一個案完整資料

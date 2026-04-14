@@ -1,4 +1,5 @@
 using hhh.api.contracts.admin.Social.Forums;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 
 namespace hhh.application.admin.Social.Forums;
@@ -12,7 +13,7 @@ namespace hhh.application.admin.Social.Forums;
 /// </remarks>
 public interface IForumService
 {
-    Task<List<ForumArticleBackItem>> GetArticleBackListAsync(CancellationToken ct = default);
+    Task<PagedResponse<ForumArticleBackItem>> GetArticleBackListAsync(ListQuery query, CancellationToken ct = default);
     Task<OperationResult> UpdateArticleAsync(int articleId, UpdateForumArticleRequest request, CancellationToken ct = default);
     Task<List<ForumReplyBackItem>> GetReplyBackListAsync(int articleId, CancellationToken ct = default);
     Task<OperationResult> UpdateReplyAsync(int replyId, UpdateForumReplyRequest request, CancellationToken ct = default);

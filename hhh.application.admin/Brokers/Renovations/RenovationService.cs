@@ -1,5 +1,6 @@
 using System.Text.Json;
 using hhh.api.contracts.admin.Brokers.Renovations;
+using hhh.api.contracts.Common;
 using hhh.infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,22 +15,12 @@ public class RenovationService : IRenovationService
         _db = db;
     }
 
-    public async Task<List<RenovationListItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<RenovationListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP:Renovation_model::get()
-        //   SELECT rr.*,
-        //          (SELECT company_name FROM deco_record
-        //           WHERE deco_record.bldsno = rr.bldsno AND rr.bldsno != 0) AS company_name
-        //   FROM renovation_reuqest rr
-        //   ORDER BY rr.id DESC
-        //
-        // 注意:當 rr.bldsno = 0 時整個子查詢取不到列,company_name 會是 NULL
-        // (原 PHP SQL 的 "AND rr.bldsno != 0" 寫在子查詢內也是同樣效果)。
-        //
         // 為了能在 LINQ 投影裡同時拿到「原始 site_lists 字串」與其他欄位,
         // 先 query 到匿名型別,再在 in-memory 階段把 site_lists 解析成 JsonElement。
-        var rows = await (
-            from r in _db.RenovationReuqests.AsNoTracking()
+        var baseQuery = from r in _db.RenovationReuqests.AsNoTracking()
             orderby r.Id descending
             select new
             {
@@ -54,10 +45,15 @@ public class RenovationService : IRenovationService
                     .Where(d => d.Bldsno == r.Bldsno && r.Bldsno != 0)
                     .Select(d => d.CompanyName)
                     .FirstOrDefault(),
-            })
+            };
+
+        var total = await baseQuery.LongCountAsync(cancellationToken);
+        var rows = await baseQuery
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
             .ToListAsync(cancellationToken);
 
-        return rows.Select(r => new RenovationListItem
+        var items = rows.Select(r => new RenovationListItem
         {
             Id = r.Id,
             Ctime = r.Ctime,
@@ -78,6 +74,14 @@ public class RenovationService : IRenovationService
             CompanyName = r.CompanyName,
             UtmSource = r.UtmSource,
         }).ToList();
+
+        return new PagedResponse<RenovationListItem>
+        {
+            Items = items,
+            Total = total,
+            Page = query.Page,
+            PageSize = query.PageSize,
+        };
     }
 
     /// <summary>

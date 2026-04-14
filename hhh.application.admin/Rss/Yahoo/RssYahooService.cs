@@ -1,7 +1,9 @@
 using hhh.api.contracts.admin.Rss;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Rss.Yahoo;
@@ -12,7 +14,7 @@ public class RssYahooService : IRssYahooService
 
     public RssYahooService(XoopsContext db) => _db = db;
 
-    public async Task<List<RssScheduleItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<RssScheduleItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
     {
         return await _db.RssYahoos
             .AsNoTracking()
@@ -26,7 +28,7 @@ public class RssYahooService : IRssYahooService
                 CreateTime = r.CreateTime,
                 UpdateTime = r.UpdateTime,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     public async Task<OperationResult<uint>> CreateAsync(

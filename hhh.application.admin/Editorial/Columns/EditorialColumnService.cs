@@ -1,7 +1,9 @@
 using hhh.api.contracts.admin.Editorial.Columns;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +22,7 @@ public class EditorialColumnService : IEditorialColumnService
         _logWriter = logWriter;
     }
 
-    public async Task<List<EditorialColumnListItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<EditorialColumnListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP column_model::get_column_lists():
         //   SELECT hcolumn_id, builder_product_id, ctag, ctype, ctype_sub, ctitle,
@@ -59,7 +61,7 @@ public class EditorialColumnService : IEditorialColumnService
                 SeoDescription = c.SeoDescription,
                 UpdateTime = c.UpdateTime,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     public async Task<EditorialColumnDetailResponse?> GetByIdAsync(

@@ -1,7 +1,9 @@
 using hhh.api.contracts.admin.Rss;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Rss.LineToday;
@@ -12,15 +14,14 @@ public class RssLineTodayService : IRssLineTodayService
 
     public RssLineTodayService(XoopsContext db) => _db = db;
 
-    public async Task<List<RssLineTodayItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<RssLineTodayItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
     {
-        // 對應舊 PHP rss_linetoday_model::get():ORDER BY date DESC LIMIT 30
+        // 對應舊 PHP rss_linetoday_model::get():ORDER BY date DESC
         // 注意:舊版還會逐行檢查 CDN 上有沒有 .mp4 檔並塞 mp4 bool,
         // 因為是 remote IO(HTTP HEAD per row)且用途不明,這裡先跳過不做。
         return await _db.RssLinetodays
             .AsNoTracking()
             .OrderByDescending(r => r.Date)
-            .Take(30)
             .Select(r => new RssLineTodayItem
             {
                 Id = r.Id,
@@ -29,7 +30,7 @@ public class RssLineTodayService : IRssLineTodayService
                 CreateTime = r.CreateTime,
                 UpdateTime = r.UpdateTime,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     public async Task<OperationResult<uint>> CreateAsync(

@@ -1,4 +1,5 @@
 using hhh.api.contracts.admin.Rss;
+using hhh.api.contracts.Common;
 using hhh.infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,13 +30,13 @@ public class RssTransferService : IRssTransferService
 
     public RssTransferService(XoopsContext db) => _db = db;
 
-    public async Task<List<RssTransferLogItem>> GetLogsAsync(
-        DateTime? startDate, DateTime? endDate,
+    public async Task<PagedResponse<RssTransferLogItem>> GetLogsAsync(
+        DateTime? startDate, DateTime? endDate, ListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP:禁止無條件全撈,至少要帶日期
         if (startDate is null && endDate is null)
-            return new List<RssTransferLogItem>();
+            return new PagedResponse<RssTransferLogItem> { Page = query.Page, PageSize = query.PageSize };
 
         var q = _db.RssTransfers.AsNoTracking().AsQueryable();
 
@@ -45,12 +46,16 @@ public class RssTransferService : IRssTransferService
         if (endDate is { } ed)
             q = q.Where(r => r.Datetime <= ed);
 
-        var rows = await q
-            .OrderByDescending(r => r.Id)
+        var ordered = q.OrderByDescending(r => r.Id);
+
+        var total = await ordered.LongCountAsync(cancellationToken);
+        var rows = await ordered
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
             .ToListAsync(cancellationToken);
 
         // 在 in-memory 做 type → 中文 + url 計算(對應舊 PHP _set_rows_data)
-        return rows.Select(r =>
+        var items = rows.Select(r =>
         {
             var rawType = r.Type;
             return new RssTransferLogItem
@@ -66,6 +71,14 @@ public class RssTransferService : IRssTransferService
                 Datetime = r.Datetime,
             };
         }).ToList();
+
+        return new PagedResponse<RssTransferLogItem>
+        {
+            Items = items,
+            Total = total,
+            Page = query.Page,
+            PageSize = query.PageSize,
+        };
     }
 
     public async Task<List<RssTransferStatItem>> GetStatisticsAsync(

@@ -1,7 +1,9 @@
 using hhh.api.contracts.admin.Social.Precises;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Social.Precises;
@@ -14,7 +16,7 @@ public class PreciseService : IPreciseService
 
     public PreciseService(XoopsContext db) => _db = db;
 
-    public async Task<List<PreciseListItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<PreciseListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
     {
         return await _db.Precises
             .AsNoTracking()
@@ -29,7 +31,7 @@ public class PreciseService : IPreciseService
                 Mobile = p.Mobile,
                 CreateTime = p.CreateTime,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     public async Task<OperationResult<int>> CreateAsync(

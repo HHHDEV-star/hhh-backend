@@ -1,5 +1,7 @@
 using hhh.api.contracts.admin.Brokers.Calculators;
+using hhh.api.contracts.Common;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Brokers.Calculators;
@@ -13,7 +15,7 @@ public class CalculatorService : ICalculatorService
         _db = db;
     }
 
-    public async Task<List<CalculatorListItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<CalculatorListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP:Calculator_model::get()
         //   SELECT * FROM calculator WHERE contact_status = 'Y' ORDER BY id DESC
@@ -51,6 +53,6 @@ public class CalculatorService : ICalculatorService
                 RentHouseStatus = c.RentHouseStatus,
                 Ip = c.Ip,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 }

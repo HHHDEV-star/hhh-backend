@@ -42,19 +42,18 @@ public class EditorialController : ApiControllerBase
     // 個案 (cases)
     // =========================================================================
 
-    /// <summary>取得個案列表(全量,無 paging)</summary>
+    /// <summary>取得個案列表(分頁)</summary>
     /// <remarks>
     /// 對應舊版 PHP:Cases.php → index_get(no id) → case_model::get_case_lists()
-    /// 沒有 paging、沒有 filter,依 sdate DESC、hcase_id DESC 排序,
-    /// 全量回給前端 Kendo Grid 自行分頁。
+    /// 依 sdate DESC、hcase_id DESC 排序。
     /// 列表會 JOIN _hdesigner 帶出 designerTitle。
     /// </remarks>
     [HttpGet("cases")]
-    [ProducesResponseType(typeof(ApiResponse<List<EditorialCaseListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCaseList(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<EditorialCaseListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCaseList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _editorialCaseService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<EditorialCaseListItem>>.Success(data));
+        var data = await _editorialCaseService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<EditorialCaseListItem>>.Success(data));
     }
 
     /// <summary>取得單一個案完整資料</summary>
@@ -131,18 +130,17 @@ public class EditorialController : ApiControllerBase
     // 專欄 (columns)
     // =========================================================================
 
-    /// <summary>取得專欄列表(全量,無 paging)</summary>
+    /// <summary>取得專欄列表(分頁)</summary>
     /// <remarks>
     /// 對應舊版 PHP:Column.php → index_get(no id) → column_model::get_column_lists()
-    /// 沒有 paging、沒有 filter,依 sdate DESC、hcolumn_id DESC 排序,
-    /// 全量回給前端 Kendo Grid 自行分頁。
+    /// 依 sdate DESC、hcolumn_id DESC 排序。
     /// </remarks>
     [HttpGet("columns")]
-    [ProducesResponseType(typeof(ApiResponse<List<EditorialColumnListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetColumnList(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<EditorialColumnListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetColumnList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _editorialColumnService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<EditorialColumnListItem>>.Success(data));
+        var data = await _editorialColumnService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<EditorialColumnListItem>>.Success(data));
     }
 
     /// <summary>取得單一專欄完整資料</summary>

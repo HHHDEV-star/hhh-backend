@@ -1,6 +1,8 @@
 using hhh.api.contracts.admin.WebSite.DecoRecords;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.WebSite.DecoRecords;
@@ -11,7 +13,7 @@ public class DecoRecordService : IDecoRecordService
 
     public DecoRecordService(XoopsContext db) => _db = db;
 
-    public async Task<List<DecoRecordListItem>> GetListAsync(CancellationToken ct = default)
+    public async Task<PagedResponse<DecoRecordListItem>> GetListAsync(ListQuery query, CancellationToken ct = default)
     {
         return await _db.DecoRecords
             .AsNoTracking()
@@ -35,7 +37,7 @@ public class DecoRecordService : IDecoRecordService
                 Website = d.Website,
                 Onoff = d.Onoff == 1,
             })
-            .ToListAsync(ct);
+            .ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult> UpdateAsync(

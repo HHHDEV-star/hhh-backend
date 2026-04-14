@@ -1,5 +1,7 @@
 using hhh.api.contracts.admin.Social.Briefs;
+using hhh.api.contracts.Common;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Social.Briefs;
@@ -10,7 +12,7 @@ public class BriefService : IBriefService
 
     public BriefService(XoopsContext db) => _db = db;
 
-    public async Task<List<BriefListItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<BriefListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
     {
         return await _db.Briefs
             .AsNoTracking()
@@ -27,6 +29,6 @@ public class BriefService : IBriefService
                 Fee = b.Fee,
                 CreateTime = b.CreateTime,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 }

@@ -49,11 +49,11 @@ public class RssController : ApiControllerBase
 
     /// <summary>取得 Yahoo RSS 排程列表</summary>
     [HttpGet("yahoo")]
-    [ProducesResponseType(typeof(ApiResponse<List<RssScheduleItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetYahooList(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssScheduleItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetYahooList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _yahooService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<RssScheduleItem>>.Success(data));
+        var data = await _yahooService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<RssScheduleItem>>.Success(data));
     }
 
     /// <summary>新增 Yahoo RSS 排程</summary>
@@ -90,11 +90,11 @@ public class RssController : ApiControllerBase
 
     /// <summary>取得 MSN RSS 排程列表</summary>
     [HttpGet("msn")]
-    [ProducesResponseType(typeof(ApiResponse<List<RssScheduleItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetMsnList(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssScheduleItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMsnList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _msnService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<RssScheduleItem>>.Success(data));
+        var data = await _msnService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<RssScheduleItem>>.Success(data));
     }
 
     /// <summary>新增 MSN RSS 排程</summary>
@@ -129,13 +129,13 @@ public class RssController : ApiControllerBase
     // LineToday
     // =========================================================================
 
-    /// <summary>取得 LineToday RSS 排程列表(最新 30 筆)</summary>
+    /// <summary>取得 LineToday RSS 排程列表</summary>
     [HttpGet("line-today")]
-    [ProducesResponseType(typeof(ApiResponse<List<RssLineTodayItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetLineTodayList(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssLineTodayItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetLineTodayList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _lineTodayService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<RssLineTodayItem>>.Success(data));
+        var data = await _lineTodayService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<RssLineTodayItem>>.Success(data));
     }
 
     /// <summary>新增 LineToday RSS 排程</summary>
@@ -177,14 +177,15 @@ public class RssController : ApiControllerBase
     /// type 會從英文轉成中文(brand→廠商 等),url 由 type + num 計算。
     /// </remarks>
     [HttpGet("transfer-logs")]
-    [ProducesResponseType(typeof(ApiResponse<List<RssTransferLogItem>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssTransferLogItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTransferLogs(
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
+        [FromQuery] ListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _transferService.GetLogsAsync(startDate, endDate, cancellationToken);
-        return Ok(ApiResponse<List<RssTransferLogItem>>.Success(data));
+        var data = await _transferService.GetLogsAsync(startDate, endDate, query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<RssTransferLogItem>>.Success(data));
     }
 
     /// <summary>取得 RSS 轉接統計</summary>

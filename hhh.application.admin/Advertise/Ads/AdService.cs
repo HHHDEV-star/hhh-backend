@@ -1,7 +1,9 @@
 using hhh.api.contracts.admin.Advertise.Ads;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +22,7 @@ public class AdService : IAdService
         _logWriter = logWriter;
     }
 
-    public async Task<List<AdListItem>> GetListAsync(string? type, CancellationToken ct = default)
+    public async Task<PagedResponse<AdListItem>> GetListAsync(string? type, ListQuery query, CancellationToken ct = default)
     {
         var q = _db.Hads.AsNoTracking().AsQueryable();
 
@@ -59,7 +61,7 @@ public class AdService : IAdService
                 IndexChar22 = a.IndexChar22,
                 IndexChar23 = a.IndexChar23,
             })
-            .ToListAsync(ct);
+            .ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult<uint>> CreateAsync(

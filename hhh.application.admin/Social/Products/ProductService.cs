@@ -1,6 +1,8 @@
 using hhh.api.contracts.admin.Social.Products;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Social.Products;
@@ -11,7 +13,7 @@ public class ProductService : IProductService
 
     public ProductService(XoopsContext db) => _db = db;
 
-    public async Task<List<ProductListItem>> GetListAsync(CancellationToken ct = default)
+    public async Task<PagedResponse<ProductListItem>> GetListAsync(ListQuery query, CancellationToken ct = default)
     {
         return await _db.Hproducts
             .AsNoTracking()
@@ -28,7 +30,7 @@ public class ProductService : IProductService
                 Cover = p.Cover,
                 Onoff = p.Onoff == 1,
             })
-            .ToListAsync(ct);
+            .ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult> UpdateAsync(

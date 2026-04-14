@@ -62,11 +62,11 @@ public class SocialController : ApiControllerBase
     /// SELECT * FROM brief ORDER BY brief_id DESC,無 paging、無 filter。
     /// </remarks>
     [HttpGet("briefs")]
-    [ProducesResponseType(typeof(ApiResponse<List<BriefListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetBriefList(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<BriefListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetBriefList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _briefService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<BriefListItem>>.Success(data));
+        var data = await _briefService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<BriefListItem>>.Success(data));
     }
 
     // =========================================================================
@@ -79,11 +79,11 @@ public class SocialController : ApiControllerBase
     /// SELECT * FROM decoration ORDER BY id DESC,無 paging、無 filter。
     /// </remarks>
     [HttpGet("decorations")]
-    [ProducesResponseType(typeof(ApiResponse<List<DecorationListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetDecorationList(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<DecorationListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDecorationList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _decorationService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<DecorationListItem>>.Success(data));
+        var data = await _decorationService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<DecorationListItem>>.Success(data));
     }
 
     /// <summary>新增全室裝修收名單</summary>
@@ -114,11 +114,11 @@ public class SocialController : ApiControllerBase
     /// <summary>取得後台文章列表</summary>
     /// <remarks>對應舊版 Forum/article_back_list_get → forum_model::get_article_for_back()。JOIN _users 帶 uname/email。</remarks>
     [HttpGet("forum-articles")]
-    [ProducesResponseType(typeof(ApiResponse<List<ForumArticleBackItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetForumArticleList(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ForumArticleBackItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetForumArticleList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _forumService.GetArticleBackListAsync(cancellationToken);
-        return Ok(ApiResponse<List<ForumArticleBackItem>>.Success(data));
+        var data = await _forumService.GetArticleBackListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<ForumArticleBackItem>>.Success(data));
     }
 
     /// <summary>後台編輯文章(置頂/刪除/閱讀數/SEO)</summary>
@@ -220,11 +220,11 @@ public class SocialController : ApiControllerBase
     /// <summary>取得精準名單列表(全量,id DESC)</summary>
     /// <remarks>對應舊版 PHP:Precise/lists_get → precise_model::lists()。</remarks>
     [HttpGet("precises")]
-    [ProducesResponseType(typeof(ApiResponse<List<PreciseListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetPreciseList(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<PreciseListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPreciseList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _preciseService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<PreciseListItem>>.Success(data));
+        var data = await _preciseService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<PreciseListItem>>.Success(data));
     }
 
     /// <summary>新增精準名單</summary>
@@ -254,11 +254,11 @@ public class SocialController : ApiControllerBase
     /// <summary>取得產品後台列表</summary>
     /// <remarks>對應舊版 Product/index_get → product_model::get_product_lists()。全量 id DESC。</remarks>
     [HttpGet("products")]
-    [ProducesResponseType(typeof(ApiResponse<List<ProductListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetProductList(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetProductList([FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _productService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<ProductListItem>>.Success(data));
+        var data = await _productService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<ProductListItem>>.Success(data));
     }
 
     /// <summary>更新產品(上下架/分類)</summary>

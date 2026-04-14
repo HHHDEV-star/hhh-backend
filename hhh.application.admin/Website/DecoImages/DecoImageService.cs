@@ -1,6 +1,8 @@
 using hhh.api.contracts.admin.WebSite.DecoImages;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.WebSite.DecoImages;
@@ -11,7 +13,7 @@ public class DecoImageService : IDecoImageService
 
     public DecoImageService(XoopsContext db) => _db = db;
 
-    public async Task<List<DecoImageListItem>> GetListAsync(CancellationToken ct = default)
+    public async Task<PagedResponse<DecoImageListItem>> GetListAsync(ListQuery query, CancellationToken ct = default)
     {
         // 對應舊 PHP deco_model::get_deco_img_list():
         // JOIN deco_record 帶出 register_number / company_name / company_ceo
@@ -34,7 +36,7 @@ public class DecoImageService : IDecoImageService
                 UpdateTime = img.UpdateTime,
                 Onoff = img.Onoff == "Y",
             })
-            .ToListAsync(ct);
+            .ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult> UpdateOnoffAsync(

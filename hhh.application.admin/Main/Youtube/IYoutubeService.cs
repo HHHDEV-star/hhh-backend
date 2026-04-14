@@ -1,4 +1,5 @@
 using hhh.api.contracts.admin.Main.Youtube;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 
 namespace hhh.application.admin.Main.Youtube;
@@ -16,7 +17,7 @@ public interface IYoutubeService
     /// 取得 Youtube 影片列表
     /// (對應舊版 youtube_model::get_youtube_list:篩 is_del=0,ORDER BY yid DESC)
     /// </summary>
-    Task<List<YoutubeListItem>> GetListAsync(CancellationToken cancellationToken = default);
+    Task<PagedResponse<YoutubeListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default);
 
     /// <summary>新增 Youtube 影片</summary>
     Task<OperationResult<uint>> CreateAsync(

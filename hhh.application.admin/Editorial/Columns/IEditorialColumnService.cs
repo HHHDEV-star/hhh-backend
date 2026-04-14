@@ -1,4 +1,5 @@
 using hhh.api.contracts.admin.Editorial.Columns;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 
 namespace hhh.application.admin.Editorial.Columns;
@@ -16,7 +17,7 @@ public interface IEditorialColumnService
     /// 取得專欄列表(無 paging,全量回傳)
     /// 對應舊版 column_model::get_column_lists()
     /// </summary>
-    Task<List<EditorialColumnListItem>> GetListAsync(CancellationToken cancellationToken = default);
+    Task<PagedResponse<EditorialColumnListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 取得單一專欄完整資料

@@ -1,7 +1,9 @@
 using hhh.api.contracts.admin.Main.Execute;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,14 +22,14 @@ public class ExecuteFormService : IExecuteFormService
         _logWriter = logWriter;
     }
 
-    public async Task<List<ExecuteFormListItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<ExecuteFormListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
     {
         return await _db.ExecuteForms
             .AsNoTracking()
             .Where(e => e.IsDelete == "N")
             .OrderByDescending(e => e.ExfId)
             .Select(e => MapToListItem(e))
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     public async Task<ExecuteFormListItem?> GetByIdAsync(uint exfId, CancellationToken cancellationToken = default)

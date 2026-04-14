@@ -37,12 +37,12 @@ public class AdvertiseController : ApiControllerBase
     /// 可選帶 type 篩選廣告類型。ORDER BY adid DESC。
     /// </remarks>
     [HttpGet("ads")]
-    [ProducesResponseType(typeof(ApiResponse<List<AdListItem>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<AdListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAdList(
-        [FromQuery] string? type, CancellationToken cancellationToken)
+        [FromQuery] string? type, [FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _adService.GetListAsync(type, cancellationToken);
-        return Ok(ApiResponse<List<AdListItem>>.Success(data));
+        var data = await _adService.GetListAsync(type, query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<AdListItem>>.Success(data));
     }
 
     /// <summary>新增廣告</summary>

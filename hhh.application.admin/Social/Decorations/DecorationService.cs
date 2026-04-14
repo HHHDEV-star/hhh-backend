@@ -1,7 +1,9 @@
 using hhh.api.contracts.admin.Social.Decorations;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Social.Decorations;
@@ -18,7 +20,7 @@ public class DecorationService : IDecorationService
 
     public DecorationService(XoopsContext db) => _db = db;
 
-    public async Task<List<DecorationListItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<DecorationListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
     {
         return await _db.Decorations
             .AsNoTracking()
@@ -34,7 +36,7 @@ public class DecorationService : IDecorationService
                 Pin = d.Pin,
                 CreateTime = d.CreateTime,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     public async Task<OperationResult<uint>> CreateAsync(

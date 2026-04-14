@@ -1,4 +1,5 @@
 using hhh.api.contracts.admin.Brokers.Renovations;
+using hhh.api.contracts.Common;
 
 namespace hhh.application.admin.Brokers.Renovations;
 
@@ -20,5 +21,5 @@ public interface IRenovationService
     ///  - site_lists JSON 字串會解析後回傳結構化內容
     ///  - 沒有任何查詢條件、沒有 server-side paging
     /// </summary>
-    Task<List<RenovationListItem>> GetListAsync(CancellationToken cancellationToken = default);
+    Task<PagedResponse<RenovationListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default);
 }

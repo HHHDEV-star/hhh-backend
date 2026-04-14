@@ -1,7 +1,9 @@
 using hhh.api.contracts.admin.Main.Youtube;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +29,7 @@ public class YoutubeService : IYoutubeService
         _logWriter = logWriter;
     }
 
-    public async Task<List<YoutubeListItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<YoutubeListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP youtube_model::get_youtube_list():
         //   WHERE channel_id IN (...) AND is_del = 0
@@ -52,7 +54,7 @@ public class YoutubeService : IYoutubeService
                 UpdateTime = y.UpdateTime,
                 Onoff = y.Onoff == "Y",
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     public async Task<OperationResult<uint>> CreateAsync(

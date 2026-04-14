@@ -1,7 +1,9 @@
 using hhh.api.contracts.admin.Editorial.Cases;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using hhh.infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,17 +22,10 @@ public class EditorialCaseService : IEditorialCaseService
         _logWriter = logWriter;
     }
 
-    public async Task<List<EditorialCaseListItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<EditorialCaseListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP case_model::get_case_lists():
-        //   SELECT c.hcase_id, c.caption, c.cover, c.onoff, c.sdate, c.creat_time, c.viewed,
-        //          c.vr360_id, c.istaging, c.auto_count_fee, c.hdesigner_id, c.style, c.condition,
-        //          c.location, c.type, c.update_time,
-        //          (SELECT title FROM _hdesigner d WHERE c.hdesigner_id = d.hdesigner_id) AS title
-        //   FROM _hcase c
         //   ORDER BY c.sdate DESC, c.hcase_id DESC
-        //
-        // 沒有 paging、沒有 filter,全量回給前端 Kendo Grid 自行分頁。
         return await (
             from c in _db.Hcases.AsNoTracking()
             orderby c.Sdate descending, c.HcaseId descending
@@ -57,7 +52,7 @@ public class EditorialCaseService : IEditorialCaseService
                     .Select(d => d.Title)
                     .FirstOrDefault() ?? string.Empty,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     public async Task<EditorialCaseDetailResponse?> GetByIdAsync(

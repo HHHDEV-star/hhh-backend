@@ -1,6 +1,8 @@
 using hhh.api.contracts.admin.Social.Forums;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Social.Forums;
@@ -11,7 +13,7 @@ public class ForumService : IForumService
 
     public ForumService(XoopsContext db) => _db = db;
 
-    public async Task<List<ForumArticleBackItem>> GetArticleBackListAsync(CancellationToken ct = default)
+    public async Task<PagedResponse<ForumArticleBackItem>> GetArticleBackListAsync(ListQuery query, CancellationToken ct = default)
     {
         // 對應舊 PHP forum_model::get_article_for_back()
         // JOIN _users 帶出 uname / email,ORDER BY article_id DESC
@@ -36,7 +38,7 @@ public class ForumService : IForumService
                 DateCreated = a.DateAdded,
                 DateModified = a.DateModified,
             })
-            .ToListAsync(ct);
+            .ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult> UpdateArticleAsync(
