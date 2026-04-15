@@ -30,4 +30,20 @@ public interface IAgentService
     Task<OperationResult> DeleteFileAsync(
         uint fileId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>取得經紀人表單詳情（單筆）</summary>
+    Task<OperationResult<AgentDetailResponse>> GetByIdAsync(
+        uint agentId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>新增經紀人表單</summary>
+    Task<OperationResult<uint>> CreateAsync(
+        CreateAgentRequest request,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>更新經紀人表單</summary>
+    Task<OperationResult> UpdateAsync(
+        uint agentId,
+        UpdateAgentRequest request,
+        CancellationToken cancellationToken = default);
 }

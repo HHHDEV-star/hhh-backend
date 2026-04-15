@@ -1,7 +1,9 @@
 using hhh.api.contracts.Common;
+using hhh.api.contracts.admin.Agents;
 using hhh.api.contracts.admin.Brokers.Calculators;
 using hhh.api.contracts.admin.Brokers.CalculatorRequests;
 using hhh.api.contracts.admin.Brokers.Renovations;
+using hhh.application.admin.Agents;
 using hhh.application.admin.Brokers.Calculators;
 using hhh.application.admin.Brokers.CalculatorRequests;
 using hhh.application.admin.Brokers.Renovations;
@@ -18,6 +20,7 @@ namespace hhh.webapi.admin.Controllers;
 /// 服務各自獨立 (per-resource service),controller 只負責 dispatch。
 ///
 /// 對應舊版後台 view:
+///  - 幸福經紀人:hhh-backstage/backend/views/backend/event/agent_list.php
 ///  - 裝修計算機:hhh-backstage/backend/views/backend/event/calculator.php
 ///  - 裝修需求預算單:hhh-backstage/backend/views/backend/event/calculator_request.php
 ///  - 裝修需求單:hhh-backstage/backend/views/backend/event/renovation.php
@@ -30,15 +33,18 @@ public class BrokersController : ApiControllerBase
     private readonly ICalculatorService _calculatorService;
     private readonly ICalculatorRequestService _calculatorRequestService;
     private readonly IRenovationService _renovationService;
+    private readonly IAgentService _agentService;
 
     public BrokersController(
         ICalculatorService calculatorService,
         ICalculatorRequestService calculatorRequestService,
-        IRenovationService renovationService)
+        IRenovationService renovationService,
+        IAgentService agentService)
     {
         _calculatorService = calculatorService;
         _calculatorRequestService = calculatorRequestService;
         _renovationService = renovationService;
+        _agentService = agentService;
     }
 
     // -------------------------------------------------------------------------
@@ -116,5 +122,128 @@ public class BrokersController : ApiControllerBase
     {
         var data = await _renovationService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<RenovationListItem>>.Success(data));
+    }
+
+    // -------------------------------------------------------------------------
+    // 幸福經紀人
+    // -------------------------------------------------------------------------
+
+    /// <summary>取得經紀人分頁列表</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:hhh-api/.../base/v1/Agent.php → lists_get
+    /// 支援 startDate / endDate（依 date_added 篩選）、keyword（手機/多欄位模糊搜尋）。
+    /// 分頁參數來自 ListQuery（page / pageSize）。
+    /// </remarks>
+    [HttpGet("agents/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<AgentListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAgentList(
+        [FromQuery] AgentQuery query,
+        [FromQuery] ListQuery listQuery,
+        CancellationToken cancellationToken)
+    {
+        var data = await _agentService.GetListAsync(query, listQuery, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<AgentListItem>>.Success(data));
+    }
+
+    /// <summary>軟刪除經紀人</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Agent.php → lists_delete（設定 is_del = 1）。
+    /// </remarks>
+    [HttpDelete("agents/{agentId:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteAgent(uint agentId, CancellationToken cancellationToken)
+    {
+        var result = await _agentService.DeleteAsync(agentId, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(null!, result.Message));
+    }
+
+    /// <summary>取得經紀人附件列表</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Agent.php → files_get。
+    /// </remarks>
+    [HttpGet("agents/{agentId:int}/files")]
+    [ProducesResponseType(typeof(ApiResponse<List<AgentFileListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAgentFiles(uint agentId, CancellationToken cancellationToken)
+    {
+        var data = await _agentService.GetFilesAsync(agentId, cancellationToken);
+        return Ok(ApiResponse<List<AgentFileListItem>>.Success(data));
+    }
+
+    /// <summary>軟刪除經紀人附件</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Agent.php → files_delete（設定 is_del = 1）。
+    /// </remarks>
+    [HttpDelete("agent-files/{fileId:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteAgentFile(uint fileId, CancellationToken cancellationToken)
+    {
+        var result = await _agentService.DeleteFileAsync(fileId, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(null!, result.Message));
+    }
+
+    /// <summary>取得經紀人表單詳情（單筆）</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Agent.php → form_get。
+    /// JSON 欄位（need_item, family, need_style, need_update_array, agent_where）
+    /// 會自動解碼為結構化物件。
+    /// </remarks>
+    [HttpGet("agents/{agentId:int}")]
+    [ProducesResponseType(typeof(ApiResponse<AgentDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAgent(uint agentId, CancellationToken cancellationToken)
+    {
+        var result = await _agentService.GetByIdAsync(agentId, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<AgentDetailResponse>.Success(result.Data!));
+    }
+
+    /// <summary>新增經紀人表單</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Agent.php → form_post → Agent_model::insert。
+    /// 複合欄位（NeedItem, Family, NeedStyle 等）以結構化 JSON 傳入，
+    /// 後端自動序列化存入 DB。
+    /// </remarks>
+    [HttpPost("agents")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> CreateAgent(
+        [FromBody] CreateAgentRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _agentService.CreateAsync(request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return StatusCode(
+            StatusCodes.Status201Created,
+            ApiResponse<object>.Created(new { agentId = result.Data }, result.Message));
+    }
+
+    /// <summary>更新經紀人表單</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Agent.php → form_put → Agent_model::update。
+    /// </remarks>
+    [HttpPut("agents/{agentId:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateAgent(
+        uint agentId,
+        [FromBody] UpdateAgentRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _agentService.UpdateAsync(agentId, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(null!, result.Message));
     }
 }
