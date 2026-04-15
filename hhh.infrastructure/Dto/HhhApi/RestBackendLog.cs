@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace hhh.infrastructure.Dto.HhhApi;
+
+public partial class RestBackendLog
+{
+    public int Id { get; set; }
+
+    public string Account { get; set; } = null!;
+
+    public string Uri { get; set; } = null!;
+
+    public string Method { get; set; } = null!;
+
+    public string? Params { get; set; }
+
+    public string ApiKey { get; set; } = null!;
+
+    public string IpAddress { get; set; } = null!;
+
+    public DateTime Time { get; set; }
+
+    public float? Rtime { get; set; }
+
+    public string Authorized { get; set; } = null!;
+
+    public short? ResponseCode { get; set; }
+}

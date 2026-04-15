@@ -1,11 +1,13 @@
 using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Social.Briefs;
+using hhh.api.contracts.admin.Social.Decoration2s;
 using hhh.api.contracts.admin.Social.Decorations;
 using hhh.api.contracts.admin.Social.Forums;
 using hhh.api.contracts.admin.Social.HhhHps;
 using hhh.api.contracts.admin.Social.Precises;
 using hhh.api.contracts.admin.Social.Products;
 using hhh.application.admin.Social.Briefs;
+using hhh.application.admin.Social.Decoration2s;
 using hhh.application.admin.Social.Decorations;
 using hhh.application.admin.Social.Forums;
 using hhh.application.admin.Social.HhhHps;
@@ -36,6 +38,7 @@ namespace hhh.webapi.admin.Controllers;
 public class SocialController : ApiControllerBase
 {
     private readonly IBriefService _briefService;
+    private readonly IDecoration2Service _decoration2Service;
     private readonly IDecorationService _decorationService;
     private readonly IForumService _forumService;
     private readonly IHhhHpService _hhhHpService;
@@ -44,6 +47,7 @@ public class SocialController : ApiControllerBase
 
     public SocialController(
         IBriefService briefService,
+        IDecoration2Service decoration2Service,
         IDecorationService decorationService,
         IForumService forumService,
         IHhhHpService hhhHpService,
@@ -51,6 +55,7 @@ public class SocialController : ApiControllerBase
         IProductService productService)
     {
         _briefService = briefService;
+        _decoration2Service = decoration2Service;
         _decorationService = decorationService;
         _forumService = forumService;
         _hhhHpService = hhhHpService;
@@ -111,6 +116,25 @@ public class SocialController : ApiControllerBase
 
         return StatusCode(StatusCodes.Status201Created,
             ApiResponse<object>.Created(new { id = result.Data }, result.Message));
+    }
+
+    // =========================================================================
+    // 全室裝修收名單 - 外部資料 (decoration2s)
+    // =========================================================================
+
+    /// <summary>取得全室裝修收名單（外部 API 資料,分頁）</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:hhh-backstage/.../event/decoration2.php
+    /// 舊版透過 Kendo Grid 直接呼叫外部 API（q.ptt.cx/v_lst），前端分頁 pageSize=50。
+    /// 本 API 改為後端代理呼叫外部 API 後做記憶體內分頁。
+    /// </remarks>
+    [HttpGet("decoration2s/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<Decoration2ListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDecoration2List(
+        [FromQuery] ListQuery query, CancellationToken cancellationToken)
+    {
+        var data = await _decoration2Service.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<Decoration2ListItem>>.Success(data));
     }
 
     // =========================================================================

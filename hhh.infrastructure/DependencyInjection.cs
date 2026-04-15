@@ -35,6 +35,13 @@ public static class DependencyInjection
         services.AddDbContext<HHHBackstageContext>(options =>
             options.UseMySql(backstageConn, serverVersion));
 
+        // hhh_api DbContext（REST log 相關）
+        var hhhApiConn = configuration.GetConnectionString("HhhApi")
+            ?? throw new InvalidOperationException("ConnectionStrings:HhhApi is not configured.");
+
+        services.AddDbContext<HhhApiContext>(options =>
+            options.UseMySql(hhhApiConn, serverVersion));
+
         // JWT token 產生器（純技術實作，跨 application 層共用）
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
