@@ -1,7 +1,9 @@
 using System.Text.Json;
 using hhh.api.contracts.admin.Planning;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -33,7 +35,8 @@ public class YoutubeManagementService : IYoutubeManagementService
     // ── 群組管理 ──
 
     /// <inheritdoc />
-    public async Task<List<YoutubeGroupListItem>> GetGroupListAsync(
+    public async Task<PagedResponse<YoutubeGroupListItem>> GetGroupListAsync(
+        ListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: Program_model::read_group()
@@ -48,7 +51,7 @@ public class YoutubeManagementService : IYoutubeManagementService
                 Onoff = g.Onoff,
                 CreateTime = g.CreateTime,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -127,7 +130,8 @@ public class YoutubeManagementService : IYoutubeManagementService
     // ── 群組明細管理 ──
 
     /// <inheritdoc />
-    public async Task<List<YoutubeGroupDetailListItem>> GetGroupDetailListAsync(
+    public async Task<PagedResponse<YoutubeGroupDetailListItem>> GetGroupDetailListAsync(
+        ListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: Program_model::get_group_detail()
@@ -149,7 +153,7 @@ public class YoutubeManagementService : IYoutubeManagementService
                 Onoff = d.Onoff,
                 CreateTime = d.CreateTime,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     /// <inheritdoc />

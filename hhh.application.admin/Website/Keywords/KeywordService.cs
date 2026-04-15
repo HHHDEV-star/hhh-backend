@@ -1,6 +1,8 @@
 using hhh.api.contracts.admin.Main.Search;
 using hhh.api.contracts.admin.Website;
+using hhh.api.contracts.Common;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Website.Keywords;
@@ -15,8 +17,9 @@ public class KeywordService : IKeywordService
     }
 
     /// <inheritdoc />
-    public async Task<List<SearchKeywordItem>> GetHotKeywordsAsync(
+    public async Task<PagedResponse<SearchKeywordItem>> GetHotKeywordsAsync(
         HotKeywordQuery query,
+        ListQuery listQuery,
         CancellationToken cancellationToken = default)
     {
         // 對應舊版 PHP: search_model::get_search_history_lists($input)
@@ -44,6 +47,6 @@ public class KeywordService : IKeywordService
                 TotalCount = g.Sum(s => (long)s.TodayCount),
             })
             .OrderByDescending(x => x.TotalCount)
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(listQuery.Page, listQuery.PageSize, cancellationToken);
     }
 }

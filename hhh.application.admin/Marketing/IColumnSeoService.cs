@@ -1,4 +1,5 @@
 using hhh.api.contracts.admin.Marketing;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 
 namespace hhh.application.admin.Marketing;
@@ -9,8 +10,9 @@ namespace hhh.application.admin.Marketing;
 /// </summary>
 public interface IColumnSeoService
 {
-    /// <summary>取得專欄 SEO 列表（全量，sdate DESC, hcolumn_id DESC）</summary>
-    Task<List<ColumnSeoListItem>> GetListAsync(
+    /// <summary>取得專欄 SEO 列表（分頁，sdate DESC, hcolumn_id DESC）</summary>
+    Task<PagedResponse<ColumnSeoListItem>> GetListAsync(
+        ListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>批次更新專欄 SEO 標題/描述</summary>

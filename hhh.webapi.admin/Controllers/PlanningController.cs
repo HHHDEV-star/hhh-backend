@@ -155,12 +155,14 @@ public class PlanningController : ApiControllerBase
     /// 對應舊版 PHP: Program/group_get → read_group()
     /// 回傳所有群組（含停用），排序: gid DESC。
     /// </remarks>
-    [HttpGet("youtube-groups")]
-    [ProducesResponseType(typeof(ApiResponse<List<YoutubeGroupListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetYoutubeGroupList(CancellationToken cancellationToken)
+    [HttpGet("youtube-groups/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<YoutubeGroupListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetYoutubeGroupList(
+        [FromQuery] ListQuery query,
+        CancellationToken cancellationToken)
     {
-        var data = await _youtubeManagementService.GetGroupListAsync(cancellationToken);
-        return Ok(ApiResponse<List<YoutubeGroupListItem>>.Success(data));
+        var data = await _youtubeManagementService.GetGroupListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<YoutubeGroupListItem>>.Success(data));
     }
 
     /// <summary>取得 YouTube 群組下拉選單（僅啟用）</summary>
@@ -227,12 +229,14 @@ public class PlanningController : ApiControllerBase
     /// JOIN youtube_group_detail + youtube_list + youtube_group，
     /// 排序: gid DESC, sort ASC。
     /// </remarks>
-    [HttpGet("youtube-group-details")]
-    [ProducesResponseType(typeof(ApiResponse<List<YoutubeGroupDetailListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetYoutubeGroupDetailList(CancellationToken cancellationToken)
+    [HttpGet("youtube-group-details/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<YoutubeGroupDetailListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetYoutubeGroupDetailList(
+        [FromQuery] ListQuery query,
+        CancellationToken cancellationToken)
     {
-        var data = await _youtubeManagementService.GetGroupDetailListAsync(cancellationToken);
-        return Ok(ApiResponse<List<YoutubeGroupDetailListItem>>.Success(data));
+        var data = await _youtubeManagementService.GetGroupDetailListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<YoutubeGroupDetailListItem>>.Success(data));
     }
 
     /// <summary>更新 YouTube 群組明細</summary>
@@ -282,14 +286,15 @@ public class PlanningController : ApiControllerBase
     /// 對應舊版 PHP: Program/unit_get → get_unit_data()
     /// 依頻道名稱 + 日期範圍查詢，JOIN youtube_list 取影片資訊。
     /// </remarks>
-    [HttpGet("program-videos")]
-    [ProducesResponseType(typeof(ApiResponse<List<ProgramVideoListItem>>), StatusCodes.Status200OK)]
+    [HttpGet("program-videos/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProgramVideoListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProgramVideoList(
         [FromQuery] ProgramVideoQuery query,
+        [FromQuery] ListQuery listQuery,
         CancellationToken cancellationToken)
     {
-        var data = await _programVideoService.GetListAsync(query, cancellationToken);
-        return Ok(ApiResponse<List<ProgramVideoListItem>>.Success(data));
+        var data = await _programVideoService.GetListAsync(query, listQuery, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<ProgramVideoListItem>>.Success(data));
     }
 
     /// <summary>更新節目影片</summary>
@@ -378,15 +383,16 @@ public class PlanningController : ApiControllerBase
     /// 對應舊版 PHP: Program/playlist_get (backstage)
     /// 依日期範圍查詢，含未上架資料。排序: prog_date ASC, prog_time ASC。
     /// </remarks>
-    [HttpGet("program-list")]
-    [ProducesResponseType(typeof(ApiResponse<List<ProgramListItem>>), StatusCodes.Status200OK)]
+    [HttpGet("program-list/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProgramListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProgramList(
         [FromQuery] DateOnly sdate,
         [FromQuery] DateOnly edate,
+        [FromQuery] ListQuery listQuery,
         CancellationToken cancellationToken)
     {
-        var data = await _programVideoService.GetProgramListAsync(sdate, edate, cancellationToken);
-        return Ok(ApiResponse<List<ProgramListItem>>.Success(data));
+        var data = await _programVideoService.GetProgramListAsync(sdate, edate, listQuery, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<ProgramListItem>>.Success(data));
     }
 
     /// <summary>審核節目表（批次上架）</summary>
@@ -417,12 +423,14 @@ public class PlanningController : ApiControllerBase
     /// 對應舊版 PHP: _hprog_chan.php 列表
     /// 全量回傳，排序: chan_id DESC。
     /// </remarks>
-    [HttpGet("channels")]
-    [ProducesResponseType(typeof(ApiResponse<List<ChannelListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetChannelList(CancellationToken cancellationToken)
+    [HttpGet("channels/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ChannelListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetChannelList(
+        [FromQuery] ListQuery query,
+        CancellationToken cancellationToken)
     {
-        var data = await _programVideoService.GetChannelListAsync(cancellationToken);
-        return Ok(ApiResponse<List<ChannelListItem>>.Success(data));
+        var data = await _programVideoService.GetChannelListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<ChannelListItem>>.Success(data));
     }
 
     /// <summary>取得單一頻道</summary>

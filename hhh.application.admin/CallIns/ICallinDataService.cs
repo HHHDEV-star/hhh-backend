@@ -1,4 +1,5 @@
 using hhh.api.contracts.admin.CallIns;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 
 namespace hhh.application.admin.CallIns;
@@ -9,8 +10,9 @@ namespace hhh.application.admin.CallIns;
 /// </summary>
 public interface ICallinDataService
 {
-    /// <summary>取得 0809 來電資料列表（全量，含黑名單標示）</summary>
-    Task<List<CallinDataListItem>> GetListAsync(
+    /// <summary>取得 0809 來電資料列表（分頁，含黑名單標示）</summary>
+    Task<PagedResponse<CallinDataListItem>> GetListAsync(
+        ListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>批次新增 0809 來電資料（重複檢查後僅新增不存在的紀錄）</summary>

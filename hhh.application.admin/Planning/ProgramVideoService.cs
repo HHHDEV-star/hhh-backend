@@ -1,6 +1,8 @@
 using hhh.api.contracts.admin.Planning;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Planning;
@@ -28,8 +30,8 @@ public class ProgramVideoService : IProgramVideoService
     }
 
     /// <inheritdoc />
-    public async Task<List<ProgramVideoListItem>> GetListAsync(
-        ProgramVideoQuery query,
+    public async Task<PagedResponse<ProgramVideoListItem>> GetListAsync(
+        ProgramVideoQuery query, ListQuery listQuery,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: Program_model::get_unit_data()
@@ -59,7 +61,7 @@ public class ProgramVideoService : IProgramVideoService
                 BuilderId = y.BuilderId,
                 Title = y.Title,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(listQuery.Page, listQuery.PageSize, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -204,8 +206,8 @@ public class ProgramVideoService : IProgramVideoService
     // ── 節目表 (prog_list) ──
 
     /// <inheritdoc />
-    public async Task<List<ProgramListItem>> GetProgramListAsync(
-        DateOnly sdate, DateOnly edate,
+    public async Task<PagedResponse<ProgramListItem>> GetProgramListAsync(
+        DateOnly sdate, DateOnly edate, ListQuery listQuery,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: Program_model::get_pgrogram_list() (backstage)
@@ -224,7 +226,7 @@ public class ProgramVideoService : IProgramVideoService
                 ProgName = p.ProgName,
                 Onoff = p.Onoff,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(listQuery.Page, listQuery.PageSize, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -250,7 +252,8 @@ public class ProgramVideoService : IProgramVideoService
     // ── 頻道管理 (_hprog_chan) ──
 
     /// <inheritdoc />
-    public async Task<List<ChannelListItem>> GetChannelListAsync(
+    public async Task<PagedResponse<ChannelListItem>> GetChannelListAsync(
+        ListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: SELECT * FROM _hprog_chan ORDER BY chan_id DESC
@@ -269,7 +272,7 @@ public class ProgramVideoService : IProgramVideoService
                 Onoff = c.Onoff,
                 Corder = c.Corder,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     /// <inheritdoc />

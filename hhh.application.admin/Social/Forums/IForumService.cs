@@ -15,9 +15,9 @@ public interface IForumService
 {
     Task<PagedResponse<ForumArticleBackItem>> GetArticleBackListAsync(ListQuery query, CancellationToken ct = default);
     Task<OperationResult> UpdateArticleAsync(int articleId, UpdateForumArticleRequest request, CancellationToken ct = default);
-    Task<List<ForumReplyBackItem>> GetReplyBackListAsync(int articleId, CancellationToken ct = default);
+    Task<PagedResponse<ForumReplyBackItem>> GetReplyBackListAsync(int articleId, ListQuery query, CancellationToken ct = default);
     Task<OperationResult> UpdateReplyAsync(int replyId, UpdateForumReplyRequest request, CancellationToken ct = default);
     Task<OperationResult> UpdateSeoImageAsync(int articleId, UpdateForumSeoImageRequest request, CancellationToken ct = default);
-    Task<List<ForumBlockItem>> GetBlockListAsync(string? uname, CancellationToken ct = default);
+    Task<PagedResponse<ForumBlockItem>> GetBlockListAsync(string? uname, ListQuery query, CancellationToken ct = default);
     Task<OperationResult> UpdateBlockAsync(uint uid, UpdateForumBlockRequest request, CancellationToken ct = default);
 }

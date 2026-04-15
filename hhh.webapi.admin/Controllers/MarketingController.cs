@@ -38,12 +38,14 @@ public class MarketingController : ApiControllerBase
     /// 對應舊版 PHP: Column/seo_get（15.11）
     /// 全量回傳，排序: sdate DESC, hcolumn_id DESC。
     /// </remarks>
-    [HttpGet("column-seo")]
-    [ProducesResponseType(typeof(ApiResponse<List<ColumnSeoListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetColumnSeoList(CancellationToken cancellationToken)
+    [HttpGet("column-seo/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ColumnSeoListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetColumnSeoList(
+        [FromQuery] ListQuery query,
+        CancellationToken cancellationToken)
     {
-        var data = await _columnSeoService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<ColumnSeoListItem>>.Success(data));
+        var data = await _columnSeoService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<ColumnSeoListItem>>.Success(data));
     }
 
     /// <summary>批次更新專欄 SEO 標題/描述</summary>
@@ -86,17 +88,19 @@ public class MarketingController : ApiControllerBase
     // 個案 SEO (case-seo)
     // =========================================================================
 
-    /// <summary>取得個案 SEO 列表</summary>
+    /// <summary>取得個案 SEO 列表（分頁）</summary>
     /// <remarks>
     /// 對應舊版 PHP: Cases/seo_get（14.10）
-    /// 全量回傳，排序: sdate DESC, hcase_id DESC。
+    /// 排序: sdate DESC, hcase_id DESC。
     /// </remarks>
-    [HttpGet("case-seo")]
-    [ProducesResponseType(typeof(ApiResponse<List<CaseSeoListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCaseSeoList(CancellationToken cancellationToken)
+    [HttpGet("case-seo/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<CaseSeoListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCaseSeoList(
+        [FromQuery] ListQuery query,
+        CancellationToken cancellationToken)
     {
-        var data = await _caseSeoService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<CaseSeoListItem>>.Success(data));
+        var data = await _caseSeoService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<CaseSeoListItem>>.Success(data));
     }
 
     /// <summary>批次更新個案 SEO 標題/描述</summary>
@@ -144,12 +148,14 @@ public class MarketingController : ApiControllerBase
     /// 對應舊版 PHP: Product/seo_get（16.06）
     /// 全量回傳，排序: id DESC。
     /// </remarks>
-    [HttpGet("product-seo")]
-    [ProducesResponseType(typeof(ApiResponse<List<ProductSeoListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetProductSeoList(CancellationToken cancellationToken)
+    [HttpGet("product-seo/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductSeoListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetProductSeoList(
+        [FromQuery] ListQuery query,
+        CancellationToken cancellationToken)
     {
-        var data = await _productSeoService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<ProductSeoListItem>>.Success(data));
+        var data = await _productSeoService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<ProductSeoListItem>>.Success(data));
     }
 
     /// <summary>批次更新產品 SEO 標題</summary>

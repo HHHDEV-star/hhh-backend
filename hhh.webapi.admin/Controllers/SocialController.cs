@@ -158,12 +158,13 @@ public class SocialController : ApiControllerBase
 
     /// <summary>取得某文章的後台回覆列表</summary>
     /// <remarks>對應舊版 Forum/article_reply_back_list_get → forum_model::get_article_reply_for_back()。必帶 articleId。</remarks>
-    [HttpGet("forum-articles/{articleId:int}/replies")]
-    [ProducesResponseType(typeof(ApiResponse<List<ForumReplyBackItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetForumReplyList(int articleId, CancellationToken cancellationToken)
+    [HttpGet("forum-articles/{articleId:int}/replies/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ForumReplyBackItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetForumReplyList(
+        int articleId, [FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _forumService.GetReplyBackListAsync(articleId, cancellationToken);
-        return Ok(ApiResponse<List<ForumReplyBackItem>>.Success(data));
+        var data = await _forumService.GetReplyBackListAsync(articleId, query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<ForumReplyBackItem>>.Success(data));
     }
 
     /// <summary>後台編輯回覆(刪除/恢復)</summary>
@@ -186,13 +187,13 @@ public class SocialController : ApiControllerBase
 
     /// <summary>取得討論區黑名單列表</summary>
     /// <remarks>對應舊版 Forum/block_get → forum_model::get_block()。可選 uname 模糊搜尋。</remarks>
-    [HttpGet("forum-blocks")]
-    [ProducesResponseType(typeof(ApiResponse<List<ForumBlockItem>>), StatusCodes.Status200OK)]
+    [HttpGet("forum-blocks/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ForumBlockItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetForumBlockList(
-        [FromQuery] string? uname, CancellationToken cancellationToken)
+        [FromQuery] string? uname, [FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _forumService.GetBlockListAsync(uname, cancellationToken);
-        return Ok(ApiResponse<List<ForumBlockItem>>.Success(data));
+        var data = await _forumService.GetBlockListAsync(uname, query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<ForumBlockItem>>.Success(data));
     }
 
     /// <summary>設定/解除討論區黑名單</summary>
@@ -280,12 +281,13 @@ public class SocialController : ApiControllerBase
 
     /// <summary>取得產品 SEO 列表</summary>
     /// <remarks>對應舊版 Product/seo_get → product_model::get_product_lists_seo()。</remarks>
-    [HttpGet("products/seo")]
-    [ProducesResponseType(typeof(ApiResponse<List<ProductSeoItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetProductSeoList(CancellationToken cancellationToken)
+    [HttpGet("products/seo/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductSeoItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetProductSeoList(
+        [FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _productService.GetSeoListAsync(cancellationToken);
-        return Ok(ApiResponse<List<ProductSeoItem>>.Success(data));
+        var data = await _productService.GetSeoListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<ProductSeoItem>>.Success(data));
     }
 
     /// <summary>更新產品 SEO 圖片</summary>

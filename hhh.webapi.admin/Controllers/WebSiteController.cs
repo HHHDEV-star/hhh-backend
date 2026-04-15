@@ -580,14 +580,15 @@ public class WebSiteController : ApiControllerBase
     /// GROUP BY keyword, SUM(today_count) DESC。
     /// 可選篩選: sdate/edate(日期區間)、keyword(精確比對)。
     /// </remarks>
-    [HttpGet("keywords")]
-    [ProducesResponseType(typeof(ApiResponse<List<SearchKeywordItem>>), StatusCodes.Status200OK)]
+    [HttpGet("keywords/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<SearchKeywordItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHotKeywords(
         [FromQuery] HotKeywordQuery query,
+        [FromQuery] ListQuery listQuery,
         CancellationToken cancellationToken)
     {
-        var data = await _keywordService.GetHotKeywordsAsync(query, cancellationToken);
-        return Ok(ApiResponse<List<SearchKeywordItem>>.Success(data));
+        var data = await _keywordService.GetHotKeywordsAsync(query, listQuery, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<SearchKeywordItem>>.Success(data));
     }
 
     // =========================================================================

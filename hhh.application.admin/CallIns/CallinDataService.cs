@@ -1,7 +1,9 @@
 using hhh.api.contracts.admin.CallIns;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Dto.Xoops;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -25,10 +27,11 @@ public class CallinDataService : ICallinDataService
     }
 
     /// <inheritdoc />
-    public async Task<List<CallinDataListItem>> GetListAsync(
+    public async Task<PagedResponse<CallinDataListItem>> GetListAsync(
+        ListQuery query,
         CancellationToken cancellationToken = default)
     {
-        var data = await _db.CallinData
+        var paged = await _db.CallinData
             .AsNoTracking()
             .OrderByDescending(c => c.ActivityTime)
             .ThenByDescending(c => c.DesignerTitle)
@@ -47,16 +50,16 @@ public class CallinDataService : ICallinDataService
                 SendMail = c.SendMail,
                 SendTime = c.SendTime,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
 
-        // 標註黑名單
-        foreach (var item in data)
+        // 標註黑名單（僅對當頁資料）
+        foreach (var item in paged.Items)
         {
             if (_blacklist.Contains(item.Phone))
                 item.Blacklist = "黑名單";
         }
 
-        return data;
+        return paged;
     }
 
     /// <inheritdoc />

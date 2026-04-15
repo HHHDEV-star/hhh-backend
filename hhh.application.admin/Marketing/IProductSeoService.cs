@@ -1,4 +1,5 @@
 using hhh.api.contracts.admin.Marketing;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 
 namespace hhh.application.admin.Marketing;
@@ -9,8 +10,9 @@ namespace hhh.application.admin.Marketing;
 /// </summary>
 public interface IProductSeoService
 {
-    /// <summary>取得產品 SEO 列表（全量，id DESC）</summary>
-    Task<List<ProductSeoListItem>> GetListAsync(
+    /// <summary>取得產品 SEO 列表（分頁，id DESC）</summary>
+    Task<PagedResponse<ProductSeoListItem>> GetListAsync(
+        ListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>批次更新產品 SEO 標題</summary>

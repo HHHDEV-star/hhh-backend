@@ -1,6 +1,8 @@
 using hhh.api.contracts.admin.Marketing;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Marketing;
@@ -12,7 +14,8 @@ public class ColumnSeoService : IColumnSeoService
     public ColumnSeoService(XoopsContext db) => _db = db;
 
     /// <inheritdoc />
-    public async Task<List<ColumnSeoListItem>> GetListAsync(
+    public async Task<PagedResponse<ColumnSeoListItem>> GetListAsync(
+        ListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: SELECT hcolumn_id, ctitle, seo_title, seo_image, seo_description
@@ -29,7 +32,7 @@ public class ColumnSeoService : IColumnSeoService
                 SeoImage = c.SeoImage,
                 SeoDescription = c.SeoDescription,
             })
-            .ToListAsync(cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     /// <inheritdoc />

@@ -57,7 +57,7 @@ public class ForumService : IForumService
         return OperationResult.Ok("文章修改成功");
     }
 
-    public async Task<List<ForumReplyBackItem>> GetReplyBackListAsync(int articleId, CancellationToken ct = default)
+    public async Task<PagedResponse<ForumReplyBackItem>> GetReplyBackListAsync(int articleId, ListQuery query, CancellationToken ct = default)
     {
         // 對應舊 PHP forum_model::get_article_reply_for_back()
         return await (
@@ -65,6 +65,7 @@ public class ForumService : IForumService
             where r.ArticleId == articleId
             join u in _db.Users.AsNoTracking() on r.Uid equals (int)u.Uid into uj
             from u in uj.DefaultIfEmpty()
+            orderby r.ArticleReplyId descending
             select new ForumReplyBackItem
             {
                 ArticleReplyId = r.ArticleReplyId,
@@ -76,7 +77,7 @@ public class ForumService : IForumService
                 DateCreated = r.DateAdded,
                 DateModified = r.DateModified,
             })
-            .ToListAsync(ct);
+            .ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult> UpdateReplyAsync(
@@ -103,7 +104,7 @@ public class ForumService : IForumService
         return OperationResult.Ok("SEO 圖片更新成功");
     }
 
-    public async Task<List<ForumBlockItem>> GetBlockListAsync(string? uname, CancellationToken ct = default)
+    public async Task<PagedResponse<ForumBlockItem>> GetBlockListAsync(string? uname, ListQuery query, CancellationToken ct = default)
     {
         // 對應舊 PHP forum_model::get_block():
         // 預設只撈 forum_block='Y',若有帶 uname 則額外 LIKE 搜尋
@@ -116,13 +117,14 @@ public class ForumService : IForumService
             q = q.Where(u => EF.Functions.Like(u.Uname, like));
         }
 
-        return await q.Select(u => new ForumBlockItem
-        {
-            Uid = u.Uid,
-            Name = u.Name,
-            Uname = u.Uname,
-            Email = u.Email,
-        }).ToListAsync(ct);
+        return await q.OrderByDescending(u => u.Uid)
+            .Select(u => new ForumBlockItem
+            {
+                Uid = u.Uid,
+                Name = u.Name,
+                Uname = u.Uname,
+                Email = u.Email,
+            }).ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult> UpdateBlockAsync(

@@ -27,14 +27,15 @@ public class AgentsController : ApiControllerBase
     /// 對應舊版 PHP: Agent/lists_get
     /// 支援日期範圍 + 關鍵字篩選。關鍵字以 09 開頭會搜手機號碼，其餘搜多欄位（姓名、市話、縣市…）。
     /// </remarks>
-    [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<AgentListResponse>), StatusCodes.Status200OK)]
+    [HttpGet("list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<AgentListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
         [FromQuery] AgentQuery query,
+        [FromQuery] ListQuery listQuery,
         CancellationToken cancellationToken)
     {
-        var data = await _agentService.GetListAsync(query, cancellationToken);
-        return Ok(ApiResponse<AgentListResponse>.Success(data));
+        var data = await _agentService.GetListAsync(query, listQuery, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<AgentListItem>>.Success(data));
     }
 
     /// <summary>刪除經紀人（軟刪除）</summary>

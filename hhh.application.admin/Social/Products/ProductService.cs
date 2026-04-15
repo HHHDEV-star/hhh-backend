@@ -49,7 +49,7 @@ public class ProductService : IProductService
         return OperationResult.Ok("產品修改成功");
     }
 
-    public async Task<List<ProductSeoItem>> GetSeoListAsync(CancellationToken ct = default)
+    public async Task<PagedResponse<ProductSeoItem>> GetSeoListAsync(ListQuery query, CancellationToken ct = default)
     {
         return await _db.Hproducts
             .AsNoTracking()
@@ -61,7 +61,7 @@ public class ProductService : IProductService
                 SeoTitle = p.SeoTitle,
                 SeoImage = p.SeoImage,
             })
-            .ToListAsync(ct);
+            .ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult> UpdateSeoImageAsync(

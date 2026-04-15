@@ -1,6 +1,8 @@
 using hhh.api.contracts.admin.Tags;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
+using hhh.infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace hhh.application.admin.Tags;
@@ -15,8 +17,8 @@ public class TagService : ITagService
     // Hcase
     // =========================================================================
 
-    public async Task<List<TagHcaseItem>> GetHcaseTagsAsync(
-        uint? hdesignerId, string? searchTag, CancellationToken ct = default)
+    public async Task<PagedResponse<TagHcaseItem>> GetHcaseTagsAsync(
+        uint? hdesignerId, string? searchTag, ListQuery query, CancellationToken ct = default)
     {
         var q = from c in _db.Hcases.AsNoTracking()
                 join d in _db.Hdesigners.AsNoTracking() on c.HdesignerId equals d.HdesignerId into dj
@@ -34,21 +36,22 @@ public class TagService : ITagService
 
         // 舊 PHP:禁止無條件全撈
         if (hdesignerId is null or 0 && string.IsNullOrWhiteSpace(searchTag))
-            return new List<TagHcaseItem>();
+            return new PagedResponse<TagHcaseItem> { Page = query.Page, PageSize = query.PageSize };
 
-        return await q.Select(x => new TagHcaseItem
-        {
-            HcaseId = x.c.HcaseId,
-            HdesignerId = x.c.HdesignerId,
-            Tag = x.c.Tag,
-            TagDatetime = x.c.TagDatetime,
-            Caption = x.c.Caption,
-            Style = x.c.Style,
-            Style2 = x.c.Style2,
-            CreatTime = x.c.CreatTime,
-            DesignerTitle = x.d != null ? x.d.Title : string.Empty,
-            DesignerName = x.d != null ? x.d.Name : string.Empty,
-        }).ToListAsync(ct);
+        return await q.OrderByDescending(x => x.c.HcaseId)
+            .Select(x => new TagHcaseItem
+            {
+                HcaseId = x.c.HcaseId,
+                HdesignerId = x.c.HdesignerId,
+                Tag = x.c.Tag,
+                TagDatetime = x.c.TagDatetime,
+                Caption = x.c.Caption,
+                Style = x.c.Style,
+                Style2 = x.c.Style2,
+                CreatTime = x.c.CreatTime,
+                DesignerTitle = x.d != null ? x.d.Title : string.Empty,
+                DesignerName = x.d != null ? x.d.Name : string.Empty,
+            }).ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult> UpdateHcaseTagAsync(
@@ -68,14 +71,14 @@ public class TagService : ITagService
     // Hcolumn
     // =========================================================================
 
-    public async Task<List<TagHcolumnItem>> GetHcolumnTagsAsync(
+    public async Task<PagedResponse<TagHcolumnItem>> GetHcolumnTagsAsync(
         string? ctype, string? ctitle, DateOnly? startDate, DateOnly? endDate,
-        string? searchTag, CancellationToken ct = default)
+        string? searchTag, ListQuery query, CancellationToken ct = default)
     {
         // 舊 PHP:至少要有一個條件才查
         if (string.IsNullOrWhiteSpace(ctype) && string.IsNullOrWhiteSpace(ctitle)
             && startDate is null && endDate is null && string.IsNullOrWhiteSpace(searchTag))
-            return new List<TagHcolumnItem>();
+            return new PagedResponse<TagHcolumnItem> { Page = query.Page, PageSize = query.PageSize };
 
         var q = _db.Hcolumns.AsNoTracking().AsQueryable();
 
@@ -111,7 +114,7 @@ public class TagService : ITagService
                 Ctitle = c.Ctitle,
                 Clogo = c.Clogo,
                 CreatTime = c.CreatTime,
-            }).ToListAsync(ct);
+            }).ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult> UpdateHcolumnTagAsync(
@@ -131,13 +134,13 @@ public class TagService : ITagService
     // Hvideo
     // =========================================================================
 
-    public async Task<List<TagHvideoItem>> GetHvideoTagsAsync(
+    public async Task<PagedResponse<TagHvideoItem>> GetHvideoTagsAsync(
         uint? hdesignerId, string? title, DateOnly? startDate, DateOnly? endDate,
-        string? searchTag, CancellationToken ct = default)
+        string? searchTag, ListQuery query, CancellationToken ct = default)
     {
         if (hdesignerId is null or 0 && string.IsNullOrWhiteSpace(title)
             && startDate is null && endDate is null && string.IsNullOrWhiteSpace(searchTag))
-            return new List<TagHvideoItem>();
+            return new PagedResponse<TagHvideoItem> { Page = query.Page, PageSize = query.PageSize };
 
         var q = _db.Hvideos.AsNoTracking().AsQueryable();
 
@@ -176,7 +179,7 @@ public class TagService : ITagService
                 TagDatetime = v.TagDatetime,
                 Title = v.Name,
                 CreatTime = v.CreatTime,
-            }).ToListAsync(ct);
+            }).ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult> UpdateHvideoTagAsync(
@@ -196,11 +199,11 @@ public class TagService : ITagService
     // Image (_hcase_img)
     // =========================================================================
 
-    public async Task<List<TagImageItem>> GetImageTagsAsync(
-        uint? hcaseId, string? searchTag, CancellationToken ct = default)
+    public async Task<PagedResponse<TagImageItem>> GetImageTagsAsync(
+        uint? hcaseId, string? searchTag, ListQuery query, CancellationToken ct = default)
     {
         if (hcaseId is null or 0 && string.IsNullOrWhiteSpace(searchTag))
-            return new List<TagImageItem>();
+            return new PagedResponse<TagImageItem> { Page = query.Page, PageSize = query.PageSize };
 
         var q = from img in _db.HcaseImgs.AsNoTracking()
                 join c in _db.Hcases.AsNoTracking() on img.HcaseId equals c.HcaseId into cj
@@ -221,20 +224,21 @@ public class TagService : ITagService
                 (x.img.Tag5 != null && EF.Functions.Like(x.img.Tag5, like)));
         }
 
-        return await q.Select(x => new TagImageItem
-        {
-            HcaseImgId = x.img.HcaseImgId,
-            HcaseId = x.img.HcaseId,
-            Tag1 = x.img.Tag1,
-            Tag2 = x.img.Tag2,
-            Tag3 = x.img.Tag3,
-            Tag4 = x.img.Tag4,
-            Tag5 = x.img.Tag5,
-            Title = x.img.Title,
-            TagMan = x.img.TagMan,
-            TagDatetime = x.img.TagDatetime,
-            CaseCaption = x.CaseCaption,
-        }).ToListAsync(ct);
+        return await q.OrderByDescending(x => x.img.HcaseImgId)
+            .Select(x => new TagImageItem
+            {
+                HcaseImgId = x.img.HcaseImgId,
+                HcaseId = x.img.HcaseId,
+                Tag1 = x.img.Tag1,
+                Tag2 = x.img.Tag2,
+                Tag3 = x.img.Tag3,
+                Tag4 = x.img.Tag4,
+                Tag5 = x.img.Tag5,
+                Title = x.img.Title,
+                TagMan = x.img.TagMan,
+                TagDatetime = x.img.TagDatetime,
+                CaseCaption = x.CaseCaption,
+            }).ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }
 
     public async Task<OperationResult> UpdateImageTagAsync(

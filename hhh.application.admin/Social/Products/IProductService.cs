@@ -9,6 +9,6 @@ public interface IProductService
 {
     Task<PagedResponse<ProductListItem>> GetListAsync(ListQuery query, CancellationToken ct = default);
     Task<OperationResult> UpdateAsync(uint id, UpdateProductRequest request, CancellationToken ct = default);
-    Task<List<ProductSeoItem>> GetSeoListAsync(CancellationToken ct = default);
+    Task<PagedResponse<ProductSeoItem>> GetSeoListAsync(ListQuery query, CancellationToken ct = default);
     Task<OperationResult> UpdateSeoImageAsync(uint id, UpdateProductSeoImageRequest request, CancellationToken ct = default);
 }

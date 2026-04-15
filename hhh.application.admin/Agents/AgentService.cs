@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using hhh.api.contracts.admin.Agents;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 using hhh.infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
@@ -18,15 +19,12 @@ public partial class AgentService : IAgentService
     }
 
     /// <inheritdoc />
-    public async Task<AgentListResponse> GetListAsync(
+    public async Task<PagedResponse<AgentListItem>> GetListAsync(
         AgentQuery query,
+        ListQuery listQuery,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: Agent_model::lists()
-        // 總數（不受篩選條件影響）
-        var allCount = await _db.AgentForms
-            .CountAsync(a => a.IsDel == 0, cancellationToken);
-
         var q = _db.AgentForms
             .AsNoTracking()
             .Where(a => a.IsDel == 0);
@@ -85,9 +83,12 @@ public partial class AgentService : IAgentService
             }
         }
 
-        // 查詢並轉換
-        var rows = await q
-            .OrderByDescending(a => a.AgentId)
+        // 先算總數再分頁（因需後處理 JSON 欄位，無法用 ToPagedResponseAsync）
+        var ordered = q.OrderByDescending(a => a.AgentId);
+        var total = await ordered.LongCountAsync(cancellationToken);
+        var rows = await ordered
+            .Skip((listQuery.Page - 1) * listQuery.PageSize)
+            .Take(listQuery.PageSize)
             .Select(a => new AgentListItem
             {
                 AgentId = a.AgentId,
@@ -118,10 +119,12 @@ public partial class AgentService : IAgentService
             item.NeedItem = DecodeJsonArray(item.NeedItem);
         }
 
-        return new AgentListResponse
+        return new PagedResponse<AgentListItem>
         {
-            AllCount = allCount,
             Items = rows,
+            Total = total,
+            Page = listQuery.Page,
+            PageSize = listQuery.PageSize,
         };
     }
 

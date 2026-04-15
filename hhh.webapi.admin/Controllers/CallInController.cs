@@ -26,17 +26,19 @@ public class CallInController : ApiControllerBase
         _callinDataService = callinDataService;
     }
 
-    /// <summary>取得 0809 來電資料列表</summary>
+    /// <summary>取得 0809 來電資料列表（分頁）</summary>
     /// <remarks>
     /// 對應舊版 PHP: Callin/callin_get（9.2）
-    /// 全量回傳,不分頁。排序: activity_time DESC, designer_title DESC, callin_time ASC。
+    /// 排序: activity_time DESC, designer_title DESC, callin_time ASC。
     /// </remarks>
-    [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<List<CallinDataListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetList(CancellationToken cancellationToken)
+    [HttpGet("list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<CallinDataListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetList(
+        [FromQuery] ListQuery query,
+        CancellationToken cancellationToken)
     {
-        var data = await _callinDataService.GetListAsync(cancellationToken);
-        return Ok(ApiResponse<List<CallinDataListItem>>.Success(data));
+        var data = await _callinDataService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<CallinDataListItem>>.Success(data));
     }
 
     /// <summary>批次新增 0809 來電資料</summary>

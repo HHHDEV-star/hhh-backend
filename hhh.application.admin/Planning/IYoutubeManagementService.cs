@@ -1,4 +1,5 @@
 using hhh.api.contracts.admin.Planning;
+using hhh.api.contracts.Common;
 using hhh.application.admin.Common;
 
 namespace hhh.application.admin.Planning;
@@ -11,8 +12,9 @@ public interface IYoutubeManagementService
 {
     // ── 群組管理 ──
 
-    /// <summary>取得 YouTube 群組完整列表（全部，gid DESC）</summary>
-    Task<List<YoutubeGroupListItem>> GetGroupListAsync(
+    /// <summary>取得 YouTube 群組完整列表（分頁，gid DESC）</summary>
+    Task<PagedResponse<YoutubeGroupListItem>> GetGroupListAsync(
+        ListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>取得 YouTube 群組下拉選單（onoff='Y'，gid DESC）</summary>
@@ -31,8 +33,9 @@ public interface IYoutubeManagementService
 
     // ── 群組明細管理 ──
 
-    /// <summary>取得群組明細列表（JOIN youtube_list + youtube_group）</summary>
-    Task<List<YoutubeGroupDetailListItem>> GetGroupDetailListAsync(
+    /// <summary>取得群組明細列表（分頁，JOIN youtube_list + youtube_group）</summary>
+    Task<PagedResponse<YoutubeGroupDetailListItem>> GetGroupDetailListAsync(
+        ListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>更新群組明細（排序 + 開關）</summary>

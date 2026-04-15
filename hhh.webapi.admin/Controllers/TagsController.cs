@@ -34,14 +34,15 @@ public class TagsController : ApiControllerBase
     /// <summary>取得個案標籤列表</summary>
     /// <remarks>至少帶一個條件(hdesignerId 或 searchTag),否則回空陣列(防全撈)。</remarks>
     [HttpGet("hcases/list")]
-    [ProducesResponseType(typeof(ApiResponse<List<TagHcaseItem>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<TagHcaseItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHcaseTags(
         [FromQuery] uint? hdesignerId,
         [FromQuery] string? searchTag,
+        [FromQuery] ListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _tagService.GetHcaseTagsAsync(hdesignerId, searchTag, cancellationToken);
-        return Ok(ApiResponse<List<TagHcaseItem>>.Success(data));
+        var data = await _tagService.GetHcaseTagsAsync(hdesignerId, searchTag, query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<TagHcaseItem>>.Success(data));
     }
 
     /// <summary>更新個案標籤</summary>
@@ -63,18 +64,19 @@ public class TagsController : ApiControllerBase
 
     /// <summary>取得專欄標籤列表</summary>
     /// <remarks>至少帶一個條件(ctype / ctitle / 日期區間 / searchTag),否則回空陣列。</remarks>
-    [HttpGet("hcolumns")]
-    [ProducesResponseType(typeof(ApiResponse<List<TagHcolumnItem>>), StatusCodes.Status200OK)]
+    [HttpGet("hcolumns/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<TagHcolumnItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHcolumnTags(
         [FromQuery] string? ctype,
         [FromQuery] string? ctitle,
         [FromQuery] DateOnly? startDate,
         [FromQuery] DateOnly? endDate,
         [FromQuery] string? searchTag,
+        [FromQuery] ListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _tagService.GetHcolumnTagsAsync(ctype, ctitle, startDate, endDate, searchTag, cancellationToken);
-        return Ok(ApiResponse<List<TagHcolumnItem>>.Success(data));
+        var data = await _tagService.GetHcolumnTagsAsync(ctype, ctitle, startDate, endDate, searchTag, query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<TagHcolumnItem>>.Success(data));
     }
 
     /// <summary>更新專欄標籤</summary>
@@ -96,18 +98,19 @@ public class TagsController : ApiControllerBase
 
     /// <summary>取得影音標籤列表</summary>
     /// <remarks>至少帶一個條件(hdesignerId / title / 日期區間 / searchTag),否則回空陣列。</remarks>
-    [HttpGet("hvideos")]
-    [ProducesResponseType(typeof(ApiResponse<List<TagHvideoItem>>), StatusCodes.Status200OK)]
+    [HttpGet("hvideos/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<TagHvideoItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHvideoTags(
         [FromQuery] uint? hdesignerId,
         [FromQuery] string? title,
         [FromQuery] DateOnly? startDate,
         [FromQuery] DateOnly? endDate,
         [FromQuery] string? searchTag,
+        [FromQuery] ListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _tagService.GetHvideoTagsAsync(hdesignerId, title, startDate, endDate, searchTag, cancellationToken);
-        return Ok(ApiResponse<List<TagHvideoItem>>.Success(data));
+        var data = await _tagService.GetHvideoTagsAsync(hdesignerId, title, startDate, endDate, searchTag, query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<TagHvideoItem>>.Success(data));
     }
 
     /// <summary>更新影音標籤</summary>
@@ -129,15 +132,16 @@ public class TagsController : ApiControllerBase
 
     /// <summary>取得圖庫標籤列表</summary>
     /// <remarks>至少帶 hcaseId 或 searchTag,否則回空陣列。</remarks>
-    [HttpGet("images")]
-    [ProducesResponseType(typeof(ApiResponse<List<TagImageItem>>), StatusCodes.Status200OK)]
+    [HttpGet("images/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<TagImageItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetImageTags(
         [FromQuery] uint? hcaseId,
         [FromQuery] string? searchTag,
+        [FromQuery] ListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _tagService.GetImageTagsAsync(hcaseId, searchTag, cancellationToken);
-        return Ok(ApiResponse<List<TagImageItem>>.Success(data));
+        var data = await _tagService.GetImageTagsAsync(hcaseId, searchTag, query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<TagImageItem>>.Success(data));
     }
 
     /// <summary>更新圖庫標籤(tag1-tag5 + title)</summary>
