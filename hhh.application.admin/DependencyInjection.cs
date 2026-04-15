@@ -19,14 +19,19 @@ using hhh.application.admin.Main.Execute;
 using hhh.application.admin.Main.Search;
 using hhh.application.admin.Main.Youtube;
 using hhh.application.admin.Members.Users;
+using hhh.application.admin.Platform.AclMenuGroups;
+using hhh.application.admin.Platform.AclMenuPaths;
+using hhh.application.admin.Platform.AclUsers;
 using hhh.application.admin.Platform.Admins;
 using hhh.application.admin.Platform.OperationLogs;
+using hhh.application.admin.Platform.SystemLogs;
 using hhh.application.admin.Reports.VideoReports;
 using hhh.application.admin.Tags;
 using hhh.application.admin.WebSite.DecoImages;
 using hhh.application.admin.WebSite.DecoRecords;
 using hhh.application.admin.Rss.LineToday;
 using hhh.application.admin.Social.Briefs;
+using hhh.application.admin.Social.Decoration2s;
 using hhh.application.admin.Social.Decorations;
 using hhh.application.admin.Social.Forums;
 using hhh.application.admin.Social.HhhHps;
@@ -62,6 +67,10 @@ public static class DependencyInjection
         // Platform - 平台管理
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IOperationLogService, OperationLogService>();
+        services.AddScoped<IAclUserService, AclUserService>();
+        services.AddScoped<ISystemLogService, SystemLogService>();
+        services.AddScoped<IAclMenuGroupService, AclMenuGroupService>();
+        services.AddScoped<IAclMenuPathService, AclMenuPathService>();
 
         // Members - 會員管理
         services.AddScoped<IUserService, UserService>();
@@ -94,6 +103,7 @@ public static class DependencyInjection
 
         // Social
         services.AddScoped<IBriefService, BriefService>();
+        services.AddHttpClient<IDecoration2Service, Decoration2Service>();
         services.AddScoped<IDecorationService, DecorationService>();
         services.AddScoped<IForumService, ForumService>();
         services.AddScoped<IHhhHpService, HhhHpService>();

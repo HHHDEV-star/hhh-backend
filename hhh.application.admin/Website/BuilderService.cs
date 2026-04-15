@@ -35,15 +35,23 @@ public class BuilderService : IBuilderService
             q = q.Where(b => b.Onoff == onoff);
         }
 
-        // 關鍵字搜尋:公司名稱 / 電話 / 地址 / Email
+        // 關鍵字搜尋:公司名稱 / 電話 / 地址 / Email / 建案名稱
         if (!string.IsNullOrWhiteSpace(query.Keyword))
         {
             var like = $"%{query.Keyword.Trim()}%";
+
+            // 先查出「建案名稱」符合的 builder_id 清單(correlated subquery)
+            var matchingBuilderIds = _db.BuilderProducts
+                .Where(p => EF.Functions.Like(p.Name, like))
+                .Select(p => p.BuilderId)
+                .Distinct();
+
             q = q.Where(b =>
                 EF.Functions.Like(b.Title, like) ||
                 EF.Functions.Like(b.Phone, like) ||
                 EF.Functions.Like(b.Address, like) ||
-                EF.Functions.Like(b.Email, like));
+                EF.Functions.Like(b.Email, like) ||
+                matchingBuilderIds.Contains(b.BuilderId));
         }
 
         return await q
@@ -58,6 +66,7 @@ public class BuilderService : IBuilderService
                 Email = b.Email,
                 Address = b.Address,
                 CreatTime = b.CreatTime,
+                ProductCount = _db.BuilderProducts.Count(p => p.BuilderId == b.BuilderId),
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }

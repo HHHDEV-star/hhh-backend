@@ -31,7 +31,14 @@
       "Bash(grep -A1 \"PagedResponse<\" hhh.webapi.admin/Controllers/**/*.cs hhh.webapi.admin/Controllers/*.cs)",
       "Bash(grep -rn \"PagedResponse<\" hhh.webapi.admin/Controllers/**/*.cs hhh.webapi.admin/Controllers/*.cs)",
       "Bash(grep -B3 \"PagedResponse<\" hhh.webapi.admin/Controllers/**/*.cs hhh.webapi.admin/Controllers/*.cs)",
-      "Bash(grep -rn 'HttpGet.*list' hhh.webapi.admin/Controllers/**/*.cs hhh.webapi.admin/Controllers/*.cs)"
+      "Bash(grep -rn 'HttpGet.*list' hhh.webapi.admin/Controllers/**/*.cs hhh.webapi.admin/Controllers/*.cs)",
+      "Bash(git checkout:*)",
+      "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.infrastructure\\\\Dto\\\\Xoops\\\\RestBackendLog.cs\")",
+      "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.infrastructure\\\\Context\\\\XoopsContext.Manual.cs\")",
+      "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.api.contracts.admin\\\\Platform\\\\SystemLogs\\\\SystemLogListQuery.cs\")",
+      "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.api.contracts.admin\\\\Platform\\\\SystemLogs\\\\SystemLogListItem.cs\")",
+      "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.application.admin\\\\Platform\\\\SystemLogs\\\\ISystemLogService.cs\")",
+      "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.application.admin\\\\Platform\\\\SystemLogs\\\\SystemLogService.cs\")"
     ]
   }
 }

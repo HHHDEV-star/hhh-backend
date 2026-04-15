@@ -13,7 +13,7 @@ public class BuilderListQuery : PagedRequest
     public byte? Onoff { get; set; }
 
     /// <summary>
-    /// 關鍵字搜尋:跨欄位 LIKE(公司名稱 / 電話 / 地址 / Email)
+    /// 關鍵字搜尋:跨欄位 LIKE(公司名稱 / 電話 / 地址 / Email / 建案名稱)
     /// </summary>
     public string? Keyword { get; set; }
 }
