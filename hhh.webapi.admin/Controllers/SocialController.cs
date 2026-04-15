@@ -2,11 +2,13 @@ using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Social.Briefs;
 using hhh.api.contracts.admin.Social.Decorations;
 using hhh.api.contracts.admin.Social.Forums;
+using hhh.api.contracts.admin.Social.HhhHps;
 using hhh.api.contracts.admin.Social.Precises;
 using hhh.api.contracts.admin.Social.Products;
 using hhh.application.admin.Social.Briefs;
 using hhh.application.admin.Social.Decorations;
 using hhh.application.admin.Social.Forums;
+using hhh.application.admin.Social.HhhHps;
 using hhh.application.admin.Social.Precises;
 using hhh.application.admin.Social.Products;
 using Microsoft.AspNetCore.Authorization;
@@ -26,6 +28,7 @@ namespace hhh.webapi.admin.Controllers;
 ///  - 討論區:hhh-api/.../base/v1/Forum.php → 後台管理 endpoints
 ///  - 精準名單白皮書:hhh-api/.../third/v1/Precise.php
 ///  - 產品:hhh-api/.../base/v1/Product.php
+///  - HHH HP:hhh-api/.../third/v1/Calculator.php → requesthpindex_get
 /// </remarks>
 [Route("api/social")]
 [Authorize]
@@ -35,6 +38,7 @@ public class SocialController : ApiControllerBase
     private readonly IBriefService _briefService;
     private readonly IDecorationService _decorationService;
     private readonly IForumService _forumService;
+    private readonly IHhhHpService _hhhHpService;
     private readonly IPreciseService _preciseService;
     private readonly IProductService _productService;
 
@@ -42,12 +46,14 @@ public class SocialController : ApiControllerBase
         IBriefService briefService,
         IDecorationService decorationService,
         IForumService forumService,
+        IHhhHpService hhhHpService,
         IPreciseService preciseService,
         IProductService productService)
     {
         _briefService = briefService;
         _decorationService = decorationService;
         _forumService = forumService;
+        _hhhHpService = hhhHpService;
         _preciseService = preciseService;
         _productService = productService;
     }
@@ -302,5 +308,26 @@ public class SocialController : ApiControllerBase
         if (!result.IsSuccess)
             return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
         return Ok(ApiResponse<object>.Success(new { }, result.Message));
+    }
+
+    // =========================================================================
+    // HHH HP (hhh-hps)
+    // =========================================================================
+
+    /// <summary>取得 HHH HP 列表(分頁)</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Calculator/requesthpindex_get → Hp_model::requestget()
+    /// 後台 view:hhh-backstage/.../event/hhh_hp.php
+    ///
+    /// 支援日期區間(startDate/endDate) + 關鍵字(keyword)篩選。
+    /// 關鍵字以 09 開頭搜手機欄位(自動格式化),其餘搜姓名/郵件/縣市/區域。
+    /// </remarks>
+    [HttpGet("hhh-hps/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<HhhHpListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHhhHpList(
+        [FromQuery] HhhHpListQuery query, CancellationToken cancellationToken)
+    {
+        var data = await _hhhHpService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<HhhHpListItem>>.Success(data));
     }
 }

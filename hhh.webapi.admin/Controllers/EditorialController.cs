@@ -1,8 +1,10 @@
 using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Editorial.Cases;
 using hhh.api.contracts.admin.Editorial.Columns;
+using hhh.api.contracts.admin.Editorial.Topics;
 using hhh.application.admin.Editorial.Cases;
 using hhh.application.admin.Editorial.Columns;
+using hhh.application.admin.Editorial.Topics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,13 +31,16 @@ public class EditorialController : ApiControllerBase
 {
     private readonly IEditorialCaseService _editorialCaseService;
     private readonly IEditorialColumnService _editorialColumnService;
+    private readonly IHtopicService _htopicService;
 
     public EditorialController(
         IEditorialCaseService editorialCaseService,
-        IEditorialColumnService editorialColumnService)
+        IEditorialColumnService editorialColumnService,
+        IHtopicService htopicService)
     {
         _editorialCaseService = editorialCaseService;
         _editorialColumnService = editorialColumnService;
+        _htopicService = htopicService;
     }
 
     // =========================================================================
@@ -210,5 +215,99 @@ public class EditorialController : ApiControllerBase
             return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
 
         return Ok(ApiResponse<object>.Success(new { id = result.Data }, result.Message));
+    }
+
+    // =========================================================================
+    // 主題 (topics)
+    // =========================================================================
+
+    /// <summary>取得主題列表(分頁)</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:hhh-admin/_htopic.php 列表頁
+    /// 支援關鍵字搜尋(q):可搜 ID、名稱、主題敘述。
+    /// 預設依 htopic_id DESC 排序。
+    /// </remarks>
+    [HttpGet("topics/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<HtopicListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTopicList(
+        [FromQuery] HtopicListQuery query, CancellationToken cancellationToken)
+    {
+        var data = await _htopicService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<HtopicListItem>>.Success(data));
+    }
+
+    /// <summary>取得單一主題完整資料</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:hhh-admin/_htopic_edit.php 編輯頁（讀取模式）
+    /// </remarks>
+    [HttpGet("topics/{id:int}")]
+    [ProducesResponseType(typeof(ApiResponse<HtopicDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetTopicById(uint id, CancellationToken cancellationToken)
+    {
+        var detail = await _htopicService.GetByIdAsync(id, cancellationToken);
+        if (detail is null)
+        {
+            return StatusCode(StatusCodes.Status404NotFound,
+                ApiResponse.Error(StatusCodes.Status404NotFound, "找不到主題"));
+        }
+
+        return Ok(ApiResponse<HtopicDetailResponse>.Success(detail));
+    }
+
+    /// <summary>新增主題</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:hhh-admin/_htopic_edit.php POST（id 為空時新增）
+    /// 必填:title、onoff。
+    /// </remarks>
+    [HttpPost("topics")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> CreateTopic(
+        [FromBody] CreateHtopicRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _htopicService.CreateAsync(request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return StatusCode(
+            StatusCodes.Status201Created,
+            ApiResponse<object>.Created(new { id = result.Data }, result.Message));
+    }
+
+    /// <summary>更新主題</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:hhh-admin/_htopic_edit.php POST（id 非空時更新）
+    /// 寫入時自動更新 update_time。
+    /// </remarks>
+    [HttpPut("topics/{id:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateTopic(
+        uint id,
+        [FromBody] UpdateHtopicRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _htopicService.UpdateAsync(id, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(new { id = result.Data }, result.Message));
+    }
+
+    /// <summary>刪除主題</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:hhh-admin/_htopic.php?delete_id=xxx（hard delete）
+    /// </remarks>
+    [HttpDelete("topics/{id:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteTopic(uint id, CancellationToken cancellationToken)
+    {
+        var result = await _htopicService.DeleteAsync(id, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(new { }, result.Message));
     }
 }

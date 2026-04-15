@@ -14,6 +14,7 @@ using hhh.application.admin.Designers.Hcases;
 using hhh.application.admin.Designers.Hdesigners;
 using hhh.application.admin.Editorial.Cases;
 using hhh.application.admin.Editorial.Columns;
+using hhh.application.admin.Editorial.Topics;
 using hhh.application.admin.Main.Execute;
 using hhh.application.admin.Main.Search;
 using hhh.application.admin.Main.Youtube;
@@ -28,6 +29,7 @@ using hhh.application.admin.Rss.LineToday;
 using hhh.application.admin.Social.Briefs;
 using hhh.application.admin.Social.Decorations;
 using hhh.application.admin.Social.Forums;
+using hhh.application.admin.Social.HhhHps;
 using hhh.application.admin.Social.Precises;
 using hhh.application.admin.Social.Products;
 using hhh.application.admin.Rss.Msn;
@@ -76,6 +78,7 @@ public static class DependencyInjection
         // Editorial - 編輯部
         services.AddScoped<IEditorialCaseService, EditorialCaseService>();
         services.AddScoped<IEditorialColumnService, EditorialColumnService>();
+        services.AddScoped<IHtopicService, HtopicService>();
 
         // Awards - 競賽獎項
         services.AddScoped<IHawardService, HawardService>();
@@ -93,6 +96,7 @@ public static class DependencyInjection
         services.AddScoped<IBriefService, BriefService>();
         services.AddScoped<IDecorationService, DecorationService>();
         services.AddScoped<IForumService, ForumService>();
+        services.AddScoped<IHhhHpService, HhhHpService>();
         services.AddScoped<IPreciseService, PreciseService>();
         services.AddScoped<IProductService, ProductService>();
 
