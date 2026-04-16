@@ -30,14 +30,23 @@ public class CallInController : ApiControllerBase
     /// <remarks>
     /// 對應舊版 PHP: Callin/callin_get（9.2）
     /// 排序: activity_time DESC, designer_title DESC, callin_time ASC。
+    ///
+    /// 支援查詢條件:
+    ///  - StartDate / EndDate:依 activity_time 篩選（含當日）
+    ///  - CallinType:話單類型精確比對
+    ///  - Phone:來電號碼模糊比對
+    ///  - Extension:分機（對應 users_sn）精確比對
+    ///  - Blacklist:true=僅黑名單、false=僅非黑名單、null=全部
+    ///    （黑名單清單來自 appsettings.json:CallinBlacklist）
     /// </remarks>
     [HttpGet("list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<CallinDataListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
-        [FromQuery] ListQuery query,
+        [FromQuery] CallinQuery query,
+        [FromQuery] ListQuery listQuery,
         CancellationToken cancellationToken)
     {
-        var data = await _callinDataService.GetListAsync(query, cancellationToken);
+        var data = await _callinDataService.GetListAsync(query, listQuery, cancellationToken);
         return Ok(ApiResponse<PagedResponse<CallinDataListItem>>.Success(data));
     }
 

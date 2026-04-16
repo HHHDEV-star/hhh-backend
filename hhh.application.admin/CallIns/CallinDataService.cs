@@ -28,11 +28,52 @@ public class CallinDataService : ICallinDataService
 
     /// <inheritdoc />
     public async Task<PagedResponse<CallinDataListItem>> GetListAsync(
-        ListQuery query,
+        CallinQuery query,
+        ListQuery listQuery,
         CancellationToken cancellationToken = default)
     {
-        var paged = await _db.CallinData
-            .AsNoTracking()
+        var q = _db.CallinData.AsNoTracking();
+
+        // 起訖日（依 activity_time 篩選，含當日）
+        if (query.StartDate.HasValue)
+            q = q.Where(c => c.ActivityTime >= query.StartDate.Value);
+
+        if (query.EndDate.HasValue)
+            q = q.Where(c => c.ActivityTime <= query.EndDate.Value);
+
+        // 話單類型
+        if (!string.IsNullOrWhiteSpace(query.CallinType))
+            q = q.Where(c => c.CallinType == query.CallinType);
+
+        // 來電號碼（模糊比對）
+        if (!string.IsNullOrWhiteSpace(query.Phone))
+        {
+            var phone = query.Phone.Trim();
+            q = q.Where(c => c.Phone.Contains(phone));
+        }
+
+        // 分機（精確比對 users_sn）
+        if (!string.IsNullOrWhiteSpace(query.Extension))
+        {
+            var ext = query.Extension.Trim();
+            q = q.Where(c => c.UsersSn == ext);
+        }
+
+        // 黑名單篩選（黑名單來源為 appsettings.json，需在 DB 端用 IN / NOT IN）
+        if (query.Blacklist.HasValue && _blacklist.Count > 0)
+        {
+            if (query.Blacklist.Value)
+                q = q.Where(c => _blacklist.Contains(c.Phone));
+            else
+                q = q.Where(c => !_blacklist.Contains(c.Phone));
+        }
+        // Blacklist == true 但黑名單為空：直接回傳空集合
+        else if (query.Blacklist == true && _blacklist.Count == 0)
+        {
+            q = q.Where(_ => false);
+        }
+
+        var paged = await q
             .OrderByDescending(c => c.ActivityTime)
             .ThenByDescending(c => c.DesignerTitle)
             .ThenBy(c => c.CallinTime)
@@ -50,7 +91,7 @@ public class CallinDataService : ICallinDataService
                 SendMail = c.SendMail,
                 SendTime = c.SendTime,
             })
-            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
+            .ToPagedResponseAsync(listQuery.Page, listQuery.PageSize, cancellationToken);
 
         // 標註黑名單（僅對當頁資料）
         foreach (var item in paged.Items)
