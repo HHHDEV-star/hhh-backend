@@ -122,6 +122,7 @@ public static class DependencyInjection
         // Planning - 節目企劃（YouTube 進階管理）
         services.AddHttpClient<IYoutubeManagementService, YoutubeManagementService>();
         services.AddScoped<IProgramVideoService, ProgramVideoService>();
+        services.AddScoped<IHvideoService, HvideoService>();
 
         // Marketing - 行銷管理
         services.AddScoped<ICaseSeoService, CaseSeoService>();

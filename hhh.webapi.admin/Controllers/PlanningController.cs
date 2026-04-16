@@ -20,15 +20,18 @@ public class PlanningController : ApiControllerBase
     private readonly IYoutubeService _youtubeService;
     private readonly IYoutubeManagementService _youtubeManagementService;
     private readonly IProgramVideoService _programVideoService;
+    private readonly IHvideoService _hvideoService;
 
     public PlanningController(
         IYoutubeService youtubeService,
         IYoutubeManagementService youtubeManagementService,
-        IProgramVideoService programVideoService)
+        IProgramVideoService programVideoService,
+        IHvideoService hvideoService)
     {
         _youtubeService = youtubeService;
         _youtubeManagementService = youtubeManagementService;
         _programVideoService = programVideoService;
+        _hvideoService = hvideoService;
     }
 
     // =========================================================================
@@ -483,5 +486,27 @@ public class PlanningController : ApiControllerBase
             return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
 
         return Ok(ApiResponse<object>.Success(new { chanId }, result.Message));
+    }
+
+    // =========================================================================
+    // 影音主表 (hvideos) — 對應舊版 _hvideo.php
+    // =========================================================================
+
+    /// <summary>取得影音分頁列表</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: _hvideo.php
+    /// 支援關鍵字 keyword 跨欄位搜尋：
+    /// ID / 標題 / 影音說明 / 標籤-單元類型 / 空間格局 /
+    /// 關聯設計師（公司名稱、姓名）/ 關聯廠商（標題）/ 關聯專欄（標題）。
+    /// 排序固定 hvideo_id DESC。
+    /// </remarks>
+    [HttpGet("hvideos/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<HvideoListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHvideoList(
+        [FromQuery] HvideoListQuery query,
+        CancellationToken cancellationToken)
+    {
+        var data = await _hvideoService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<HvideoListItem>>.Success(data));
     }
 }
