@@ -7,6 +7,7 @@ using hhh.application.admin.Awards.Hprizes;
 using hhh.application.admin.CallIns;
 using hhh.application.admin.Brokers.Calculators;
 using hhh.application.admin.Brokers.CalculatorRequests;
+using hhh.application.admin.Brokers.Decos;
 using hhh.application.admin.Brokers.Renovations;
 using hhh.application.admin.Content.Hpublishes;
 using hhh.application.admin.Content.Htopic2s;
@@ -144,10 +145,11 @@ public static class DependencyInjection
         services.AddScoped<IDecoRecordService, DecoRecordService>();
         services.AddScoped<IDecoImageService, DecoImageService>();
 
-        // Brokers - 經紀人（計算器/裝修）
+        // Brokers - 經紀人（計算器/裝修/軟裝需求單）
         services.AddScoped<ICalculatorService, CalculatorService>();
         services.AddScoped<ICalculatorRequestService, CalculatorRequestService>();
         services.AddScoped<IRenovationService, RenovationService>();
+        services.AddScoped<IDecoRequestService, DecoRequestService>();
 
         // Agents - 幸福經紀人表單
         services.AddScoped<IAgentService, AgentService>();

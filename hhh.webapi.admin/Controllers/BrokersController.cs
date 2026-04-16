@@ -2,10 +2,12 @@ using hhh.api.contracts.Common;
 using hhh.api.contracts.admin.Agents;
 using hhh.api.contracts.admin.Brokers.Calculators;
 using hhh.api.contracts.admin.Brokers.CalculatorRequests;
+using hhh.api.contracts.admin.Brokers.Decos;
 using hhh.api.contracts.admin.Brokers.Renovations;
 using hhh.application.admin.Agents;
 using hhh.application.admin.Brokers.Calculators;
 using hhh.application.admin.Brokers.CalculatorRequests;
+using hhh.application.admin.Brokers.Decos;
 using hhh.application.admin.Brokers.Renovations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +26,7 @@ namespace hhh.webapi.admin.Controllers;
 ///  - 裝修計算機:hhh-backstage/backend/views/backend/event/calculator.php
 ///  - 裝修需求預算單:hhh-backstage/backend/views/backend/event/calculator_request.php
 ///  - 裝修需求單:hhh-backstage/backend/views/backend/event/renovation.php
+///  - 軟裝需求單:hhh-backstage/backend/views/backend/event/deco.php
 /// </remarks>
 [Route("api/brokers")]
 [Authorize]
@@ -33,17 +36,20 @@ public class BrokersController : ApiControllerBase
     private readonly ICalculatorService _calculatorService;
     private readonly ICalculatorRequestService _calculatorRequestService;
     private readonly IRenovationService _renovationService;
+    private readonly IDecoRequestService _decoRequestService;
     private readonly IAgentService _agentService;
 
     public BrokersController(
         ICalculatorService calculatorService,
         ICalculatorRequestService calculatorRequestService,
         IRenovationService renovationService,
+        IDecoRequestService decoRequestService,
         IAgentService agentService)
     {
         _calculatorService = calculatorService;
         _calculatorRequestService = calculatorRequestService;
         _renovationService = renovationService;
+        _decoRequestService = decoRequestService;
         _agentService = agentService;
     }
 
@@ -122,6 +128,167 @@ public class BrokersController : ApiControllerBase
     {
         var data = await _renovationService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<RenovationListItem>>.Success(data));
+    }
+
+    // -------------------------------------------------------------------------
+    // 軟裝需求單 (deco_request)
+    // -------------------------------------------------------------------------
+
+    /// <summary>取得軟裝需求單列表（分頁）</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:hhh-api/.../third/v2/Renovation.php → deco_get
+    /// 業務規則:只回傳 payment_status='N' AND is_delete='N' 的資料;
+    /// type 為空或 "全部" 時不過濾分類;排序固定 seq DESC。
+    /// </remarks>
+    [HttpGet("deco-requests/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<DecoRequestListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDecoRequestList(
+        [FromQuery] DecoRequestListQuery query,
+        CancellationToken cancellationToken)
+    {
+        var data = await _decoRequestService.GetListAsync(query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<DecoRequestListItem>>.Success(data));
+    }
+
+    /// <summary>取得軟裝需求單明細(單筆)</summary>
+    [HttpGet("deco-requests/{seq:int}")]
+    [ProducesResponseType(typeof(ApiResponse<DecoRequestDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetDecoRequest(int seq, CancellationToken cancellationToken)
+    {
+        var result = await _decoRequestService.GetByIdAsync(seq, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<DecoRequestDetailResponse>.Success(result.Data!));
+    }
+
+    /// <summary>新增軟裝需求單</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Renovation.php → deco_by_backstage_post
+    /// GUID 由後端自動產生,send_status 預設 'Y'。
+    /// </remarks>
+    [HttpPost("deco-requests")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> CreateDecoRequest(
+        [FromBody] CreateDecoRequestRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _decoRequestService.CreateAsync(request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return StatusCode(
+            StatusCodes.Status201Created,
+            ApiResponse<object>.Created(new { seq = result.Data }, result.Message));
+    }
+
+    /// <summary>更新軟裝需求單</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Renovation.php → deco_by_backstage_put
+    /// </remarks>
+    [HttpPut("deco-requests/{seq:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateDecoRequest(
+        int seq,
+        [FromBody] UpdateDecoRequestRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _decoRequestService.UpdateAsync(seq, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(null!, result.Message));
+    }
+
+    /// <summary>批次軟刪除軟裝需求單</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Renovation.php → delete_put(將 is_delete 設為 'Y')。
+    /// </remarks>
+    [HttpDelete("deco-requests")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> BatchDeleteDecoRequests(
+        [FromBody] BatchDeleteDecoRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _decoRequestService.BatchSoftDeleteAsync(request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(null!, result.Message));
+    }
+
+    /// <summary>取得軟裝需求單的附件清單</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Renovation.php → deco_files_get
+    /// </remarks>
+    [HttpGet("deco-requests/{seq:int}/files")]
+    [ProducesResponseType(typeof(ApiResponse<List<DecoRequestFileItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDecoRequestFiles(int seq, CancellationToken cancellationToken)
+    {
+        var data = await _decoRequestService.GetFilesAsync(seq, cancellationToken);
+        return Ok(ApiResponse<List<DecoRequestFileItem>>.Success(data));
+    }
+
+    /// <summary>批次新增軟裝需求單附件</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Renovation.php → deco_files_post
+    /// 此 API 僅建立 DB 關聯紀錄,檔案上傳由前端或其他上傳端處理。
+    /// </remarks>
+    [HttpPost("deco-requests/{seq:int}/files")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CreateDecoRequestFiles(
+        int seq,
+        [FromBody] CreateDecoRequestFilesRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _decoRequestService.CreateFilesAsync(seq, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(null!, result.Message));
+    }
+
+    /// <summary>批次刪除軟裝需求單附件</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Renovation.php → deco_files_delete(硬刪除)。
+    /// </remarks>
+    [HttpDelete("deco-request-files")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteDecoRequestFiles(
+        [FromBody] BatchDeleteDecoRequestFiles request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _decoRequestService.DeleteFilesAsync(request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(null!, result.Message));
+    }
+
+    /// <summary>付款通知(更新金額並標記已付款)</summary>
+    /// <remarks>
+    /// 對應舊版 PHP:Renovation.php → set_price_post
+    /// 舊版會寄 email 給客戶(CC 經紀人 + 技術主管),.NET 尚未整合 SMTP,
+    /// 目前僅更新 DB + 寫 _hoplog 紀錄,待 SMTP 接通後補送 email。
+    /// </remarks>
+    [HttpPost("deco-requests/{seq:int}/set-price")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetDecoPrice(
+        int seq,
+        [FromBody] SetDecoPriceRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _decoRequestService.SetPriceAsync(seq, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return Ok(ApiResponse<object>.Success(null!, result.Message));
     }
 
     // -------------------------------------------------------------------------
