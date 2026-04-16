@@ -10,8 +10,11 @@ namespace hhh.application.admin.Website;
 /// </summary>
 public interface IBuilderService
 {
-    /// <summary>建商分頁列表（支援 onoff 篩選 + keyword 跨欄位搜尋）</summary>
-    Task<PagedResponse<BuilderListItem>> GetListAsync(
+    /// <summary>
+    /// 建商分頁列表（支援 onoff 篩選 + keyword 跨欄位搜尋）,
+    /// 另回傳 4 筆全域統計:建商總數 / 上線建商數 / 建案總數 / 上線建商底下建案數。
+    /// </summary>
+    Task<BuilderListResponse> GetListAsync(
         BuilderListQuery query,
         CancellationToken cancellationToken = default);
 

@@ -23,7 +23,7 @@ public class BuilderService : IBuilderService
     }
 
     /// <inheritdoc />
-    public async Task<PagedResponse<BuilderListItem>> GetListAsync(
+    public async Task<BuilderListResponse> GetListAsync(
         BuilderListQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -54,7 +54,8 @@ public class BuilderService : IBuilderService
                 matchingBuilderIds.Contains(b.BuilderId));
         }
 
-        return await q
+        // 分頁主查詢
+        var paged = await q
             .OrderByDescending(b => b.BuilderId)
             .Select(b => new BuilderListItem
             {
@@ -69,6 +70,32 @@ public class BuilderService : IBuilderService
                 ProductCount = _db.BuilderProducts.Count(p => p.BuilderId == b.BuilderId),
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
+
+        // 全域統計摘要(不受上方 keyword / onoff 篩選影響)
+        // EF Core 不支援同 DbContext 並行查詢,4 個 COUNT 依序執行
+        var builderTotal = await _db.Builders.CountAsync(cancellationToken);
+        var builderOnoffCount = await _db.Builders
+            .CountAsync(b => b.Onoff == 1, cancellationToken);
+        var productTotal = await _db.BuilderProducts.CountAsync(cancellationToken);
+        var productOnoffCount = await _db.BuilderProducts
+            .CountAsync(
+                p => _db.Builders.Any(b => b.BuilderId == p.BuilderId && b.Onoff == 1),
+                cancellationToken);
+
+        return new BuilderListResponse
+        {
+            Items = paged.Items,
+            Total = paged.Total,
+            Page = paged.Page,
+            PageSize = paged.PageSize,
+            Summary = new BuilderListSummary
+            {
+                BuilderTotal = builderTotal,
+                BuilderOnoffCount = builderOnoffCount,
+                ProductTotal = productTotal,
+                ProductOnoffCount = productOnoffCount,
+            },
+        };
     }
 
     /// <inheritdoc />

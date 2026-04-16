@@ -83,6 +83,24 @@ public class HdesignerService : IHdesignerService
             .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
     }
 
+    public async Task<List<HdesignerSelectItem>> GetSelectListAsync(
+        CancellationToken cancellationToken = default)
+    {
+        // 精簡列表:僅回傳下拉選單所需欄位,不分頁、不篩選。
+        // 預設依 hdesigner_id DESC 排序,與分頁版預設排序一致。
+        return await _db.Hdesigners
+            .AsNoTracking()
+            .OrderByDescending(h => h.HdesignerId)
+            .Select(h => new HdesignerSelectItem
+            {
+                Id = h.HdesignerId,
+                ImgPath = h.ImgPath,
+                Title = h.Title,
+                Name = h.Name,
+            })
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<HdesignerDetailResponse?> GetByIdAsync(
         uint id,
         CancellationToken cancellationToken = default)

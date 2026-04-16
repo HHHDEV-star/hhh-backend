@@ -81,15 +81,21 @@ public class WebSiteController : ApiControllerBase
     /// <remarks>
     /// 對應舊版 PHP: Builder/lists_get（13.01）
     /// 支援 onoff 篩選(0=關/1=開,不帶=全部) + keyword 跨欄位搜尋(公司名稱/電話/地址/Email)。
+    /// 回應除分頁資料外另帶 <c>summary</c>:
+    ///  - builderTotal:建商總筆數
+    ///  - builderOnoffCount:上線狀態開啟的建商筆數
+    ///  - productTotal:建案總筆數
+    ///  - productOnoffCount:上線中建商底下的建案筆數
+    /// 此四項統計為全域數值,不受 keyword / onoff 查詢條件影響。
     /// </remarks>
     [HttpGet("builders/list")]
-    [ProducesResponseType(typeof(ApiResponse<PagedResponse<BuilderListItem>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<BuilderListResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetBuilderList(
         [FromQuery] BuilderListQuery query,
         CancellationToken cancellationToken)
     {
         var data = await _builderService.GetListAsync(query, cancellationToken);
-        return Ok(ApiResponse<PagedResponse<BuilderListItem>>.Success(data));
+        return Ok(ApiResponse<BuilderListResponse>.Success(data));
     }
 
     /// <summary>取得單筆建商完整資料</summary>

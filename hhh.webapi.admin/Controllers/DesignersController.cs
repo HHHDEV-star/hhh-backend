@@ -56,6 +56,19 @@ public class DesignersController : ApiControllerBase
         return Ok(ApiResponse<PagedResponse<HdesignerListItem>>.Success(data));
     }
 
+    /// <summary>取得設計師精簡列表（不分頁、不篩選）</summary>
+    /// <remarks>
+    /// 專供下拉選單 / 關聯選擇使用,僅回傳 id / img_path / title / name。
+    /// 排序:依 hdesigner_id DESC。
+    /// </remarks>
+    [HttpGet("hdesigners/select-list")]
+    [ProducesResponseType(typeof(ApiResponse<List<HdesignerSelectItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHdesignerSelectList(CancellationToken cancellationToken)
+    {
+        var data = await _hdesignerService.GetSelectListAsync(cancellationToken);
+        return Ok(ApiResponse<List<HdesignerSelectItem>>.Success(data));
+    }
+
     /// <summary>取得單一設計師完整資料</summary>
     /// <remarks>對應舊版 /backend/_hdesigner_edit.php?id={id} (GET)。</remarks>
     [HttpGet("hdesigners/{id:int}")]

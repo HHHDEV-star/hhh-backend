@@ -18,6 +18,13 @@ public interface IHdesignerService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// 取得設計師精簡列表（不分頁、不篩選）。
+    /// 僅回傳 id / img_path / title / name,用於下拉選單或關聯選擇等情境。
+    /// </summary>
+    Task<List<HdesignerSelectItem>> GetSelectListAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// 取得單一設計師完整資料（對應舊版 _hdesigner_edit.php GET 分支）
     /// </summary>
     /// <returns>找不到時回傳 null。</returns>

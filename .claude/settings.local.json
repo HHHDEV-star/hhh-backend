@@ -38,7 +38,8 @@
       "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.api.contracts.admin\\\\Platform\\\\SystemLogs\\\\SystemLogListQuery.cs\")",
       "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.api.contracts.admin\\\\Platform\\\\SystemLogs\\\\SystemLogListItem.cs\")",
       "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.application.admin\\\\Platform\\\\SystemLogs\\\\ISystemLogService.cs\")",
-      "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.application.admin\\\\Platform\\\\SystemLogs\\\\SystemLogService.cs\")"
+      "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.application.admin\\\\Platform\\\\SystemLogs\\\\SystemLogService.cs\")",
+      "Bash(cmd //c \"del \\\\?\\\\D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\nul\")"
     ]
   }
 }
