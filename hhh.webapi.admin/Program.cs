@@ -232,8 +232,15 @@ app.UseStatusCodePages(async statusContext =>
 // ---------------------------------------------------------------------------
 // HTTP pipeline
 // ---------------------------------------------------------------------------
-app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwagger(c =>
+{
+    c.RouteTemplate = "api/swagger/{documentName}/swagger.json";
+});
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "HHH Admin Web API v1");
+    c.RoutePrefix = "api/swagger";   // 讓 UI 在 /api/swagger
+});
 app.UseHttpsRedirection();
 
 // ---------------------------------------------------------------------------
