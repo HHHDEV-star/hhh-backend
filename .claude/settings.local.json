@@ -39,7 +39,11 @@
       "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.api.contracts.admin\\\\Platform\\\\SystemLogs\\\\SystemLogListItem.cs\")",
       "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.application.admin\\\\Platform\\\\SystemLogs\\\\ISystemLogService.cs\")",
       "Bash(del \"D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\hhh.application.admin\\\\Platform\\\\SystemLogs\\\\SystemLogService.cs\")",
-      "Bash(cmd //c \"del \\\\?\\\\D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\nul\")"
+      "Bash(cmd //c \"del \\\\?\\\\D:\\\\github.com\\\\HHHDEV-star\\\\hhh-backend\\\\nul\")",
+      "Bash(gh auth *)",
+      "PowerShell(gh auth *)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" --version)",
+      "Bash(git add *)"
     ]
   }
 }
