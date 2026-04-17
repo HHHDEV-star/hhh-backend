@@ -1,0 +1,90 @@
+﻿DB,Table,Parent Menu,Page Name,Page Path
+Xoops (legacy _),_hdesigner,亞洲設計獎,獎項,src/pages/asia-design-awards/awards/index.tsx
+Xoops (legacy _),_hdesigner,編輯採訪部,個案資訊,src/pages/editorial/cases/index.tsx
+Xoops (legacy _),_hdesigner,編輯採訪部,設計師資訊,src/pages/editorial/designers/index.tsx
+Xoops (legacy _),_hdesigner,行銷企劃部,設計師列表,src/pages/marketing/designers/index.tsx
+Xoops (legacy _),_hdesigner,影音企劃部,影音資訊,src/pages/video/info/index.tsx
+Xoops (legacy _),_hdesigner,網站設計部,首頁元素,src/pages/web-design/index-innerset/index.tsx
+Xoops (legacy _),_hcase,亞洲設計獎,獎項,src/pages/asia-design-awards/awards/index.tsx
+Xoops (legacy _),_hcase,編輯採訪部,個案資訊,src/pages/editorial/cases/index.tsx
+Xoops (legacy _),_hcase,行銷企劃部,個案分享設定,src/pages/marketing/case-seo/index.tsx
+Xoops (legacy _),_hcase,影音企劃部,影音資訊,src/pages/video/info/index.tsx
+Xoops (legacy _),_hcase,網站設計部,首頁元素,src/pages/web-design/index-innerset/index.tsx
+Xoops (legacy _),_hoplog,,廣告版位露出,src/pages/ads/index.tsx
+Xoops (legacy _),_hoplog,亞洲設計獎,獎項,src/pages/asia-design-awards/awards/index.tsx
+Xoops (legacy _),_hoplog,亞洲設計獎,競圖,src/pages/asia-design-awards/contests/index.tsx
+Xoops (legacy _),_hoplog,站內收單管理,輕裝修需求單,src/pages/orders/light-deco/index.tsx
+Xoops (legacy _),_hcolumn,客戶開發處,建商列表,src/pages/customer/builders/index.tsx
+Xoops (legacy _),_hcolumn,編輯採訪部,專欄類別查詢快調,src/pages/editorial/column-subtypes/index.tsx
+Xoops (legacy _),_hcolumn,編輯採訪部,專欄文章,src/pages/editorial/columns/index.tsx
+Xoops (legacy _),_hcolumn,行銷企劃部,專欄分享設定,src/pages/marketing/column-seo/index.tsx
+Xoops (legacy _),_hcolumn,影音企劃部,影音資訊,src/pages/video/info/index.tsx
+Xoops (legacy _),_hcolumn,網站設計部,首頁元素,src/pages/web-design/index-innerset/index.tsx
+Xoops (new),builder_product,客戶開發處,建商列表,src/pages/customer/builders/index.tsx
+Xoops (legacy _),_hvideo,客戶開發處,建商列表,src/pages/customer/builders/index.tsx
+Xoops (legacy _),_hvideo,影音企劃部,影音資訊,src/pages/video/info/index.tsx
+Xoops (legacy _),_hvideo,網站設計部,首頁元素,src/pages/web-design/index-innerset/index.tsx
+Xoops (legacy _),_hproduct,行銷企劃部,產品分享設定,src/pages/marketing/product-seo/index.tsx
+Xoops (legacy _),_hproduct,網站設計部,首頁元素,src/pages/web-design/index-innerset/index.tsx
+Xoops (legacy _),_users,行銷企劃部,討論區黑名單,src/pages/marketing/forum-block/index.tsx
+Xoops (legacy _),_users,行銷企劃部,討論區發文管理,src/pages/marketing/forum/index.tsx
+Xoops (legacy _),_users,後台系統管理,會員管理,src/pages/system/members/index.tsx
+Xoops (new),builder,客戶開發處,建商列表,src/pages/customer/builders/index.tsx
+Xoops (new),youtube_list,影音企劃部,節目表群組列表,src/pages/video/program-group-list/index.tsx
+Xoops (new),youtube_list,影音企劃部,節目表影片維護,src/pages/video/program-video/index.tsx
+Xoops (new),youtube_list,影音企劃部,Youtube 維護,src/pages/video/youtube/index.tsx
+Xoops (new),admin,,(無對應頁面),
+Xoops (new),agent_form,經紀人,新增案件,src/pages/agent/create/index.tsx
+Xoops (new),agent_form,經紀人,案件列表,src/pages/agent/list/index.tsx
+Xoops (new),deco_request,站內收單管理,輕裝修需求單,src/pages/orders/light-deco/index.tsx
+Xoops (legacy _),_had,,廣告版位露出,src/pages/ads/index.tsx
+Xoops (legacy _),_had,網站設計部,首頁元素,src/pages/web-design/index-innerset/index.tsx
+Xoops (new),youtube_group,影音企劃部,節目表群組資訊,src/pages/video/program-group-info/index.tsx
+Xoops (new),youtube_group,影音企劃部,節目表群組列表,src/pages/video/program-group-list/index.tsx
+Xoops (new),youtube_group,影音企劃部,節目表影片維護,src/pages/video/program-video/index.tsx
+Xoops (legacy _),_hawards,亞洲設計獎,獎項,src/pages/asia-design-awards/awards/index.tsx
+Xoops (legacy _),_hcontest,亞洲設計獎,競圖,src/pages/asia-design-awards/contests/index.tsx
+Xoops (legacy _),_hprize,,(無對應頁面),
+Xoops (legacy _),_hproduct_img,,(無對應頁面),
+Xoops (legacy _),_hpublish,,(無對應頁面),
+Xoops (legacy _),_htopic,編輯採訪部,主題企劃,src/pages/editorial/topics/index.tsx
+Xoops (legacy _),_htopic2,,(無對應頁面),
+Xoops (new),execute_form,,(無對應頁面),
+Xoops (new),prog_video,影音企劃部,節目表影片維護,src/pages/video/program-video/index.tsx
+Xoops (legacy _),_hbrand,影音企劃部,影音資訊,src/pages/video/info/index.tsx
+Xoops (legacy _),_hprog_chan,影音企劃部,TV 節目表資訊,src/pages/video/tv-program/index.tsx
+Xoops (new),agent_files,經紀人,案件列表,src/pages/agent/list/index.tsx
+Xoops (new),deco_record,經紀人,裝修需求單,src/pages/agent/renovation/index.tsx
+Xoops (new),deco_record,客戶開發處,裝修登記圖片審核,src/pages/customer/deco-images/index.tsx
+Xoops (new),deco_record,客戶開發處,全國裝修登記查詢,src/pages/customer/deco-query/index.tsx
+HHHBackstage,HHHBackstage.acl_menu_group,後台系統管理,目錄管理,src/pages/system/menu-paths/index.tsx
+Xoops (new),homepage_set,網站設計部,首頁元素,src/pages/web-design/index-innerset/index.tsx
+Xoops (new),youtube_group_detail,影音企劃部,節目表群組列表,src/pages/video/program-group-list/index.tsx
+Xoops (new),youtube_group_detail,影音企劃部,節目表影片維護,src/pages/video/program-video/index.tsx
+Xoops (legacy _),_hcase_img,,(無對應頁面),
+Xoops (new),deco_request_files,站內收單管理,輕裝修需求單,src/pages/orders/light-deco/index.tsx
+Xoops (new),forum_article,行銷企劃部,討論區發文管理,src/pages/marketing/forum/index.tsx
+HHHBackstage,HHHBackstage.acl_menu_path,後台系統管理,目錄管理,src/pages/system/menu-paths/index.tsx
+HHHBackstage,HHHBackstage.acl_users,後台系統管理,內部帳號管理,src/pages/system/admins/index.tsx
+Xoops (new),rss_linetoday,影音企劃部,RSS LINETODAY 設定,src/pages/video/rss-linetoday/index.tsx
+Xoops (new),rss_msn,編輯採訪部,RSS MSN 設定,src/pages/editorial/rss-msn/index.tsx
+Xoops (new),rss_yahoo,編輯採訪部,RSS Yahoo 設定,src/pages/editorial/rss-yahoo/index.tsx
+Xoops (new),site_setup,網站設計部,網站設定,src/pages/web-design/site-setup/index.tsx
+Xoops (new),callin_data,客戶開發處,0809 通話紀錄,src/pages/customer/call-records/index.tsx
+Xoops (new),deco_record_img,客戶開發處,裝修登記圖片審核,src/pages/customer/deco-images/index.tsx
+Xoops (new),decoration,行銷企劃部,全室裝修收名單,src/pages/marketing/decoration/index.tsx
+Xoops (new),forum_article_reply,行銷企劃部,討論區發文管理,src/pages/marketing/forum/index.tsx
+Xoops (new),precise,行銷企劃部,精準名單報名資料,src/pages/marketing/precise/index.tsx
+Xoops (new),prog_list,影音企劃部,節目表上線審核,src/pages/video/program-review/index.tsx
+Xoops (new),rss_transfer,編輯採訪部,RSS 轉換明細,src/pages/editorial/rss-lists/index.tsx
+Xoops (new),rss_transfer,編輯採訪部,RSS 轉換統計,src/pages/editorial/rss-statistics/index.tsx
+Xoops (new),search_history,網站設計部,站內關鍵字搜尋次數,src/pages/web-design/keyword/index.tsx
+Xoops (new),brief,行銷企劃部,訂閱 Youtube 活動,src/pages/marketing/youtube-subscribe/index.tsx
+Xoops (new),calculator,經紀人,舊裝修計算機,src/pages/agent/calculator/index.tsx
+Xoops (new),calculator_request,站內收單管理,裝修計算機,src/pages/agent/calculator-request/index.tsx
+Xoops (new),contact,網站設計部,聯絡我們,src/pages/web-design/contact-us/index.tsx
+Xoops (new),hhh_hp,行銷企劃部,代銷表單,src/pages/marketing/agency-form/index.tsx
+HhhApi,HhhApi.rest_backend_logs,後台系統管理,全站 Log 紀錄,src/pages/system/logs/index.tsx
+HHHBackstage,HHHBackstage.acl_projects,後台系統管理,目錄管理,src/pages/system/menu-paths/index.tsx
+Xoops (new),outer_site_set,網站設計部,首頁元素,src/pages/web-design/index-innerset/index.tsx
+Xoops (new),renovation_reuqest,經紀人,裝修需求單,src/pages/agent/renovation/index.tsx

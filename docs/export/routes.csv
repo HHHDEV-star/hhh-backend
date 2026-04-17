@@ -1,0 +1,217 @@
+﻿Controller,HTTP,Route,Service,Tables,Tables Count,FE Pages (menu paths)
+AdvertiseController,GET,/api/advertise/ads/list,AdService.GetListAsync,_had,1,廣告版位露出
+AdvertiseController,POST,/api/advertise/ads,AdService.CreateAsync,"_had, _hoplog",2,廣告版位露出
+AdvertiseController,PUT,/api/advertise/ads/{adid},AdService.UpdateAsync,"_had, _hoplog",2,廣告版位露出
+AdvertiseController,PUT,/api/advertise/ads/{adid}/logo,AdService.UpdateLogoAsync,_had,1,
+AdvertiseController,DELETE,/api/advertise/ads/{adid},AdService.DeleteAsync,"_had, _hoplog",2,廣告版位露出
+AgentsController,GET,/api/agents/list,AgentService.GetListAsync,agent_form,1,
+AgentsController,DELETE,/api/agents/{agentId},AgentService.DeleteAsync,agent_form,1,
+AgentsController,GET,/api/agents/{agentId}/files,AgentService.GetFilesAsync,agent_files,1,
+AgentsController,DELETE,/api/agents/{agentId}/files/{fileId},AgentService.DeleteFileAsync,agent_files,1,
+AuthController,POST,/api/auth/login,AuthService.LoginAsync,admin,1,
+AwardsController,GET,/api/awards/hawards/list,HawardService.GetListAsync,"_hawards, _hcase, _hdesigner",3,亞洲設計獎 › 獎項
+AwardsController,GET,/api/awards/hawards/{id},HawardService.GetByIdAsync,"_hawards, _hcase, _hdesigner",3,
+AwardsController,POST,/api/awards/hawards,HawardService.CreateAsync,"_hawards, _hcase, _hdesigner, _hoplog",4,亞洲設計獎 › 獎項
+AwardsController,PUT,/api/awards/hawards/{id},HawardService.UpdateAsync,"_hawards, _hcase, _hdesigner, _hoplog",4,亞洲設計獎 › 獎項
+AwardsController,DELETE,/api/awards/hawards/{id},HawardService.DeleteAsync,"_hawards, _hoplog",2,亞洲設計獎 › 獎項
+AwardsController,GET,/api/awards/hprizes/list,HprizeService.GetListAsync,_hprize,1,
+AwardsController,GET,/api/awards/hprizes/{id},HprizeService.GetByIdAsync,_hprize,1,
+AwardsController,POST,/api/awards/hprizes,HprizeService.CreateAsync,"_hoplog, _hprize",2,
+AwardsController,PUT,/api/awards/hprizes/{id},HprizeService.UpdateAsync,"_hoplog, _hprize",2,
+AwardsController,DELETE,/api/awards/hprizes/{id},HprizeService.DeleteAsync,"_hoplog, _hprize",2,
+AwardsController,GET,/api/awards/hcontests/list,HcontestService.GetListAsync,_hcontest,1,亞洲設計獎 › 競圖
+AwardsController,GET,/api/awards/hcontests/{id},HcontestService.GetByIdAsync,_hcontest,1,亞洲設計獎 › 競圖
+AwardsController,POST,/api/awards/hcontests,HcontestService.CreateAsync,"_hcontest, _hoplog",2,亞洲設計獎 › 競圖
+AwardsController,PUT,/api/awards/hcontests/{id},HcontestService.UpdateAsync,"_hcontest, _hoplog",2,亞洲設計獎 › 競圖
+AwardsController,DELETE,/api/awards/hcontests/{id},HcontestService.DeleteAsync,"_hcontest, _hoplog",2,亞洲設計獎 › 競圖
+BrokersController,GET,/api/brokers/agents/list,AgentService.GetListAsync,agent_form,1,經紀人 › 案件列表
+BrokersController,GET,/api/brokers/agents/{agentId},AgentService.GetByIdAsync,agent_form,1,經紀人 › 新增案件
+BrokersController,GET,/api/brokers/agents/{agentId}/files,AgentService.GetFilesAsync,agent_files,1,經紀人 › 案件列表
+BrokersController,POST,/api/brokers/agents,AgentService.CreateAsync,agent_form,1,經紀人 › 新增案件
+BrokersController,PUT,/api/brokers/agents/{agentId},AgentService.UpdateAsync,agent_form,1,經紀人 › 新增案件
+BrokersController,DELETE,/api/brokers/agent-files/{fileId},AgentService.DeleteFileAsync,agent_files,1,經紀人 › 案件列表
+BrokersController,DELETE,/api/brokers/agents/{agentId},AgentService.DeleteAsync,agent_form,1,經紀人 › 案件列表
+BrokersController,GET,/api/brokers/calculator-requests/list,CalculatorRequestService.GetListAsync,calculator_request,1,站內收單管理 › 裝修計算機
+BrokersController,GET,/api/brokers/calculators/list,CalculatorService.GetListAsync,calculator,1,經紀人 › 舊裝修計算機
+BrokersController,DELETE,/api/brokers/deco-request-files,DecoRequestService.DeleteFilesAsync,"_hoplog, deco_request_files",2,站內收單管理 › 輕裝修需求單
+BrokersController,DELETE,/api/brokers/deco-requests,DecoRequestService.BatchSoftDeleteAsync,"_hoplog, deco_request",2,站內收單管理 › 輕裝修需求單
+BrokersController,GET,/api/brokers/deco-requests/list,DecoRequestService.GetListAsync,deco_request,1,站內收單管理 › 輕裝修需求單
+BrokersController,GET,/api/brokers/deco-requests/{seq},DecoRequestService.GetByIdAsync,deco_request,1,站內收單管理 › 輕裝修需求單
+BrokersController,GET,/api/brokers/deco-requests/{seq}/files,DecoRequestService.GetFilesAsync,deco_request_files,1,站內收單管理 › 輕裝修需求單
+BrokersController,POST,/api/brokers/deco-requests,DecoRequestService.CreateAsync,"_hoplog, deco_request",2,站內收單管理 › 輕裝修需求單
+BrokersController,POST,/api/brokers/deco-requests/{seq}/files,DecoRequestService.CreateFilesAsync,"_hoplog, deco_request, deco_request_files",3,
+BrokersController,POST,/api/brokers/deco-requests/{seq}/set-price,DecoRequestService.SetPriceAsync,"_hoplog, deco_request",2,站內收單管理 › 輕裝修需求單
+BrokersController,PUT,/api/brokers/deco-requests/{seq},DecoRequestService.UpdateAsync,"_hoplog, deco_request",2,站內收單管理 › 輕裝修需求單
+BrokersController,GET,/api/brokers/renovations/list,RenovationService.GetListAsync,"deco_record, renovation_reuqest",2,經紀人 › 裝修需求單
+CallInController,GET,/api/call-ins/list,CallinDataService.GetListAsync,callin_data,1,客戶開發處 › 0809 通話紀錄
+CallInController,POST,/api/call-ins,CallinDataService.BatchCreateAsync,callin_data,1,客戶開發處 › 0809 通話紀錄
+ContentController,GET,/api/content/hpublishes/list,HpublishService.GetListAsync,_hpublish,1,
+ContentController,GET,/api/content/hpublishes/{id},HpublishService.GetByIdAsync,_hpublish,1,
+ContentController,POST,/api/content/hpublishes,HpublishService.CreateAsync,_hpublish,1,
+ContentController,PUT,/api/content/hpublishes/{id},HpublishService.UpdateAsync,_hpublish,1,
+ContentController,DELETE,/api/content/hpublishes/{id},HpublishService.DeleteAsync,_hpublish,1,
+ContentController,GET,/api/content/htopic2s/list,Htopic2Service.GetListAsync,_htopic2,1,
+ContentController,GET,/api/content/htopic2s/{id},Htopic2Service.GetByIdAsync,_htopic2,1,
+ContentController,POST,/api/content/htopic2s,Htopic2Service.CreateAsync,_htopic2,1,
+ContentController,PUT,/api/content/htopic2s/{id},Htopic2Service.UpdateAsync,_htopic2,1,
+ContentController,DELETE,/api/content/htopic2s/{id},Htopic2Service.DeleteAsync,_htopic2,1,
+DesignersController,GET,/api/designers/hdesigners/list,HdesignerService.GetListAsync,_hdesigner,1,編輯採訪部 › 設計師資訊 | 行銷企劃部 › 設計師列表
+DesignersController,GET,/api/designers/hdesigners/select-list,HdesignerService.GetSelectListAsync,_hdesigner,1,
+DesignersController,GET,/api/designers/hdesigners/{id},HdesignerService.GetByIdAsync,_hdesigner,1,編輯採訪部 › 設計師資訊
+DesignersController,POST,/api/designers/hdesigners,HdesignerService.CreateAsync,_hdesigner,1,編輯採訪部 › 設計師資訊
+DesignersController,PUT,/api/designers/hdesigners/{id},HdesignerService.UpdateAsync,_hdesigner,1,編輯採訪部 › 設計師資訊
+DesignersController,PUT,/api/designers/hdesigners/sort-order,HdesignerService.UpdateSortOrderAsync,_hdesigner,1,
+DesignersController,PUT,/api/designers/hdesigners/mobile-sort-order,HdesignerService.UpdateMobileSortOrderAsync,_hdesigner,1,
+DesignersController,GET,/api/designers/hcases/list,HcaseService.GetListAsync,"_hcase, _hcase_img, _hdesigner",3,
+DesignersController,GET,/api/designers/hcases/{id},HcaseService.GetByIdAsync,"_hcase, _hdesigner",2,
+DesignersController,POST,/api/designers/hcases,HcaseService.CreateAsync,"_hcase, _hdesigner",2,
+DesignersController,PUT,/api/designers/hcases/{id},HcaseService.UpdateAsync,"_hcase, _hdesigner",2,
+DesignersController,PUT,/api/designers/hcases/sort-order,HcaseService.UpdateSortOrderAsync,"_hcase, _hdesigner",2,
+EditorialController,GET,/api/editorial/cases/list,EditorialCaseService.GetListAsync,"_hcase, _hdesigner",2,編輯採訪部 › 個案資訊
+EditorialController,GET,/api/editorial/cases/{id},EditorialCaseService.GetByIdAsync,"_hcase, _hdesigner",2,
+EditorialController,POST,/api/editorial/cases,EditorialCaseService.CreateAsync,_hcase,1,
+EditorialController,PUT,/api/editorial/cases/{id},EditorialCaseService.UpdateAsync,_hcase,1,
+EditorialController,GET,/api/editorial/columns/list,EditorialColumnService.GetListAsync,_hcolumn,1,編輯採訪部 › 專欄文章 | 編輯採訪部 › 專欄類別查詢快調
+EditorialController,GET,/api/editorial/columns/{id},EditorialColumnService.GetByIdAsync,_hcolumn,1,
+EditorialController,POST,/api/editorial/columns,EditorialColumnService.CreateAsync,_hcolumn,1,
+EditorialController,PUT,/api/editorial/columns/{id},EditorialColumnService.UpdateAsync,_hcolumn,1,編輯採訪部 › 專欄類別查詢快調
+EditorialController,GET,/api/editorial/topics/list,HtopicService.GetListAsync,_htopic,1,編輯採訪部 › 主題企劃
+EditorialController,GET,/api/editorial/topics/{id},HtopicService.GetByIdAsync,_htopic,1,編輯採訪部 › 主題企劃
+EditorialController,POST,/api/editorial/topics,HtopicService.CreateAsync,_htopic,1,編輯採訪部 › 主題企劃
+EditorialController,PUT,/api/editorial/topics/{id},HtopicService.UpdateAsync,_htopic,1,編輯採訪部 › 主題企劃
+EditorialController,DELETE,/api/editorial/topics/{id},HtopicService.DeleteAsync,_htopic,1,編輯採訪部 › 主題企劃
+MainController,GET,/api/main/search/keywords,SearchService.GetKeywordTagsAsync,site_setup,1,
+MainController,GET,/api/main/search/hot-keywords,SearchService.GetHotKeywordsAsync,search_history,1,
+MainController,GET,/api/main/search/autocomplete,SearchService.GetAutocompleteAsync,"_hbrand, _hdesigner",2,
+MainController,GET,/api/main/search/backend,SearchService.SearchBackendAsync,"_hbrand, _hcase, _hcolumn, _hdesigner, _hproduct, _hvideo",6,
+MainController,GET,/api/main/execute-forms/list,ExecuteFormService.GetListAsync,execute_form,1,
+MainController,GET,/api/main/execute-forms/{exfId},ExecuteFormService.GetByIdAsync,execute_form,1,
+MainController,POST,/api/main/execute-forms,ExecuteFormService.CreateAsync,execute_form,1,
+MainController,PUT,/api/main/execute-forms/{exfId},ExecuteFormService.UpdateAsync,execute_form,1,
+MainController,DELETE,/api/main/execute-forms/{exfId},ExecuteFormService.SoftDeleteAsync,execute_form,1,
+MarketingController,GET,/api/marketing/case-seo/list,CaseSeoService.GetListAsync,_hcase,1,行銷企劃部 › 個案分享設定
+MarketingController,GET,/api/marketing/column-seo/list,ColumnSeoService.GetListAsync,_hcolumn,1,行銷企劃部 › 專欄分享設定
+MarketingController,GET,/api/marketing/product-seo/list,ProductSeoService.GetListAsync,_hproduct,1,行銷企劃部 › 產品分享設定
+MarketingController,PUT,/api/marketing/case-seo,CaseSeoService.BatchUpdateAsync,_hcase,1,行銷企劃部 › 個案分享設定
+MarketingController,PUT,/api/marketing/case-seo/images,CaseSeoService.BatchUpdateImageAsync,_hcase,1,行銷企劃部 › 個案分享設定
+MarketingController,PUT,/api/marketing/column-seo,ColumnSeoService.BatchUpdateAsync,_hcolumn,1,行銷企劃部 › 專欄分享設定
+MarketingController,PUT,/api/marketing/column-seo/images,ColumnSeoService.BatchUpdateImageAsync,_hcolumn,1,行銷企劃部 › 專欄分享設定
+MarketingController,PUT,/api/marketing/product-seo,ProductSeoService.BatchUpdateAsync,_hproduct,1,行銷企劃部 › 產品分享設定
+MarketingController,PUT,/api/marketing/product-seo/images,ProductSeoService.BatchUpdateImageAsync,_hproduct,1,行銷企劃部 › 產品分享設定
+MembersController,GET,/api/members/users/list,UserService.GetListAsync,_users,1,後台系統管理 › 會員管理
+MembersController,GET,/api/members/users/{id:int},UserService.GetByIdAsync,_users,1,後台系統管理 › 會員管理
+MembersController,POST,/api/members/users,UserService.CreateAsync,_users,1,後台系統管理 › 會員管理
+MembersController,PUT,/api/members/users/{id:int},UserService.UpdateAsync,_users,1,後台系統管理 › 會員管理
+PlanningController,GET,/api/planning/channels/list,ProgramVideoService.GetChannelListAsync,_hprog_chan,1,影音企劃部 › TV 節目表資訊
+PlanningController,GET,/api/planning/channels/{chanId:int},ProgramVideoService.GetChannelAsync,_hprog_chan,1,影音企劃部 › TV 節目表資訊
+PlanningController,GET,/api/planning/hvideos/list,HvideoService.GetListAsync,"_hbrand, _hcase, _hcolumn, _hdesigner, _hvideo",5,影音企劃部 › 影音資訊
+PlanningController,GET,/api/planning/program-list/list,ProgramVideoService.GetProgramListAsync,prog_list,1,影音企劃部 › 節目表上線審核
+PlanningController,GET,/api/planning/program-videos/list,ProgramVideoService.GetListAsync,"prog_video, youtube_list",2,影音企劃部 › 節目表影片維護
+PlanningController,GET,/api/planning/youtube/list,YoutubeService.GetListAsync,youtube_list,1,影音企劃部 › Youtube 維護
+PlanningController,GET,/api/planning/youtube-group-details/list,YoutubeManagementService.GetGroupDetailListAsync,"youtube_group, youtube_group_detail, youtube_list",3,影音企劃部 › 節目表群組列表
+PlanningController,GET,/api/planning/youtube-groups/dropdown,YoutubeManagementService.GetGroupDropdownAsync,youtube_group,1,影音企劃部 › 節目表影片維護
+PlanningController,GET,/api/planning/youtube-groups/list,YoutubeManagementService.GetGroupListAsync,youtube_group,1,影音企劃部 › 節目表群組資訊
+PlanningController,POST,/api/planning/channels,ProgramVideoService.CreateChannelAsync,_hprog_chan,1,影音企劃部 › TV 節目表資訊
+PlanningController,POST,/api/planning/program-videos/generate-from-group,ProgramVideoService.GenerateFromGroupAsync,"prog_video, youtube_group, youtube_group_detail",3,影音企劃部 › 節目表影片維護
+PlanningController,POST,/api/planning/program-list/approve,ProgramVideoService.ApproveProgramListAsync,prog_list,1,影音企劃部 › 節目表上線審核
+PlanningController,POST,/api/planning/youtube,YoutubeService.CreateAsync,youtube_list,1,影音企劃部 › Youtube 維護
+PlanningController,POST,/api/planning/youtube/import-by-id,YoutubeManagementService.ImportByVideoIdAsync,youtube_list,1,影音企劃部 › Youtube 維護
+PlanningController,POST,/api/planning/youtube/sync,YoutubeManagementService.SyncChannelAsync,youtube_list,1,影音企劃部 › Youtube 維護
+PlanningController,POST,/api/planning/youtube-groups,YoutubeManagementService.CreateGroupAsync,youtube_group,1,影音企劃部 › 節目表群組資訊
+PlanningController,PATCH,/api/planning/program-videos/{progId:int}/mail-content,ProgramVideoService.UpdateMailContentAsync,prog_video,1,影音企劃部 › 節目表影片維護
+PlanningController,PUT,/api/planning/channels/{chanId:int},ProgramVideoService.UpdateChannelAsync,_hprog_chan,1,影音企劃部 › TV 節目表資訊
+PlanningController,PUT,/api/planning/program-videos/{progId:int},ProgramVideoService.UpdateAsync,prog_video,1,影音企劃部 › 節目表影片維護
+PlanningController,PUT,/api/planning/youtube-group-details/{id:int},YoutubeManagementService.UpdateGroupDetailAsync,youtube_group_detail,1,影音企劃部 › 節目表群組列表
+PlanningController,PUT,/api/planning/youtube-groups/{gid:int},YoutubeManagementService.UpdateGroupAsync,youtube_group,1,影音企劃部 › 節目表群組資訊
+PlanningController,PUT,/api/planning/youtube/{yid:int},YoutubeService.UpdateAsync,youtube_list,1,影音企劃部 › Youtube 維護
+PlanningController,DELETE,/api/planning/program-videos/{progId:int},ProgramVideoService.DeleteAsync,prog_video,1,影音企劃部 › 節目表影片維護
+PlanningController,DELETE,/api/planning/youtube-group-details/{id:int},YoutubeManagementService.DeleteGroupDetailAsync,youtube_group_detail,1,影音企劃部 › 節目表群組列表
+PlanningController,DELETE,/api/planning/youtube/{yid:int},YoutubeService.DeleteAsync,youtube_list,1,影音企劃部 › Youtube 維護
+PlatformController,GET,/api/platform/acl-menu-groups/list,AclMenuGroupService.GetListAsync,HHHBackstage.acl_menu_group,1,後台系統管理 › 目錄管理
+PlatformController,GET,/api/platform/acl-menu-paths/list,AclMenuPathService.GetListAsync,HHHBackstage.acl_menu_path,1,後台系統管理 › 目錄管理
+PlatformController,GET,/api/platform/acl-menu-paths/select-menu-groups,AclMenuPathService.GetMenuGroupOptionsAsync,HHHBackstage.acl_menu_group,1,後台系統管理 › 目錄管理
+PlatformController,GET,/api/platform/acl-menu-paths/select-projects,AclMenuPathService.GetProjectOptionsAsync,HHHBackstage.acl_projects,1,後台系統管理 › 目錄管理
+PlatformController,GET,/api/platform/acl-users/list,AclUserService.GetListAsync,HHHBackstage.acl_users,1,後台系統管理 › 內部帳號管理
+PlatformController,GET,/api/platform/admins/list,AdminService.GetListAsync,admin,1,
+PlatformController,GET,/api/platform/admins/me,AdminService.GetByIdAsync,admin,1,
+PlatformController,GET,/api/platform/admins/{id:int},AdminService.GetByIdAsync,admin,1,
+PlatformController,GET,/api/platform/operation-logs/list,OperationLogService.GetListAsync,_hoplog,1,
+PlatformController,GET,/api/platform/operation-logs/{id:int},OperationLogService.GetByIdAsync,_hoplog,1,
+PlatformController,GET,/api/platform/system-logs/list,SystemLogService.GetListAsync,HhhApi.rest_backend_logs,1,後台系統管理 › 全站 Log 紀錄
+PlatformController,POST,/api/platform/acl-menu-groups,AclMenuGroupService.CreateAsync,HHHBackstage.acl_menu_group,1,後台系統管理 › 目錄管理
+PlatformController,POST,/api/platform/acl-menu-paths,AclMenuPathService.CreateAsync,HHHBackstage.acl_menu_path,1,後台系統管理 › 目錄管理
+PlatformController,POST,/api/platform/acl-users,AclUserService.CreateAsync,HHHBackstage.acl_users,1,後台系統管理 › 內部帳號管理
+PlatformController,POST,/api/platform/admins,AdminService.CreateAsync,admin,1,
+PlatformController,PUT,/api/platform/acl-menu-groups/{id:int},AclMenuGroupService.UpdateAsync,HHHBackstage.acl_menu_group,1,後台系統管理 › 目錄管理
+PlatformController,PUT,/api/platform/acl-menu-paths/{id:int},AclMenuPathService.UpdateAsync,HHHBackstage.acl_menu_path,1,後台系統管理 › 目錄管理
+PlatformController,PUT,/api/platform/acl-users/{id:int},AclUserService.UpdateAsync,HHHBackstage.acl_users,1,後台系統管理 › 內部帳號管理
+PlatformController,PUT,/api/platform/admins/me,AdminService.UpdateProfileAsync,admin,1,
+PlatformController,PUT,/api/platform/admins/{id:int},AdminService.UpdateAsync,admin,1,
+ReportsController,GET,/api/reports/video-reports/brands,VideoReportService.GetBrandReportAsync,"_hbrand, _hvideo",2,
+ReportsController,GET,/api/reports/video-reports/designers,VideoReportService.GetDesignerReportAsync,"_hdesigner, _hvideo",2,
+RssController,GET,/api/rss/yahoo/list,RssYahooService.GetListAsync,rss_yahoo,1,編輯採訪部 › RSS Yahoo 設定
+RssController,POST,/api/rss/yahoo,RssYahooService.CreateAsync,rss_yahoo,1,編輯採訪部 › RSS Yahoo 設定
+RssController,PUT,/api/rss/yahoo/{id:int},RssYahooService.UpdateAsync,rss_yahoo,1,編輯採訪部 › RSS Yahoo 設定
+RssController,GET,/api/rss/msn/list,RssMsnService.GetListAsync,rss_msn,1,編輯採訪部 › RSS MSN 設定
+RssController,POST,/api/rss/msn,RssMsnService.CreateAsync,rss_msn,1,編輯採訪部 › RSS MSN 設定
+RssController,PUT,/api/rss/msn/{id:int},RssMsnService.UpdateAsync,rss_msn,1,編輯採訪部 › RSS MSN 設定
+RssController,GET,/api/rss/line-today/list,RssLineTodayService.GetListAsync,rss_linetoday,1,影音企劃部 › RSS LINETODAY 設定
+RssController,POST,/api/rss/line-today,RssLineTodayService.CreateAsync,rss_linetoday,1,影音企劃部 › RSS LINETODAY 設定
+RssController,PUT,/api/rss/line-today/{id:int},RssLineTodayService.UpdateAsync,rss_linetoday,1,影音企劃部 › RSS LINETODAY 設定
+RssController,GET,/api/rss/transfer-logs/list,RssTransferService.GetLogsAsync,rss_transfer,1,編輯採訪部 › RSS 轉換明細
+RssController,GET,/api/rss/transfer-statistics,RssTransferService.GetStatisticsAsync,rss_transfer,1,編輯採訪部 › RSS 轉換統計
+SocialController,GET,/api/social/briefs/list,BriefService.GetListAsync,brief,1,行銷企劃部 › 訂閱 Youtube 活動
+SocialController,GET,/api/social/decorations/list,DecorationService.GetListAsync,decoration,1,行銷企劃部 › 全室裝修收名單
+SocialController,POST,/api/social/decorations,DecorationService.CreateAsync,decoration,1,
+SocialController,GET,/api/social/decoration2s/list,Decoration2Service.GetListAsync,,0,
+SocialController,GET,/api/social/forum-articles/list,ForumService.GetArticleBackListAsync,"_users, forum_article",2,行銷企劃部 › 討論區發文管理
+SocialController,GET,/api/social/forum-articles/{articleId:int}/replies/list,ForumService.GetReplyBackListAsync,"_users, forum_article_reply",2,行銷企劃部 › 討論區發文管理
+SocialController,PUT,/api/social/forum-articles/{articleId:int},ForumService.UpdateArticleAsync,forum_article,1,行銷企劃部 › 討論區發文管理
+SocialController,PUT,/api/social/forum-articles/{articleId:int}/seo-image,ForumService.UpdateSeoImageAsync,forum_article,1,
+SocialController,PUT,/api/social/forum-replies/{replyId:int},ForumService.UpdateReplyAsync,forum_article_reply,1,行銷企劃部 › 討論區發文管理
+SocialController,GET,/api/social/forum-blocks/list,ForumService.GetBlockListAsync,_users,1,行銷企劃部 › 討論區黑名單
+SocialController,PUT,/api/social/forum-blocks/{uid:int},ForumService.UpdateBlockAsync,_users,1,行銷企劃部 › 討論區黑名單
+SocialController,GET,/api/social/precises/list,PreciseService.GetListAsync,precise,1,行銷企劃部 › 精準名單報名資料
+SocialController,POST,/api/social/precises,PreciseService.CreateAsync,precise,1,
+SocialController,GET,/api/social/products/list,ProductService.GetListAsync,_hproduct,1,
+SocialController,GET,/api/social/products/seo/list,ProductService.GetSeoListAsync,_hproduct,1,
+SocialController,PUT,/api/social/products/{id:int},ProductService.UpdateAsync,_hproduct,1,
+SocialController,PUT,/api/social/products/{id:int}/seo-image,ProductService.UpdateSeoImageAsync,_hproduct,1,
+SocialController,GET,/api/social/hhh-hps/list,HhhHpService.GetListAsync,hhh_hp,1,行銷企劃部 › 代銷表單
+TagsController,GET,/api/tags/hcases/list,TagService.GetHcaseTagsAsync,"_hcase, _hdesigner",2,
+TagsController,PUT,/api/tags/hcases/{id:int},TagService.UpdateHcaseTagAsync,_hcase,1,
+TagsController,GET,/api/tags/hcolumns/list,TagService.GetHcolumnTagsAsync,_hcolumn,1,
+TagsController,PUT,/api/tags/hcolumns/{id:int},TagService.UpdateHcolumnTagAsync,_hcolumn,1,
+TagsController,GET,/api/tags/hvideos/list,TagService.GetHvideoTagsAsync,_hvideo,1,
+TagsController,PUT,/api/tags/hvideos/{id:int},TagService.UpdateHvideoTagAsync,_hvideo,1,
+TagsController,GET,/api/tags/images/list,TagService.GetImageTagsAsync,"_hcase, _hcase_img",2,
+TagsController,PUT,/api/tags/images/{id:int},TagService.UpdateImageTagAsync,_hcase_img,1,
+WebSiteController,GET,/api/website/builders/list,BuilderService.GetListAsync,"builder, builder_product",2,客戶開發處 › 建商列表
+WebSiteController,GET,/api/website/builders/dropdown,⚠️ Controller 直接查 DB,builder,1,
+WebSiteController,GET,/api/website/builders/{id:int},⚠️ Controller 直接查 DB,builder,1,客戶開發處 › 建商列表
+WebSiteController,POST,/api/website/builders,⚠️ Controller 直接操作 DB,builder,1,客戶開發處 › 建商列表
+WebSiteController,PUT,/api/website/builders/{id:int},⚠️ Controller 直接操作 DB,builder,1,客戶開發處 › 建商列表
+WebSiteController,DELETE,/api/website/builders/{id:int},⚠️ Controller 直接操作 DB,builder,1,客戶開發處 › 建商列表
+WebSiteController,GET,/api/website/builder-products/list,BuilderProductService.GetListAsync,"_hcolumn, _hvideo, builder, builder_product",4,客戶開發處 › 建商列表
+WebSiteController,GET,/api/website/builder-products/dropdown,BuilderProductService.GetDropdownAsync,builder_product,1,
+WebSiteController,GET,/api/website/builder-products/{id:int},BuilderProductService.GetByIdAsync,"_hcolumn, _hvideo, builder, builder_product",4,
+WebSiteController,POST,/api/website/builder-products,BuilderProductService.CreateAsync,"_hcolumn, _hvideo, builder_product",3,客戶開發處 › 建商列表
+WebSiteController,PUT,/api/website/builder-products/{id:int},BuilderProductService.UpdateAsync,"_hcolumn, _hvideo, builder_product",3,客戶開發處 › 建商列表
+WebSiteController,DELETE,/api/website/builder-products/{id:int},BuilderProductService.DeleteAsync,builder_product,1,客戶開發處 › 建商列表
+WebSiteController,GET,/api/website/builder-products/{productId:int}/images,BuilderProductService.GetImagesAsync,"_hproduct_img, builder_product",2,
+WebSiteController,POST,/api/website/builder-products/{productId:int}/images,BuilderProductService.CreateImageAsync,"_hproduct_img, builder_product",2,
+WebSiteController,PUT,/api/website/builder-products/{productId:int}/images/{id:int},BuilderProductService.UpdateImageAsync,"_hproduct_img, builder_product",2,
+WebSiteController,DELETE,/api/website/builder-products/{productId:int}/images/{id:int},BuilderProductService.DeleteImageAsync,"_hproduct_img, builder_product",2,
+WebSiteController,PUT,/api/website/builder-products/{productId:int}/cover,BuilderProductService.SetCoverAsync,"_hproduct_img, builder_product",2,
+WebSiteController,GET,/api/website/deco-records/list,DecoRecordService.GetListAsync,deco_record,1,客戶開發處 › 全國裝修登記查詢
+WebSiteController,PUT,/api/website/deco-records/{bldsno:int},DecoRecordService.UpdateAsync,deco_record,1,客戶開發處 › 全國裝修登記查詢
+WebSiteController,GET,/api/website/deco-images/list,DecoImageService.GetListAsync,"deco_record, deco_record_img",2,客戶開發處 › 裝修登記圖片審核
+WebSiteController,PUT,/api/website/deco-images/{id:int}/onoff,DecoImageService.UpdateOnoffAsync,deco_record_img,1,客戶開發處 › 裝修登記圖片審核
+WebSiteController,GET,/api/website/keywords/list,KeywordService.GetHotKeywordsAsync,search_history,1,網站設計部 › 站內關鍵字搜尋次數
+WebSiteController,GET,/api/website/homepage-inner-sets/list,HomepageInnerSetService.GetListAsync,"_had, _hcase, _hcolumn, _hdesigner, _hproduct, _hvideo, homepage_set, outer_site_set",8,網站設計部 › 首頁元素
+WebSiteController,POST,/api/website/homepage-inner-sets,HomepageInnerSetService.CreateAsync,homepage_set,1,網站設計部 › 首頁元素
+WebSiteController,PUT,/api/website/homepage-inner-sets/{psId:int},HomepageInnerSetService.UpdateAsync,homepage_set,1,網站設計部 › 首頁元素
+WebSiteController,DELETE,/api/website/homepage-inner-sets/{psId:int},HomepageInnerSetService.DeleteAsync,homepage_set,1,網站設計部 › 首頁元素
+WebSiteController,GET,/api/website/site-setup,SiteSetupService.GetAsync,site_setup,1,網站設計部 › 網站設定
+WebSiteController,PUT,/api/website/site-setup,SiteSetupService.UpdateAsync,site_setup,1,網站設計部 › 網站設定
+WebSiteController,GET,/api/website/contacts/list,ContactService.GetListAsync,contact,1,網站設計部 › 聯絡我們
