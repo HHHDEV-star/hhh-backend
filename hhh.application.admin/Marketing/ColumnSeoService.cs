@@ -15,22 +15,77 @@ public class ColumnSeoService : IColumnSeoService
 
     /// <inheritdoc />
     public async Task<PagedResponse<ColumnSeoListItem>> GetListAsync(
-        ListQuery query,
+        ColumnSeoListQuery query,
         CancellationToken cancellationToken = default)
     {
-        // 對應 PHP: SELECT hcolumn_id, ctitle, seo_title, seo_image, seo_description
-        //           FROM _hcolumn ORDER BY sdate DESC, hcolumn_id DESC
-        return await _db.Hcolumns
-            .AsNoTracking()
+        var q = _db.Hcolumns.AsNoTracking().AsQueryable();
+
+        // 關鍵字搜尋：專欄標題 / SEO 標題
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(c =>
+                EF.Functions.Like(c.Ctitle, like) ||
+                EF.Functions.Like(c.SeoTitle ?? "", like));
+        }
+
+        // 專欄類別篩選
+        if (!string.IsNullOrWhiteSpace(query.Ctype))
+        {
+            q = q.Where(c => c.Ctype == query.Ctype.Trim());
+        }
+
+        // 上線狀態篩選
+        if (query.Onoff is { } onoff)
+        {
+            q = q.Where(c => c.Onoff == onoff);
+        }
+
+        // SEO 完成度篩選
+        if (string.Equals(query.SeoStatus, "complete", StringComparison.OrdinalIgnoreCase))
+        {
+            q = q.Where(c =>
+                c.SeoTitle != null && c.SeoTitle != "" &&
+                c.SeoImage != null && c.SeoImage != "" &&
+                c.SeoDescription != null && c.SeoDescription != "");
+        }
+        else if (string.Equals(query.SeoStatus, "incomplete", StringComparison.OrdinalIgnoreCase))
+        {
+            q = q.Where(c =>
+                c.SeoTitle == null || c.SeoTitle == "" ||
+                c.SeoImage == null || c.SeoImage == "" ||
+                c.SeoDescription == null || c.SeoDescription == "");
+        }
+
+        // 上架日期區間篩選
+        if (query.DateFrom is { } dateFrom)
+        {
+            q = q.Where(c => c.Sdate >= dateFrom);
+        }
+        if (query.DateTo is { } dateTo)
+        {
+            q = q.Where(c => c.Sdate <= dateTo);
+        }
+
+        return await q
             .OrderByDescending(c => c.Sdate)
             .ThenByDescending(c => c.HcolumnId)
             .Select(c => new ColumnSeoListItem
             {
                 HcolumnId = c.HcolumnId,
                 Ctitle = c.Ctitle,
+                Ctype = c.Ctype,
+                Clogo = c.Clogo,
+                Onoff = c.Onoff == 1,
+                Viewed = c.Viewed,
+                Sdate = c.Sdate,
                 SeoTitle = c.SeoTitle,
                 SeoImage = c.SeoImage,
                 SeoDescription = c.SeoDescription,
+                SeoComplete = c.SeoTitle != null && c.SeoTitle != ""
+                           && c.SeoImage != null && c.SeoImage != ""
+                           && c.SeoDescription != null && c.SeoDescription != "",
+                UpdateTime = c.UpdateTime,
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }

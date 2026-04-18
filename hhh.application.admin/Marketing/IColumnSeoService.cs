@@ -12,7 +12,7 @@ public interface IColumnSeoService
 {
     /// <summary>取得專欄 SEO 列表（分頁，sdate DESC, hcolumn_id DESC）</summary>
     Task<PagedResponse<ColumnSeoListItem>> GetListAsync(
-        ListQuery query,
+        ColumnSeoListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>批次更新專欄 SEO 標題/描述</summary>

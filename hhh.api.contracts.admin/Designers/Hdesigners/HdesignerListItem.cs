@@ -20,17 +20,35 @@ public class HdesignerListItem
     /// <summary>E-mail（可能為逗號分隔多筆）</summary>
     public string Mail { get; set; } = string.Empty;
 
-    /// <summary>網站</summary>
-    public string Website { get; set; } = string.Empty;
-
     /// <summary>電話</summary>
     public string Phone { get; set; } = string.Empty;
+
+    /// <summary>免付費電話</summary>
+    public string ServicePhone { get; set; } = string.Empty;
 
     /// <summary>地址</summary>
     public string Address { get; set; } = string.Empty;
 
-    /// <summary>上線狀態（0:關 / 1:開）</summary>
+    /// <summary>網站</summary>
+    public string Website { get; set; } = string.Empty;
+
+    /// <summary>接案區域（CSV）</summary>
+    public string Region { get; set; } = string.Empty;
+
+    /// <summary>接案風格（CSV）</summary>
+    public string Style { get; set; } = string.Empty;
+
+    /// <summary>上線狀態</summary>
     public bool Onoff { get; set; }
+
+    /// <summary>幸福經紀人</summary>
+    public ushort Guarantee { get; set; }
+
+    /// <summary>點擊數</summary>
+    public int Clicks { get; set; }
+
+    /// <summary>作品案例數</summary>
+    public int CaseCount { get; set; }
 
     /// <summary>桌機版排序（dorder）</summary>
     public uint Dorder { get; set; }
@@ -40,4 +58,7 @@ public class HdesignerListItem
 
     /// <summary>建立時間</summary>
     public DateTime CreatTime { get; set; }
+
+    /// <summary>更新時間</summary>
+    public DateTime UpdateTime { get; set; }
 }

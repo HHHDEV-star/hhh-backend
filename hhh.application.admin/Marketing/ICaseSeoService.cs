@@ -10,9 +10,9 @@ namespace hhh.application.admin.Marketing;
 /// </summary>
 public interface ICaseSeoService
 {
-    /// <summary>取得個案 SEO 列表（分頁，sdate DESC, hcase_id DESC）</summary>
+    /// <summary>取得個案 SEO 列表（分頁，sdate DESC, hcase_id DESC��</summary>
     Task<PagedResponse<CaseSeoListItem>> GetListAsync(
-        ListQuery query,
+        CaseSeoListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>批次更新個案 SEO 標題/描述</summary>

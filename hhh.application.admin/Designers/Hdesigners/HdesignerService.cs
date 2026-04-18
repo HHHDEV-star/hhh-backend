@@ -27,7 +27,7 @@ public class HdesignerService : IHdesignerService
         CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP:SELECT * FROM _hdesigner WHERE ...
-        var query = _db.Hdesigners.AsNoTracking();
+        var query = _db.Hdesigners.AsNoTracking().AsQueryable();
 
         // 關鍵字搜尋 ----------------------------------------------------------
         if (!string.IsNullOrWhiteSpace(request.Q))
@@ -62,6 +62,39 @@ public class HdesignerService : IHdesignerService
             }
         }
 
+        // 上線狀態篩選
+        if (request.Onoff is { } onoff)
+        {
+            query = query.Where(h => h.Onoff == onoff);
+        }
+
+        // 幸福經紀人篩選
+        if (request.Guarantee is { } guarantee)
+        {
+            query = guarantee == 0
+                ? query.Where(h => h.Guarantee == 0)
+                : query.Where(h => h.Guarantee != 0);
+        }
+
+        // 接案區域篩選（region 為 CSV，用 LIKE 模糊比對）
+        if (!string.IsNullOrWhiteSpace(request.Region))
+        {
+            var like = $"%{request.Region.Trim()}%";
+            query = query.Where(h => EF.Functions.Like(h.Region, like));
+        }
+
+        // 建立日期區間篩選
+        if (request.DateFrom is { } dateFrom)
+        {
+            var from = dateFrom.ToDateTime(TimeOnly.MinValue);
+            query = query.Where(h => h.CreatTime >= from);
+        }
+        if (request.DateTo is { } dateTo)
+        {
+            var to = dateTo.ToDateTime(TimeOnly.MaxValue);
+            query = query.Where(h => h.CreatTime <= to);
+        }
+
         var ordered = ApplyOrdering(query, request.Sort, request.By);
 
         return await ordered
@@ -72,13 +105,20 @@ public class HdesignerService : IHdesignerService
                 Title = h.Title,
                 Name = h.Name,
                 Mail = h.Mail,
-                Website = h.Website,
                 Phone = h.Phone,
+                ServicePhone = h.ServicePhone,
                 Address = h.Address,
+                Website = h.Website,
+                Region = h.Region,
+                Style = h.Style,
                 Onoff = h.Onoff == 1,
+                Guarantee = h.Guarantee,
+                Clicks = h.Clicks,
+                CaseCount = _db.Hcases.Count(c => c.HdesignerId == h.HdesignerId),
                 Dorder = h.Dorder,
                 MobileOrder = h.MobileOrder,
                 CreatTime = h.CreatTime,
+                UpdateTime = h.UpdateTime,
             })
             .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
     }
@@ -431,6 +471,7 @@ public class HdesignerService : IHdesignerService
             "dorder" => isAsc ? query.OrderBy(h => h.Dorder) : query.OrderByDescending(h => h.Dorder),
             "mobileorder" => isAsc ? query.OrderBy(h => h.MobileOrder) : query.OrderByDescending(h => h.MobileOrder),
             "onoff" => isAsc ? query.OrderBy(h => h.Onoff) : query.OrderByDescending(h => h.Onoff),
+            "clicks" => isAsc ? query.OrderBy(h => h.Clicks) : query.OrderByDescending(h => h.Clicks),
             "creattime" => isAsc ? query.OrderBy(h => h.CreatTime) : query.OrderByDescending(h => h.CreatTime),
             "updatetime" => isAsc ? query.OrderBy(h => h.UpdateTime) : query.OrderByDescending(h => h.UpdateTime),
             _ => isAsc ? query.OrderBy(h => h.HdesignerId) : query.OrderByDescending(h => h.HdesignerId),

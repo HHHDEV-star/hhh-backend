@@ -15,22 +15,90 @@ public class CaseSeoService : ICaseSeoService
 
     /// <inheritdoc />
     public async Task<PagedResponse<CaseSeoListItem>> GetListAsync(
-        ListQuery query,
+        CaseSeoListQuery query,
         CancellationToken cancellationToken = default)
     {
-        // 對應 PHP: SELECT hcase_id, caption, seo_title, seo_image, seo_description
-        //           FROM _hcase ORDER BY sdate DESC, hcase_id DESC
-        return await _db.Hcases
-            .AsNoTracking()
-            .OrderByDescending(c => c.Sdate)
-            .ThenByDescending(c => c.HcaseId)
-            .Select(c => new CaseSeoListItem
+        var q = from c in _db.Hcases.AsNoTracking()
+                join d in _db.Hdesigners.AsNoTracking() on c.HdesignerId equals d.HdesignerId into dj
+                from d in dj.DefaultIfEmpty()
+                select new { c, d };
+
+        // 關鍵字搜尋：個案名稱 / SEO 標題
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(x =>
+                EF.Functions.Like(x.c.Caption, like) ||
+                EF.Functions.Like(x.c.SeoTitle ?? "", like));
+        }
+
+        // 設計師篩選
+        if (query.HdesignerId is { } hdesignerId)
+        {
+            q = q.Where(x => x.c.HdesignerId == hdesignerId);
+        }
+
+        // 設計風格篩選（style 為 CSV，用 LIKE 模糊比對）
+        if (!string.IsNullOrWhiteSpace(query.Style))
+        {
+            var like = $"%{query.Style.Trim()}%";
+            q = q.Where(x => EF.Functions.Like(x.c.Style, like));
+        }
+
+        // 上線狀態篩選
+        if (query.Onoff is { } onoff)
+        {
+            q = q.Where(x => x.c.Onoff == onoff);
+        }
+
+        // SEO 完成度篩選
+        if (string.Equals(query.SeoStatus, "complete", StringComparison.OrdinalIgnoreCase))
+        {
+            q = q.Where(x =>
+                x.c.SeoTitle != null && x.c.SeoTitle != "" &&
+                x.c.SeoImage != null && x.c.SeoImage != "" &&
+                x.c.SeoDescription != null && x.c.SeoDescription != "");
+        }
+        else if (string.Equals(query.SeoStatus, "incomplete", StringComparison.OrdinalIgnoreCase))
+        {
+            q = q.Where(x =>
+                x.c.SeoTitle == null || x.c.SeoTitle == "" ||
+                x.c.SeoImage == null || x.c.SeoImage == "" ||
+                x.c.SeoDescription == null || x.c.SeoDescription == "");
+        }
+
+        // 上架日期區間篩選
+        if (query.DateFrom is { } dateFrom)
+        {
+            q = q.Where(x => x.c.Sdate >= dateFrom);
+        }
+        if (query.DateTo is { } dateTo)
+        {
+            q = q.Where(x => x.c.Sdate <= dateTo);
+        }
+
+        return await q
+            .OrderByDescending(x => x.c.Sdate)
+            .ThenByDescending(x => x.c.HcaseId)
+            .Select(x => new CaseSeoListItem
             {
-                HcaseId = c.HcaseId,
-                Caption = c.Caption,
-                SeoTitle = c.SeoTitle,
-                SeoImage = c.SeoImage,
-                SeoDescription = c.SeoDescription,
+                HcaseId = x.c.HcaseId,
+                Caption = x.c.Caption,
+                HdesignerId = x.c.HdesignerId,
+                DesignerName = x.d != null ? x.d.Title : string.Empty,
+                Cover = x.c.Cover,
+                Style = x.c.Style,
+                Type = x.c.Type,
+                Onoff = x.c.Onoff == 1,
+                Viewed = x.c.Viewed,
+                Sdate = x.c.Sdate,
+                SeoTitle = x.c.SeoTitle,
+                SeoImage = x.c.SeoImage,
+                SeoDescription = x.c.SeoDescription,
+                SeoComplete = x.c.SeoTitle != null && x.c.SeoTitle != ""
+                           && x.c.SeoImage != null && x.c.SeoImage != ""
+                           && x.c.SeoDescription != null && x.c.SeoDescription != "",
+                UpdateTime = x.c.UpdateTime,
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }

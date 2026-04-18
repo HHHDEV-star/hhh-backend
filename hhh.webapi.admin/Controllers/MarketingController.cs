@@ -35,13 +35,14 @@ public class MarketingController : ApiControllerBase
 
     /// <summary>取得專欄 SEO 列表</summary>
     /// <remarks>
-    /// 對應舊版 PHP: Column/seo_get（15.11）
-    /// 全量回傳，排序: sdate DESC, hcolumn_id DESC。
+    /// 對應舊版 PHP: Column/seo_get（15.11）。
+    /// 支援：keyword（標題/SEO標題）、ctype、onoff、seoStatus（complete/incomplete）、dateFrom~dateTo 篩選。
+    /// 排序: sdate DESC, hcolumn_id DESC。
     /// </remarks>
     [HttpGet("column-seo/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ColumnSeoListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetColumnSeoList(
-        [FromQuery] ListQuery query,
+        [FromQuery] ColumnSeoListQuery query,
         CancellationToken cancellationToken)
     {
         var data = await _columnSeoService.GetListAsync(query, cancellationToken);
@@ -90,13 +91,14 @@ public class MarketingController : ApiControllerBase
 
     /// <summary>取得個案 SEO 列表（分頁）</summary>
     /// <remarks>
-    /// 對應舊版 PHP: Cases/seo_get（14.10）
+    /// 對應舊版 PHP: Cases/seo_get（14.10）。
+    /// 支援：keyword（名稱/SEO標題）、hdesignerId、style、onoff、seoStatus（complete/incomplete）、dateFrom~dateTo 篩選。
     /// 排序: sdate DESC, hcase_id DESC。
     /// </remarks>
     [HttpGet("case-seo/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<CaseSeoListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCaseSeoList(
-        [FromQuery] ListQuery query,
+        [FromQuery] CaseSeoListQuery query,
         CancellationToken cancellationToken)
     {
         var data = await _caseSeoService.GetListAsync(query, cancellationToken);
