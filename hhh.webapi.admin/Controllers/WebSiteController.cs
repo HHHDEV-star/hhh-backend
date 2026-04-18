@@ -513,7 +513,7 @@ public class WebSiteController : ApiControllerBase
     /// <remarks>對應舊版 PHP:Deco/backend_get → deco_model::get_deco_lists_backend()。</remarks>
     [HttpGet("deco-records/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<DecoRecordListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetDecoRecordList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetDecoRecordList([FromQuery] DecoRecordListQuery query, CancellationToken cancellationToken)
     {
         var data = await _decoRecordService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<DecoRecordListItem>>.Success(data));

@@ -13,10 +13,36 @@ public class DecoRecordService : IDecoRecordService
 
     public DecoRecordService(XoopsContext db) => _db = db;
 
-    public async Task<PagedResponse<DecoRecordListItem>> GetListAsync(ListQuery query, CancellationToken ct = default)
+    public async Task<PagedResponse<DecoRecordListItem>> GetListAsync(DecoRecordListQuery query, CancellationToken ct = default)
     {
-        return await _db.DecoRecords
-            .AsNoTracking()
+        var q = _db.DecoRecords.AsNoTracking().AsQueryable();
+
+        // 上線狀態篩選（不帶 = 全部）
+        if (query.Onoff is { } onoff)
+        {
+            q = q.Where(d => d.Onoff == onoff);
+        }
+
+        // 關鍵字搜尋：模糊比對 Response 所有欄位
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(d =>
+                EF.Functions.Like(d.RegisterNumber ?? "", like) ||
+                EF.Functions.Like(d.CompanyName, like) ||
+                EF.Functions.Like(d.Address ?? "", like) ||
+                EF.Functions.Like(d.District ?? "", like) ||
+                EF.Functions.Like(d.Street ?? "", like) ||
+                EF.Functions.Like(d.Phone ?? "", like) ||
+                EF.Functions.Like(d.Cellphone ?? "", like) ||
+                EF.Functions.Like(d.ServicePhone ?? "", like) ||
+                EF.Functions.Like(d.Email ?? "", like) ||
+                EF.Functions.Like(d.Lineid ?? "", like) ||
+                EF.Functions.Like(d.Website ?? "", like) ||
+                EF.Functions.Like(d.Url ?? "", like));
+        }
+
+        return await q
             .OrderByDescending(d => d.RegisterNumber)
             .Select(d => new DecoRecordListItem
             {
