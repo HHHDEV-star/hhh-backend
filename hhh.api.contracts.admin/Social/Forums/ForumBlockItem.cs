@@ -25,4 +25,7 @@ public class ForumBlockItem
 
     /// <summary>發文數</summary>
     public uint Posts { get; set; }
+
+    /// <summary>是否為黑名單</summary>
+    public bool ForumBlock { get; set; }
 }

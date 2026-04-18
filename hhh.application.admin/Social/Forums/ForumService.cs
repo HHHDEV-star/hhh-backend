@@ -150,6 +150,7 @@ public class ForumService : IForumService
                 RegisterDate = u.UserRegdateDatetime,
                 LastLoginDate = u.LastLoginDatetime,
                 Posts = u.Posts,
+                ForumBlock = u.ForumBlock == "Y",
             }).ToPagedResponseAsync(query.Page, query.PageSize, ct);
 
         // 全域統計（不受查詢條件影響）
