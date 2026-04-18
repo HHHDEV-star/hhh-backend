@@ -13,28 +13,50 @@ public class DecoImageService : IDecoImageService
 
     public DecoImageService(XoopsContext db) => _db = db;
 
-    public async Task<PagedResponse<DecoImageListItem>> GetListAsync(ListQuery query, CancellationToken ct = default)
+    public async Task<PagedResponse<DecoImageListItem>> GetListAsync(DecoImageListQuery query, CancellationToken ct = default)
     {
         // 對應舊 PHP deco_model::get_deco_img_list():
         // JOIN deco_record 帶出 register_number / company_name / company_ceo
         // ORDER BY onoff ASC(未審核在前), bldsno ASC, sort ASC
-        return await (
+        var baseQuery =
             from img in _db.DecoRecordImgs.AsNoTracking()
             join rec in _db.DecoRecords.AsNoTracking() on img.Bldsno equals (uint)rec.Bldsno into rj
             from rec in rj.DefaultIfEmpty()
-            orderby img.Onoff, img.Bldsno, img.Sort
-            select new DecoImageListItem
+            select new { img, rec };
+
+        // 關鍵字篩選：模糊比對公司名稱 / 登記證號 / 負責人
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword.Trim()}%";
+            baseQuery = baseQuery.Where(x =>
+                (x.rec != null && EF.Functions.Like(x.rec.CompanyName, kw)) ||
+                (x.rec != null && x.rec.RegisterNumber != null && EF.Functions.Like(x.rec.RegisterNumber, kw)) ||
+                (x.rec != null && x.rec.CompanyCeo != null && EF.Functions.Like(x.rec.CompanyCeo, kw)));
+        }
+
+        // 審核狀態篩選（Y=通過 / N=未通過）
+        if (!string.IsNullOrWhiteSpace(query.Onoff))
+        {
+            var onoff = query.Onoff.Trim().ToUpper();
+            baseQuery = baseQuery.Where(x => x.img.Onoff == onoff);
+        }
+
+        return await baseQuery
+            .OrderBy(x => x.img.Onoff)
+            .ThenBy(x => x.img.Bldsno)
+            .ThenBy(x => x.img.Sort)
+            .Select(x => new DecoImageListItem
             {
-                Id = img.Id,
-                Bldsno = img.Bldsno,
-                RegisterNumber = rec != null ? rec.RegisterNumber : null,
-                CompanyName = rec != null ? rec.CompanyName : string.Empty,
-                CompanyCeo = rec != null ? rec.CompanyCeo : null,
-                ImgPath = img.ImgPath,
-                Sort = img.Sort,
-                CreateTime = img.CreateTime,
-                UpdateTime = img.UpdateTime,
-                Onoff = img.Onoff == "Y",
+                Id = x.img.Id,
+                Bldsno = x.img.Bldsno,
+                RegisterNumber = x.rec != null ? x.rec.RegisterNumber : null,
+                CompanyName = x.rec != null ? x.rec.CompanyName : string.Empty,
+                CompanyCeo = x.rec != null ? x.rec.CompanyCeo : null,
+                ImgPath = x.img.ImgPath,
+                Sort = x.img.Sort,
+                CreateTime = x.img.CreateTime,
+                UpdateTime = x.img.UpdateTime,
+                Onoff = x.img.Onoff == "Y",
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }

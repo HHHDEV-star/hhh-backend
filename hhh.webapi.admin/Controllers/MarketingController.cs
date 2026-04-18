@@ -153,7 +153,7 @@ public class MarketingController : ApiControllerBase
     [HttpGet("product-seo/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductSeoListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProductSeoList(
-        [FromQuery] ListQuery query,
+        [FromQuery] ProductSeoListQuery query,
         CancellationToken cancellationToken)
     {
         var data = await _productSeoService.GetListAsync(query, cancellationToken);

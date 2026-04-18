@@ -102,7 +102,7 @@ public class MainController : ApiControllerBase
     /// <remarks>對應舊版 Execute/index_get(no exf_id)。篩 is_delete='N',exf_id DESC。</remarks>
     [HttpGet("execute-forms/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ExecuteFormListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetExecuteFormList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetExecuteFormList([FromQuery] ExecuteFormListQuery query, CancellationToken cancellationToken)
     {
         var data = await _executeFormService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<ExecuteFormListItem>>.Success(data));

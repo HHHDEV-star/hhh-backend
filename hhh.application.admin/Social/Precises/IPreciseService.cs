@@ -7,6 +7,6 @@ namespace hhh.application.admin.Social.Precises;
 /// <summary>精準名單白皮書 服務</summary>
 public interface IPreciseService
 {
-    Task<PagedResponse<PreciseListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default);
+    Task<PagedResponse<PreciseListItem>> GetListAsync(PreciseListQuery query, CancellationToken cancellationToken = default);
     Task<OperationResult<int>> CreateAsync(CreatePreciseRequest request, CancellationToken cancellationToken = default);
 }

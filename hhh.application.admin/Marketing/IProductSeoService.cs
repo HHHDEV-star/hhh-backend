@@ -12,7 +12,7 @@ public interface IProductSeoService
 {
     /// <summary>取得產品 SEO 列表（分頁，id DESC）</summary>
     Task<PagedResponse<ProductSeoListItem>> GetListAsync(
-        ListQuery query,
+        ProductSeoListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>批次更新產品 SEO 標題</summary>

@@ -28,8 +28,7 @@ public class CallinDataService : ICallinDataService
 
     /// <inheritdoc />
     public async Task<PagedResponse<CallinDataListItem>> GetListAsync(
-        CallinQuery query,
-        ListQuery listQuery,
+        CallinDataListQuery query,
         CancellationToken cancellationToken = default)
     {
         var q = _db.CallinData.AsNoTracking();
@@ -91,7 +90,7 @@ public class CallinDataService : ICallinDataService
                 SendMail = c.SendMail,
                 SendTime = c.SendTime,
             })
-            .ToPagedResponseAsync(listQuery.Page, listQuery.PageSize, cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
 
         // 標註黑名單（僅對當頁資料）
         foreach (var item in paged.Items)

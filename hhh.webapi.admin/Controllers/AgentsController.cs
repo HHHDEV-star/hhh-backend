@@ -30,11 +30,10 @@ public class AgentsController : ApiControllerBase
     [HttpGet("list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<AgentListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
-        [FromQuery] AgentQuery query,
-        [FromQuery] ListQuery listQuery,
+        [FromQuery] AgentListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _agentService.GetListAsync(query, listQuery, cancellationToken);
+        var data = await _agentService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<AgentListItem>>.Success(data));
     }
 

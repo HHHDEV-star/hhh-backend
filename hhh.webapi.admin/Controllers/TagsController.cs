@@ -36,12 +36,10 @@ public class TagsController : ApiControllerBase
     [HttpGet("hcases/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<TagHcaseItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHcaseTags(
-        [FromQuery] uint? hdesignerId,
-        [FromQuery] string? searchTag,
-        [FromQuery] ListQuery query,
+        [FromQuery] TagHcaseListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _tagService.GetHcaseTagsAsync(hdesignerId, searchTag, query, cancellationToken);
+        var data = await _tagService.GetHcaseTagsAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<TagHcaseItem>>.Success(data));
     }
 
@@ -67,15 +65,10 @@ public class TagsController : ApiControllerBase
     [HttpGet("hcolumns/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<TagHcolumnItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHcolumnTags(
-        [FromQuery] string? ctype,
-        [FromQuery] string? ctitle,
-        [FromQuery] DateOnly? startDate,
-        [FromQuery] DateOnly? endDate,
-        [FromQuery] string? searchTag,
-        [FromQuery] ListQuery query,
+        [FromQuery] TagHcolumnListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _tagService.GetHcolumnTagsAsync(ctype, ctitle, startDate, endDate, searchTag, query, cancellationToken);
+        var data = await _tagService.GetHcolumnTagsAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<TagHcolumnItem>>.Success(data));
     }
 
@@ -101,15 +94,10 @@ public class TagsController : ApiControllerBase
     [HttpGet("hvideos/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<TagHvideoItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHvideoTags(
-        [FromQuery] uint? hdesignerId,
-        [FromQuery] string? title,
-        [FromQuery] DateOnly? startDate,
-        [FromQuery] DateOnly? endDate,
-        [FromQuery] string? searchTag,
-        [FromQuery] ListQuery query,
+        [FromQuery] TagHvideoListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _tagService.GetHvideoTagsAsync(hdesignerId, title, startDate, endDate, searchTag, query, cancellationToken);
+        var data = await _tagService.GetHvideoTagsAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<TagHvideoItem>>.Success(data));
     }
 
@@ -135,12 +123,10 @@ public class TagsController : ApiControllerBase
     [HttpGet("images/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<TagImageItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetImageTags(
-        [FromQuery] uint? hcaseId,
-        [FromQuery] string? searchTag,
-        [FromQuery] ListQuery query,
+        [FromQuery] TagImageListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _tagService.GetImageTagsAsync(hcaseId, searchTag, query, cancellationToken);
+        var data = await _tagService.GetImageTagsAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<TagImageItem>>.Success(data));
     }
 

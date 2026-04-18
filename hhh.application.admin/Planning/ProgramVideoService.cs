@@ -31,7 +31,7 @@ public class ProgramVideoService : IProgramVideoService
 
     /// <inheritdoc />
     public async Task<PagedResponse<ProgramVideoListItem>> GetListAsync(
-        ProgramVideoQuery query, ListQuery listQuery,
+        ProgramVideoListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: Program_model::get_unit_data()
@@ -61,7 +61,7 @@ public class ProgramVideoService : IProgramVideoService
                 BuilderId = y.BuilderId,
                 Title = y.Title,
             })
-            .ToPagedResponseAsync(listQuery.Page, listQuery.PageSize, cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -207,7 +207,7 @@ public class ProgramVideoService : IProgramVideoService
 
     /// <inheritdoc />
     public async Task<PagedResponse<ProgramListItem>> GetProgramListAsync(
-        DateOnly sdate, DateOnly edate, ListQuery listQuery,
+        ProgramListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: Program_model::get_pgrogram_list() (backstage)
@@ -216,7 +216,7 @@ public class ProgramVideoService : IProgramVideoService
         // ORDER BY prog_date ASC, prog_time ASC
         return await _db.ProgLists
             .AsNoTracking()
-            .Where(p => p.ProgDate >= sdate && p.ProgDate <= edate)
+            .Where(p => p.ProgDate >= query.Sdate && p.ProgDate <= query.Edate)
             .OrderBy(p => p.ProgDate)
             .ThenBy(p => p.ProgTime)
             .Select(p => new ProgramListItem
@@ -226,7 +226,7 @@ public class ProgramVideoService : IProgramVideoService
                 ProgName = p.ProgName,
                 Onoff = p.Onoff,
             })
-            .ToPagedResponseAsync(listQuery.Page, listQuery.PageSize, cancellationToken);
+            .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -253,12 +253,25 @@ public class ProgramVideoService : IProgramVideoService
 
     /// <inheritdoc />
     public async Task<PagedResponse<ChannelListItem>> GetChannelListAsync(
-        ListQuery query,
+        ChannelListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: SELECT * FROM _hprog_chan ORDER BY chan_id DESC
-        return await _db.HprogChans
-            .AsNoTracking()
+        var q = _db.HprogChans.AsNoTracking();
+
+        // 關鍵字篩選（Cname / CnameS）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            q = q.Where(c => EF.Functions.Like(c.Cname, kw)
+                           || EF.Functions.Like(c.CnameS, kw));
+        }
+
+        // 上下架篩選
+        if (query.Onoff.HasValue)
+            q = q.Where(c => c.Onoff == query.Onoff.Value);
+
+        return await q
             .OrderByDescending(c => c.ChanId)
             .Select(c => new ChannelListItem
             {

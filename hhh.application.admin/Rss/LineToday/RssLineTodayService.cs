@@ -14,13 +14,32 @@ public class RssLineTodayService : IRssLineTodayService
 
     public RssLineTodayService(XoopsContext db) => _db = db;
 
-    public async Task<PagedResponse<RssLineTodayItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<RssLineTodayItem>> GetListAsync(RssLineTodayListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP rss_linetoday_model::get():ORDER BY date DESC
         // 注意:舊版還會逐行檢查 CDN 上有沒有 .mp4 檔並塞 mp4 bool,
         // 因為是 remote IO(HTTP HEAD per row)且用途不明,這裡先跳過不做。
-        return await _db.RssLinetodays
-            .AsNoTracking()
+        var q = _db.RssLinetodays.AsNoTracking().AsQueryable();
+
+        // 日期區間篩選（entity Date 為 DateOnly）
+        if (query.DateFrom is { } dateFrom)
+        {
+            q = q.Where(r => r.Date >= dateFrom);
+        }
+
+        if (query.DateTo is { } dateTo)
+        {
+            q = q.Where(r => r.Date <= dateTo);
+        }
+
+        // 關鍵字篩選（Hvideo）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            q = q.Where(r => EF.Functions.Like(r.Hvideo, kw));
+        }
+
+        return await q
             .OrderByDescending(r => r.Date)
             .Select(r => new RssLineTodayItem
             {

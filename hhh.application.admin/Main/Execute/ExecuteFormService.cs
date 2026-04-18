@@ -22,11 +22,35 @@ public class ExecuteFormService : IExecuteFormService
         _logWriter = logWriter;
     }
 
-    public async Task<PagedResponse<ExecuteFormListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<ExecuteFormListItem>> GetListAsync(ExecuteFormListQuery query, CancellationToken cancellationToken = default)
     {
-        return await _db.ExecuteForms
+        var q = _db.ExecuteForms
             .AsNoTracking()
-            .Where(e => e.IsDelete == "N")
+            .Where(e => e.IsDelete == "N");
+
+        // 關鍵字篩選（Num / Company / Designer / SalesMan）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(e =>
+                EF.Functions.Like(e.Num, like) ||
+                EF.Functions.Like(e.Company, like) ||
+                EF.Functions.Like(e.Designer, like) ||
+                EF.Functions.Like(e.SalesMan, like));
+        }
+
+        // 結案狀態篩選
+        if (!string.IsNullOrWhiteSpace(query.IsClose))
+            q = q.Where(e => e.IsClose == query.IsClose.Trim());
+
+        // 合約日期範圍篩選
+        if (query.DateFrom is { } dateFrom)
+            q = q.Where(e => e.ContractTime >= dateFrom);
+
+        if (query.DateTo is { } dateTo)
+            q = q.Where(e => e.ContractTime <= dateTo);
+
+        return await q
             .OrderByDescending(e => e.ExfId)
             .Select(e => MapToListItem(e))
             .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);

@@ -106,25 +106,47 @@ public class ForumService : IForumService
         return OperationResult.Ok("文章修改成功");
     }
 
-    public async Task<PagedResponse<ForumReplyBackItem>> GetReplyBackListAsync(int articleId, ListQuery query, CancellationToken ct = default)
+    public async Task<PagedResponse<ForumReplyBackItem>> GetReplyBackListAsync(int articleId, ForumReplyListQuery query, CancellationToken ct = default)
     {
         // 對應舊 PHP forum_model::get_article_reply_for_back()
-        return await (
-            from r in _db.ForumArticleReplies.AsNoTracking()
-            where r.ArticleId == articleId
-            join u in _db.Users.AsNoTracking() on r.Uid equals (int)u.Uid into uj
-            from u in uj.DefaultIfEmpty()
-            orderby r.ArticleReplyId descending
-            select new ForumReplyBackItem
+        var q = from r in _db.ForumArticleReplies.AsNoTracking()
+                where r.ArticleId == articleId
+                join u in _db.Users.AsNoTracking() on r.Uid equals (int)u.Uid into uj
+                from u in uj.DefaultIfEmpty()
+                select new { r, u };
+
+        // 關鍵字搜尋：帳號 / 回覆內容
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(x =>
+                (x.u != null && EF.Functions.Like(x.u.Uname, like)) ||
+                EF.Functions.Like(x.r.ReplyContent, like));
+        }
+
+        // 刪除狀態篩選
+        if (query.IsDel is { } isDel)
+        {
+            var val = (sbyte)(isDel ? 1 : 0);
+            q = q.Where(x => x.r.IsDel == val);
+        }
+
+        return await q
+            .OrderByDescending(x => x.r.ArticleReplyId)
+            .Select(x => new ForumReplyBackItem
             {
-                ArticleReplyId = r.ArticleReplyId,
-                ArticleId = r.ArticleId,
-                Uid = r.Uid,
-                Uname = u != null ? u.Uname : string.Empty,
-                ReplyContent = r.ReplyContent,
-                IsDel = r.IsDel == 1,
-                DateCreated = r.DateAdded,
-                DateModified = r.DateModified,
+                ArticleReplyId = x.r.ArticleReplyId,
+                ArticleId = x.r.ArticleId,
+                Uid = x.r.Uid,
+                Uname = x.u != null ? x.u.Uname : string.Empty,
+                Name = x.u != null ? x.u.Name : string.Empty,
+                Email = x.u != null ? x.u.Email : string.Empty,
+                ReplyContent = x.r.ReplyContent,
+                GoodCount = x.r.ReplyGoodCount,
+                BadCount = x.r.ReplyBadCount,
+                IsDel = x.r.IsDel == 1,
+                DateCreated = x.r.DateAdded,
+                DateModified = x.r.DateModified,
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }

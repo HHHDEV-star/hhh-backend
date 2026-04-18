@@ -15,15 +15,38 @@ public class CalculatorService : ICalculatorService
         _db = db;
     }
 
-    public async Task<PagedResponse<CalculatorListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<CalculatorListItem>> GetListAsync(CalculatorListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP:Calculator_model::get()
         //   SELECT * FROM calculator WHERE contact_status = 'Y' ORDER BY id DESC
-        // 沿用舊功能採「全量回傳 + 前端 Kendo Grid 自行分頁」,
-        // 不做 server-side paging、也沒有任何查詢條件。
-        return await _db.Calculators
+        var q = _db.Calculators
             .AsNoTracking()
-            .Where(c => c.ContactStatus == "Y")
+            .Where(c => c.ContactStatus == "Y");
+
+        // 關鍵字篩選（Name / Phone / Email）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(c =>
+                EF.Functions.Like(c.Name, like) ||
+                EF.Functions.Like(c.Phone, like) ||
+                EF.Functions.Like(c.Email, like));
+        }
+
+        // 建立日期範圍篩選
+        if (query.DateFrom is { } dateFrom)
+        {
+            var from = dateFrom.ToDateTime(TimeOnly.MinValue);
+            q = q.Where(c => c.CreateTime >= from);
+        }
+
+        if (query.DateTo is { } dateTo)
+        {
+            var to = dateTo.ToDateTime(new TimeOnly(23, 59, 59));
+            q = q.Where(c => c.CreateTime <= to);
+        }
+
+        return await q
             .OrderByDescending(c => c.Id)
             .Select(c => new CalculatorListItem
             {

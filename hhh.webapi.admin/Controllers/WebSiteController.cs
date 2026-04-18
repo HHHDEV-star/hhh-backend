@@ -549,7 +549,7 @@ public class WebSiteController : ApiControllerBase
     /// </remarks>
     [HttpGet("deco-images/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<DecoImageListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetDecoImageList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetDecoImageList([FromQuery] DecoImageListQuery query, CancellationToken cancellationToken)
     {
         var data = await _decoImageService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<DecoImageListItem>>.Success(data));
@@ -609,7 +609,7 @@ public class WebSiteController : ApiControllerBase
     /// </remarks>
     [HttpGet("homepage-inner-sets/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<HomepageInnerSetListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetHomepageInnerSetList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetHomepageInnerSetList([FromQuery] HomepageInnerSetListQuery query, CancellationToken cancellationToken)
     {
         var data = await _homepageInnerSetService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<HomepageInnerSetListItem>>.Success(data));
@@ -726,7 +726,7 @@ public class WebSiteController : ApiControllerBase
     /// </remarks>
     [HttpGet("contacts/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ContactListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetContactList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetContactList([FromQuery] ContactListQuery query, CancellationToken cancellationToken)
     {
         var data = await _contactService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<ContactListItem>>.Success(data));

@@ -17,5 +17,5 @@ public interface ICalculatorService
     /// (對應舊版 Calculator/index_get → Calculator_model::get())
     /// 業務規則:只回傳 contact_status='Y' 的紀錄,依 id DESC 排序、無分頁、無查詢條件。
     /// </summary>
-    Task<PagedResponse<CalculatorListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default);
+    Task<PagedResponse<CalculatorListItem>> GetListAsync(CalculatorListQuery query, CancellationToken cancellationToken = default);
 }

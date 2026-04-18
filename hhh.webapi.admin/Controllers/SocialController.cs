@@ -74,7 +74,7 @@ public class SocialController : ApiControllerBase
     /// </remarks>
     [HttpGet("briefs/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<BriefListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetBriefList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetBriefList([FromQuery] BriefListQuery query, CancellationToken cancellationToken)
     {
         var data = await _briefService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<BriefListItem>>.Success(data));
@@ -91,7 +91,7 @@ public class SocialController : ApiControllerBase
     /// </remarks>
     [HttpGet("decorations/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<DecorationListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetDecorationList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetDecorationList([FromQuery] DecorationListQuery query, CancellationToken cancellationToken)
     {
         var data = await _decorationService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<DecorationListItem>>.Success(data));
@@ -195,7 +195,7 @@ public class SocialController : ApiControllerBase
     [HttpGet("forum-articles/{articleId:int}/replies/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ForumReplyBackItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetForumReplyList(
-        int articleId, [FromQuery] ListQuery query, CancellationToken cancellationToken)
+        int articleId, [FromQuery] ForumReplyListQuery query, CancellationToken cancellationToken)
     {
         var data = await _forumService.GetReplyBackListAsync(articleId, query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<ForumReplyBackItem>>.Success(data));
@@ -260,7 +260,7 @@ public class SocialController : ApiControllerBase
     /// <remarks>對應舊版 PHP:Precise/lists_get → precise_model::lists()。</remarks>
     [HttpGet("precises/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<PreciseListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetPreciseList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetPreciseList([FromQuery] PreciseListQuery query, CancellationToken cancellationToken)
     {
         var data = await _preciseService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<PreciseListItem>>.Success(data));
@@ -294,7 +294,7 @@ public class SocialController : ApiControllerBase
     /// <remarks>對應舊版 Product/index_get → product_model::get_product_lists()。全量 id DESC。</remarks>
     [HttpGet("products/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetProductList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetProductList([FromQuery] ProductListQuery query, CancellationToken cancellationToken)
     {
         var data = await _productService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<ProductListItem>>.Success(data));
@@ -322,7 +322,7 @@ public class SocialController : ApiControllerBase
     [HttpGet("products/seo/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProductSeoItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProductSeoList(
-        [FromQuery] ListQuery query, CancellationToken cancellationToken)
+        [FromQuery] ProductSeoListQuery query, CancellationToken cancellationToken)
     {
         var data = await _productService.GetSeoListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<ProductSeoItem>>.Success(data));

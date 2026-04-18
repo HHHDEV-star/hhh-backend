@@ -21,5 +21,5 @@ public interface IRenovationService
     ///  - site_lists JSON 字串會解析後回傳結構化內容
     ///  - 沒有任何查詢條件、沒有 server-side paging
     /// </summary>
-    Task<PagedResponse<RenovationListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default);
+    Task<PagedResponse<RenovationListItem>> GetListAsync(RenovationListQuery query, CancellationToken cancellationToken = default);
 }

@@ -29,14 +29,32 @@ public class YoutubeService : IYoutubeService
         _logWriter = logWriter;
     }
 
-    public async Task<PagedResponse<YoutubeListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<YoutubeListItem>> GetListAsync(YoutubeListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP youtube_model::get_youtube_list():
         //   WHERE channel_id IN (...) AND is_del = 0
         //   ORDER BY yid DESC
-        return await _db.YoutubeLists
+        var q = _db.YoutubeLists
             .AsNoTracking()
-            .Where(y => AllowedChannelIds.Contains(y.ChannelId) && !y.IsDel)
+            .Where(y => AllowedChannelIds.Contains(y.ChannelId) && !y.IsDel);
+
+        // 關鍵字篩選（Title / YoutubeVideoId）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            q = q.Where(y => EF.Functions.Like(y.Title, kw)
+                           || EF.Functions.Like(y.YoutubeVideoId, kw));
+        }
+
+        // 上下架篩選
+        if (!string.IsNullOrWhiteSpace(query.Onoff))
+            q = q.Where(y => y.Onoff == query.Onoff);
+
+        // 頻道 ID 篩選
+        if (!string.IsNullOrWhiteSpace(query.ChannelId))
+            q = q.Where(y => y.ChannelId == query.ChannelId);
+
+        return await q
             .OrderByDescending(y => y.Yid)
             .Select(y => new YoutubeListItem
             {

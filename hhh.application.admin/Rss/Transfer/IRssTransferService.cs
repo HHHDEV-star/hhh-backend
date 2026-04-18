@@ -7,7 +7,7 @@ namespace hhh.application.admin.Rss.Transfer;
 public interface IRssTransferService
 {
     Task<PagedResponse<RssTransferLogItem>> GetLogsAsync(
-        DateTime? startDate, DateTime? endDate, ListQuery query,
+        RssTransferLogListQuery query,
         CancellationToken cancellationToken = default);
 
     Task<List<RssTransferStatItem>> GetStatisticsAsync(

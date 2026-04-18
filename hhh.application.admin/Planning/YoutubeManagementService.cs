@@ -36,13 +36,25 @@ public class YoutubeManagementService : IYoutubeManagementService
 
     /// <inheritdoc />
     public async Task<PagedResponse<YoutubeGroupListItem>> GetGroupListAsync(
-        ListQuery query,
+        YoutubeGroupListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: Program_model::read_group()
         // SELECT * FROM youtube_group ORDER BY gid DESC
-        return await _db.YoutubeGroups
-            .AsNoTracking()
+        var q = _db.YoutubeGroups.AsNoTracking();
+
+        // 關鍵字篩選（Name）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            q = q.Where(g => EF.Functions.Like(g.Name, kw));
+        }
+
+        // 上下架篩選
+        if (!string.IsNullOrWhiteSpace(query.Onoff))
+            q = q.Where(g => g.Onoff == query.Onoff);
+
+        return await q
             .OrderByDescending(g => g.Gid)
             .Select(g => new YoutubeGroupListItem
             {
@@ -131,27 +143,46 @@ public class YoutubeManagementService : IYoutubeManagementService
 
     /// <inheritdoc />
     public async Task<PagedResponse<YoutubeGroupDetailListItem>> GetGroupDetailListAsync(
-        ListQuery query,
+        YoutubeGroupDetailListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: Program_model::get_group_detail()
         // JOIN youtube_group_detail + youtube_list + youtube_group
         // ORDER BY youtube_group.gid DESC, youtube_group_detail.sort ASC
-        return await (
+        var q =
             from d in _db.YoutubeGroupDetails.AsNoTracking()
             join y in _db.YoutubeLists.AsNoTracking() on d.Yid equals y.Yid
             join g in _db.YoutubeGroups.AsNoTracking() on d.Gid equals g.Gid
-            orderby g.Gid descending, d.Sort ascending
-            select new YoutubeGroupDetailListItem
+            select new { d, y, g };
+
+        // 群組 ID 篩選
+        if (query.Gid.HasValue)
+            q = q.Where(x => x.d.Gid == query.Gid.Value);
+
+        // 關鍵字篩選（影片 Title）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            q = q.Where(x => EF.Functions.Like(x.y.Title, kw));
+        }
+
+        // 上下架篩選
+        if (!string.IsNullOrWhiteSpace(query.Onoff))
+            q = q.Where(x => x.d.Onoff == query.Onoff);
+
+        return await q
+            .OrderByDescending(x => x.g.Gid)
+            .ThenBy(x => x.d.Sort)
+            .Select(x => new YoutubeGroupDetailListItem
             {
-                Id = d.Id,
-                Gid = d.Gid,
-                Name = g.Name,
-                Yid = d.Yid,
-                Title = y.Title,
-                Sort = d.Sort,
-                Onoff = d.Onoff,
-                CreateTime = d.CreateTime,
+                Id = x.d.Id,
+                Gid = x.d.Gid,
+                Name = x.g.Name,
+                Yid = x.d.Yid,
+                Title = x.y.Title,
+                Sort = x.d.Sort,
+                Onoff = x.d.Onoff,
+                CreateTime = x.d.CreateTime,
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }

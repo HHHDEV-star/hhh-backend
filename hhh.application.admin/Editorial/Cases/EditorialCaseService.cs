@@ -22,14 +22,50 @@ public class EditorialCaseService : IEditorialCaseService
         _logWriter = logWriter;
     }
 
-    public async Task<PagedResponse<EditorialCaseListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<EditorialCaseListItem>> GetListAsync(EditorialCaseListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP case_model::get_case_lists():
         //   ORDER BY c.sdate DESC, c.hcase_id DESC
-        return await (
-            from c in _db.Hcases.AsNoTracking()
-            orderby c.Sdate descending, c.HcaseId descending
-            select new EditorialCaseListItem
+        var q = _db.Hcases.AsNoTracking().AsQueryable();
+
+        // 關鍵字篩選（Caption + 設計師 Title）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            var matchedDesignerIds = _db.Hdesigners
+                .Where(d => EF.Functions.Like(d.Title, kw))
+                .Select(d => d.HdesignerId);
+
+            q = q.Where(c => EF.Functions.Like(c.Caption, kw)
+                           || matchedDesignerIds.Contains(c.HdesignerId));
+        }
+
+        // 設計師 ID 篩選
+        if (query.HdesignerId.HasValue)
+            q = q.Where(c => c.HdesignerId == query.HdesignerId.Value);
+
+        // 上下架篩選
+        if (query.Onoff.HasValue)
+            q = q.Where(c => c.Onoff == query.Onoff.Value);
+
+        // 風格篩選
+        if (!string.IsNullOrWhiteSpace(query.Style))
+            q = q.Where(c => c.Style == query.Style);
+
+        // 類型篩選
+        if (!string.IsNullOrWhiteSpace(query.Type))
+            q = q.Where(c => c.Type == query.Type);
+
+        // 日期範圍篩選
+        if (query.DateFrom.HasValue)
+            q = q.Where(c => c.Sdate >= query.DateFrom.Value);
+        if (query.DateTo.HasValue)
+            q = q.Where(c => c.Sdate <= query.DateTo.Value);
+
+        return await q
+            .OrderByDescending(c => c.Sdate)
+            .ThenByDescending(c => c.HcaseId)
+            .Select(c => new EditorialCaseListItem
             {
                 HcaseId = c.HcaseId,
                 Caption = c.Caption,

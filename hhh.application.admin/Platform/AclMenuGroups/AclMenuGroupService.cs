@@ -15,10 +15,22 @@ public class AclMenuGroupService : IAclMenuGroupService
     public AclMenuGroupService(HHHBackstageContext db) => _db = db;
 
     public async Task<PagedResponse<AclMenuGroupListItem>> GetListAsync(
-        ListQuery query, CancellationToken ct = default)
+        AclMenuGroupListQuery query, CancellationToken ct = default)
     {
-        return await _db.AclMenuGroups
-            .AsNoTracking()
+        var q = _db.AclMenuGroups.AsNoTracking().AsQueryable();
+
+        // 關鍵字篩選（Name）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            q = q.Where(g => g.Name != null && EF.Functions.Like(g.Name, kw));
+        }
+
+        // 是否顯示篩選
+        if (!string.IsNullOrWhiteSpace(query.IsShow))
+            q = q.Where(g => g.IsShow == query.IsShow);
+
+        return await q
             .OrderBy(g => g.SortNum)
             .Select(g => new AclMenuGroupListItem
             {

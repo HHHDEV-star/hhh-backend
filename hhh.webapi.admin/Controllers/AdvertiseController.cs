@@ -39,9 +39,9 @@ public class AdvertiseController : ApiControllerBase
     [HttpGet("ads/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<AdListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAdList(
-        [FromQuery] string? type, [FromQuery] ListQuery query, CancellationToken cancellationToken)
+        [FromQuery] AdListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _adService.GetListAsync(type, query, cancellationToken);
+        var data = await _adService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<AdListItem>>.Success(data));
     }
 

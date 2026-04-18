@@ -21,8 +21,7 @@ public partial class AgentService : IAgentService
 
     /// <inheritdoc />
     public async Task<PagedResponse<AgentListItem>> GetListAsync(
-        AgentQuery query,
-        ListQuery listQuery,
+        AgentListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: Agent_model::lists()
@@ -88,8 +87,8 @@ public partial class AgentService : IAgentService
         var ordered = q.OrderByDescending(a => a.AgentId);
         var total = await ordered.LongCountAsync(cancellationToken);
         var rows = await ordered
-            .Skip((listQuery.Page - 1) * listQuery.PageSize)
-            .Take(listQuery.PageSize)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
             .Select(a => new AgentListItem
             {
                 AgentId = a.AgentId,
@@ -124,8 +123,8 @@ public partial class AgentService : IAgentService
         {
             Items = rows,
             Total = total,
-            Page = listQuery.Page,
-            PageSize = listQuery.PageSize,
+            Page = query.Page,
+            PageSize = query.PageSize,
         };
     }
 

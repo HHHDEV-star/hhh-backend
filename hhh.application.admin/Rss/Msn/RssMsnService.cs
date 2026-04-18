@@ -14,10 +14,31 @@ public class RssMsnService : IRssMsnService
 
     public RssMsnService(XoopsContext db) => _db = db;
 
-    public async Task<PagedResponse<RssScheduleItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<RssScheduleItem>> GetListAsync(RssScheduleListQuery query, CancellationToken cancellationToken = default)
     {
-        return await _db.RssMsns
-            .AsNoTracking()
+        var q = _db.RssMsns.AsNoTracking().AsQueryable();
+
+        // 日期區間篩選（entity Date 為 DateOnly）
+        if (query.DateFrom is { } dateFrom)
+        {
+            q = q.Where(r => r.Date >= dateFrom);
+        }
+
+        if (query.DateTo is { } dateTo)
+        {
+            q = q.Where(r => r.Date <= dateTo);
+        }
+
+        // 關鍵字篩選（Hcolumn / Hcase）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            q = q.Where(r =>
+                EF.Functions.Like(r.Hcolumn, kw) ||
+                EF.Functions.Like(r.Hcase, kw));
+        }
+
+        return await q
             .OrderByDescending(r => r.Date)
             .Select(r => new RssScheduleItem
             {

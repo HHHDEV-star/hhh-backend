@@ -17,10 +17,26 @@ public class AclUserService : IAclUserService
     public AclUserService(HHHBackstageContext db) => _db = db;
 
     public async Task<PagedResponse<AclUserListItem>> GetListAsync(
-        ListQuery query, CancellationToken ct = default)
+        AclUserListQuery query, CancellationToken ct = default)
     {
-        return await _db.AclUsers
-            .AsNoTracking()
+        var q = _db.AclUsers.AsNoTracking().AsQueryable();
+
+        // 關鍵字篩選（Name / Account / Email / Position）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            q = q.Where(u =>
+                (u.Name != null && EF.Functions.Like(u.Name, kw)) ||
+                EF.Functions.Like(u.Account, kw) ||
+                EF.Functions.Like(u.Email, kw) ||
+                (u.Position != null && EF.Functions.Like(u.Position, kw)));
+        }
+
+        // 是否刪除篩選
+        if (!string.IsNullOrWhiteSpace(query.IsDel))
+            q = q.Where(u => u.IsDel == query.IsDel);
+
+        return await q
             .OrderByDescending(u => u.Id)
             .Select(u => new AclUserListItem
             {

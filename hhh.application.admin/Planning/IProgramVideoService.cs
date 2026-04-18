@@ -12,7 +12,7 @@ public interface IProgramVideoService
 {
     /// <summary>取得節目影片列表（分頁，依頻道 + 日期範圍，JOIN youtube_list）</summary>
     Task<PagedResponse<ProgramVideoListItem>> GetListAsync(
-        ProgramVideoQuery query, ListQuery listQuery,
+        ProgramVideoListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>更新節目影片（頻道、日期、開關、排序）</summary>
@@ -39,7 +39,7 @@ public interface IProgramVideoService
 
     /// <summary>取得節目表列表（分頁，依日期範圍，含未上架）</summary>
     Task<PagedResponse<ProgramListItem>> GetProgramListAsync(
-        DateOnly sdate, DateOnly edate, ListQuery listQuery,
+        ProgramListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>審核節目表（批次設為上架 onoff='Y'）</summary>
@@ -51,7 +51,7 @@ public interface IProgramVideoService
 
     /// <summary>取得頻道列表（分頁）</summary>
     Task<PagedResponse<ChannelListItem>> GetChannelListAsync(
-        ListQuery query,
+        ChannelListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>取得單一頻道</summary>

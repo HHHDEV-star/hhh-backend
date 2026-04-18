@@ -20,10 +20,40 @@ public class DecorationService : IDecorationService
 
     public DecorationService(XoopsContext db) => _db = db;
 
-    public async Task<PagedResponse<DecorationListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<DecorationListItem>> GetListAsync(DecorationListQuery query, CancellationToken cancellationToken = default)
     {
-        return await _db.Decorations
-            .AsNoTracking()
+        var q = _db.Decorations.AsNoTracking().AsQueryable();
+
+        // 關鍵字搜尋：姓名 / Email / 電話 / 地區
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(d =>
+                EF.Functions.Like(d.Name, like) ||
+                EF.Functions.Like(d.Email, like) ||
+                EF.Functions.Like(d.Phone, like) ||
+                EF.Functions.Like(d.Area, like));
+        }
+
+        // 房屋類型篩選
+        if (!string.IsNullOrWhiteSpace(query.Type))
+        {
+            q = q.Where(d => d.Type == query.Type);
+        }
+
+        // 日期區間篩選（建立時間）
+        if (query.DateFrom is { } dateFrom)
+        {
+            var from = dateFrom.ToDateTime(TimeOnly.MinValue);
+            q = q.Where(d => d.CreateTime >= from);
+        }
+        if (query.DateTo is { } dateTo)
+        {
+            var to = dateTo.ToDateTime(TimeOnly.MaxValue);
+            q = q.Where(d => d.CreateTime <= to);
+        }
+
+        return await q
             .OrderByDescending(d => d.Id)
             .Select(d => new DecorationListItem
             {

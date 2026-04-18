@@ -15,12 +15,41 @@ public class RenovationService : IRenovationService
         _db = db;
     }
 
-    public async Task<PagedResponse<RenovationListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<RenovationListItem>> GetListAsync(RenovationListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP:Renovation_model::get()
         // 為了能在 LINQ 投影裡同時拿到「原始 site_lists 字串」與其他欄位,
         // 先 query 到匿名型別,再在 in-memory 階段把 site_lists 解析成 JsonElement。
-        var baseQuery = from r in _db.RenovationReuqests.AsNoTracking()
+        var filtered = _db.RenovationReuqests.AsNoTracking().AsQueryable();
+
+        // 關鍵字篩選（Name / Phone / Email）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            filtered = filtered.Where(r =>
+                EF.Functions.Like(r.Name, like) ||
+                EF.Functions.Like(r.Phone, like) ||
+                EF.Functions.Like(r.Email, like));
+        }
+
+        // 類型篩選
+        if (!string.IsNullOrWhiteSpace(query.Type))
+            filtered = filtered.Where(r => r.Type == query.Type.Trim());
+
+        // 建立日期範圍篩選
+        if (query.DateFrom is { } dateFrom)
+        {
+            var from = dateFrom.ToDateTime(TimeOnly.MinValue);
+            filtered = filtered.Where(r => r.Ctime >= from);
+        }
+
+        if (query.DateTo is { } dateTo)
+        {
+            var to = dateTo.ToDateTime(new TimeOnly(23, 59, 59));
+            filtered = filtered.Where(r => r.Ctime <= to);
+        }
+
+        var baseQuery = from r in filtered
             orderby r.Id descending
             select new
             {

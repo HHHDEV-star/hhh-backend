@@ -42,11 +42,10 @@ public class CallInController : ApiControllerBase
     [HttpGet("list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<CallinDataListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList(
-        [FromQuery] CallinQuery query,
-        [FromQuery] ListQuery listQuery,
+        [FromQuery] CallinDataListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _callinDataService.GetListAsync(query, listQuery, cancellationToken);
+        var data = await _callinDataService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<CallinDataListItem>>.Success(data));
     }
 

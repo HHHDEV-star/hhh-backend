@@ -22,19 +22,35 @@ public class EditorialColumnService : IEditorialColumnService
         _logWriter = logWriter;
     }
 
-    public async Task<PagedResponse<EditorialColumnListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<EditorialColumnListItem>> GetListAsync(EditorialColumnListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP column_model::get_column_lists():
-        //   SELECT hcolumn_id, builder_product_id, ctag, ctype, ctype_sub, ctitle,
-        //          cshort_title, cdesc, clogo, extend_str, viewed, recommend, onoff,
-        //          creat_time, bid, hdesigner_ids, sdate, seo_title, seo_image,
-        //          seo_description, update_time
-        //   FROM _hcolumn
-        //   ORDER BY sdate DESC, hcolumn_id DESC
-        //
-        // 沒有 paging、沒有 filter,全量回給前端 Kendo Grid 自行分頁。
-        return await _db.Hcolumns
-            .AsNoTracking()
+        //   SELECT ... FROM _hcolumn ORDER BY sdate DESC, hcolumn_id DESC
+        var q = _db.Hcolumns.AsNoTracking().AsQueryable();
+
+        // 關鍵字篩選（Ctitle / CshortTitle）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            q = q.Where(c => EF.Functions.Like(c.Ctitle, kw)
+                           || EF.Functions.Like(c.CshortTitle, kw));
+        }
+
+        // 專欄類別篩選
+        if (!string.IsNullOrWhiteSpace(query.Ctype))
+            q = q.Where(c => c.Ctype == query.Ctype);
+
+        // 上下架篩選
+        if (query.Onoff.HasValue)
+            q = q.Where(c => c.Onoff == query.Onoff.Value);
+
+        // 日期範圍篩選
+        if (query.DateFrom.HasValue)
+            q = q.Where(c => c.Sdate >= query.DateFrom.Value);
+        if (query.DateTo.HasValue)
+            q = q.Where(c => c.Sdate <= query.DateTo.Value);
+
+        return await q
             .OrderByDescending(c => c.Sdate)
             .ThenByDescending(c => c.HcolumnId)
             .Select(c => new EditorialColumnListItem

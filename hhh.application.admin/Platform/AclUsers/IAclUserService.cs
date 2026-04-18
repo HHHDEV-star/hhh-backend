@@ -15,7 +15,7 @@ public interface IAclUserService
 {
     /// <summary>取得帳號列表（分頁）</summary>
     Task<PagedResponse<AclUserListItem>> GetListAsync(
-        ListQuery query, CancellationToken ct = default);
+        AclUserListQuery query, CancellationToken ct = default);
 
     /// <summary>新增帳號</summary>
     Task<OperationResult<int>> CreateAsync(

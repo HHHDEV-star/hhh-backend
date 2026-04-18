@@ -22,12 +22,26 @@ public class AdService : IAdService
         _logWriter = logWriter;
     }
 
-    public async Task<PagedResponse<AdListItem>> GetListAsync(string? type, ListQuery query, CancellationToken ct = default)
+    public async Task<PagedResponse<AdListItem>> GetListAsync(AdListQuery query, CancellationToken ct = default)
     {
         var q = _db.Hads.AsNoTracking().AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(type))
-            q = q.Where(a => a.Adtype == type.Trim());
+        if (!string.IsNullOrWhiteSpace(query.Type))
+            q = q.Where(a => a.Adtype == query.Type.Trim());
+
+        // 關鍵字篩選（Addesc / Keyword / Tabname）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(a =>
+                EF.Functions.Like(a.Addesc, like) ||
+                (a.Keyword != null && EF.Functions.Like(a.Keyword, like)) ||
+                EF.Functions.Like(a.Tabname, like));
+        }
+
+        // 上下架狀態篩選
+        if (query.Onoff.HasValue)
+            q = q.Where(a => a.Onoff == query.Onoff.Value);
 
         return await q
             .OrderByDescending(a => a.Adid)

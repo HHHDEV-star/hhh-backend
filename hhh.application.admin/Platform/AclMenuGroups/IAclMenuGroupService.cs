@@ -14,7 +14,7 @@ public interface IAclMenuGroupService
 {
     /// <summary>取得目錄群組列表（分頁）</summary>
     Task<PagedResponse<AclMenuGroupListItem>> GetListAsync(
-        ListQuery query, CancellationToken ct = default);
+        AclMenuGroupListQuery query, CancellationToken ct = default);
 
     /// <summary>新增目錄群組</summary>
     Task<OperationResult<int>> CreateAsync(

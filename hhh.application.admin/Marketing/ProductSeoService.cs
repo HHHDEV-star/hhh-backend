@@ -15,13 +15,41 @@ public class ProductSeoService : IProductSeoService
 
     /// <inheritdoc />
     public async Task<PagedResponse<ProductSeoListItem>> GetListAsync(
-        ListQuery query,
+        ProductSeoListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應 PHP: SELECT id, name, seo_title, seo_image
         //           FROM _hproduct ORDER BY id DESC
-        return await _db.Hproducts
-            .AsNoTracking()
+        var q = _db.Hproducts.AsNoTracking().AsQueryable();
+
+        // 關鍵字篩選（Name / SeoTitle）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            q = q.Where(p =>
+                EF.Functions.Like(p.Name, kw) ||
+                (p.SeoTitle != null && EF.Functions.Like(p.SeoTitle, kw)));
+        }
+
+        // 上線狀態篩選（Hproduct.Onoff 為 sbyte）
+        if (query.Onoff.HasValue)
+            q = q.Where(p => p.Onoff == (sbyte)query.Onoff.Value);
+
+        // SEO 完成度篩選（SeoTitle + SeoImage 皆非空 = complete）
+        if (string.Equals(query.SeoStatus, "complete", StringComparison.OrdinalIgnoreCase))
+        {
+            q = q.Where(p =>
+                p.SeoTitle != null && p.SeoTitle != "" &&
+                p.SeoImage != null && p.SeoImage != "");
+        }
+        else if (string.Equals(query.SeoStatus, "incomplete", StringComparison.OrdinalIgnoreCase))
+        {
+            q = q.Where(p =>
+                p.SeoTitle == null || p.SeoTitle == "" ||
+                p.SeoImage == null || p.SeoImage == "");
+        }
+
+        return await q
             .OrderByDescending(p => p.Id)
             .Select(p => new ProductSeoListItem
             {
@@ -29,6 +57,11 @@ public class ProductSeoService : IProductSeoService
                 Name = p.Name,
                 SeoTitle = p.SeoTitle,
                 SeoImage = p.SeoImage,
+                Onoff = p.Onoff != 0,
+                Cover = p.Cover ?? string.Empty,
+                SeoComplete = p.SeoTitle != null && p.SeoTitle != "" &&
+                              p.SeoImage != null && p.SeoImage != "",
+                UpdatedAt = p.UpdatedAt,
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }

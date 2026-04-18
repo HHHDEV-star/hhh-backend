@@ -31,20 +31,28 @@ public class RssTransferService : IRssTransferService
     public RssTransferService(XoopsContext db) => _db = db;
 
     public async Task<PagedResponse<RssTransferLogItem>> GetLogsAsync(
-        DateTime? startDate, DateTime? endDate, ListQuery query,
+        RssTransferLogListQuery query,
         CancellationToken cancellationToken = default)
     {
         // 對應舊 PHP:禁止無條件全撈,至少要帶日期
-        if (startDate is null && endDate is null)
+        if (query.StartDate is null && query.EndDate is null)
             return new PagedResponse<RssTransferLogItem> { Page = query.Page, PageSize = query.PageSize };
 
         var q = _db.RssTransfers.AsNoTracking().AsQueryable();
 
-        if (startDate is { } sd)
+        if (query.StartDate is { } sd)
             q = q.Where(r => r.Datetime >= sd);
 
-        if (endDate is { } ed)
+        if (query.EndDate is { } ed)
             q = q.Where(r => r.Datetime <= ed);
+
+        // 來源篩選
+        if (!string.IsNullOrWhiteSpace(query.Source))
+            q = q.Where(r => r.Source == query.Source);
+
+        // 類型篩選（原始英文 type）
+        if (!string.IsNullOrWhiteSpace(query.Type))
+            q = q.Where(r => r.Type == query.Type);
 
         var ordered = q.OrderByDescending(r => r.Id);
 

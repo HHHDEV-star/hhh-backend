@@ -14,7 +14,7 @@ public interface IYoutubeManagementService
 
     /// <summary>取得 YouTube 群組完整列表（分頁，gid DESC）</summary>
     Task<PagedResponse<YoutubeGroupListItem>> GetGroupListAsync(
-        ListQuery query,
+        YoutubeGroupListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>取得 YouTube 群組下拉選單（onoff='Y'，gid DESC）</summary>
@@ -35,7 +35,7 @@ public interface IYoutubeManagementService
 
     /// <summary>取得群組明細列表（分頁，JOIN youtube_list + youtube_group）</summary>
     Task<PagedResponse<YoutubeGroupDetailListItem>> GetGroupDetailListAsync(
-        ListQuery query,
+        YoutubeGroupDetailListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>更新群組明細（排序 + 開關）</summary>

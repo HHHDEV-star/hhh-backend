@@ -67,7 +67,7 @@ public class BrokersController : ApiControllerBase
     /// </remarks>
     [HttpGet("calculators/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<CalculatorListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCalculatorList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetCalculatorList([FromQuery] CalculatorListQuery query, CancellationToken cancellationToken)
     {
         var data = await _calculatorService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<CalculatorListItem>>.Success(data));
@@ -124,7 +124,7 @@ public class BrokersController : ApiControllerBase
     /// </remarks>
     [HttpGet("renovations/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<RenovationListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetRenovationList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetRenovationList([FromQuery] RenovationListQuery query, CancellationToken cancellationToken)
     {
         var data = await _renovationService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<RenovationListItem>>.Success(data));
@@ -304,11 +304,10 @@ public class BrokersController : ApiControllerBase
     [HttpGet("agents/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<AgentListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAgentList(
-        [FromQuery] AgentQuery query,
-        [FromQuery] ListQuery listQuery,
+        [FromQuery] AgentListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _agentService.GetListAsync(query, listQuery, cancellationToken);
+        var data = await _agentService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<AgentListItem>>.Success(data));
     }
 

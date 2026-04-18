@@ -24,7 +24,7 @@ public class HomepageInnerSetService : IHomepageInnerSetService
 
     /// <inheritdoc />
     public async Task<PagedResponse<HomepageInnerSetListItem>> GetListAsync(
-        ListQuery query, CancellationToken cancellationToken = default)
+        HomepageInnerSetListQuery query, CancellationToken cancellationToken = default)
     {
         // 對應 PHP: homepage_model::get_innerset()
         // 1. 計算每個 outer_set 中 onoff='Y' 的筆數
@@ -36,7 +36,7 @@ public class HomepageInnerSetService : IHomepageInnerSetService
             .ToDictionaryAsync(x => x.OuterSet, x => x.Count, cancellationToken);
 
         // 2. 主查詢: homepage_set JOIN outer_site_set
-        var rows = await _db.HomepageSets
+        var baseQuery = _db.HomepageSets
             .AsNoTracking()
             .Join(
                 _db.OuterSiteSets.AsNoTracking(),
@@ -55,7 +55,29 @@ public class HomepageInnerSetService : IHomepageInnerSetService
                     OssTitle = oss.Title,
                     OSort = oss.Sort,
                     MaxRow = oss.MaxRow,
-                })
+                });
+
+        // 主題類型篩選
+        if (!string.IsNullOrWhiteSpace(query.ThemeType))
+        {
+            var themeType = query.ThemeType.Trim().ToLower();
+            baseQuery = baseQuery.Where(x => x.ThemeType == themeType);
+        }
+
+        // 上線狀態篩選（Y/N）
+        if (!string.IsNullOrWhiteSpace(query.Onoff))
+        {
+            var onoff = query.Onoff.Trim().ToUpper();
+            baseQuery = baseQuery.Where(x => x.Onoff == onoff);
+        }
+
+        // 區塊篩選
+        if (query.OuterSet.HasValue)
+        {
+            baseQuery = baseQuery.Where(x => x.OuterSet == query.OuterSet.Value);
+        }
+
+        var rows = await baseQuery
             .OrderBy(x => x.OuterSet)
             .ThenBy(x => x.InnerSort)
             .ToListAsync(cancellationToken);

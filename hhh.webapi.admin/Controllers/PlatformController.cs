@@ -226,7 +226,7 @@ public class PlatformController : ApiControllerBase
     [HttpGet("acl-users/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<AclUserListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAclUserList(
-        [FromQuery] ListQuery query,
+        [FromQuery] AclUserListQuery query,
         CancellationToken cancellationToken)
     {
         var data = await _aclUserService.GetListAsync(query, cancellationToken);
@@ -308,7 +308,7 @@ public class PlatformController : ApiControllerBase
     [HttpGet("acl-menu-groups/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<AclMenuGroupListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAclMenuGroupList(
-        [FromQuery] ListQuery query,
+        [FromQuery] AclMenuGroupListQuery query,
         CancellationToken cancellationToken)
     {
         var data = await _aclMenuGroupService.GetListAsync(query, cancellationToken);
@@ -368,7 +368,7 @@ public class PlatformController : ApiControllerBase
     [HttpGet("acl-menu-paths/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<AclMenuPathListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAclMenuPathList(
-        [FromQuery] ListQuery query,
+        [FromQuery] AclMenuPathListQuery query,
         CancellationToken cancellationToken)
     {
         var data = await _aclMenuPathService.GetListAsync(query, cancellationToken);

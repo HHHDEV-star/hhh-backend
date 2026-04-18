@@ -14,4 +14,16 @@ public class ProductSeoListItem
 
     /// <summary>SEO 圖片（FB 分享圖片）</summary>
     public string? SeoImage { get; set; }
+
+    /// <summary>上線狀態（true=開, false=關）</summary>
+    public bool Onoff { get; set; }
+
+    /// <summary>封面圖</summary>
+    public string Cover { get; set; } = string.Empty;
+
+    /// <summary>SEO 完成度（SeoTitle + SeoImage 皆有值）</summary>
+    public bool SeoComplete { get; set; }
+
+    /// <summary>更新時間</summary>
+    public DateTime UpdatedAt { get; set; }
 }

@@ -12,8 +12,7 @@ public interface IAgentService
 {
     /// <summary>取得經紀人列表（依日期範圍 + 關鍵字篩選，分頁）</summary>
     Task<PagedResponse<AgentListItem>> GetListAsync(
-        AgentQuery query,
-        ListQuery listQuery,
+        AgentListQuery query,
         CancellationToken cancellationToken = default);
 
     /// <summary>軟刪除經紀人（is_del = 1）</summary>

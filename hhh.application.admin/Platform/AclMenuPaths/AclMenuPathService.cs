@@ -15,10 +15,28 @@ public class AclMenuPathService : IAclMenuPathService
     public AclMenuPathService(HHHBackstageContext db) => _db = db;
 
     public async Task<PagedResponse<AclMenuPathListItem>> GetListAsync(
-        ListQuery query, CancellationToken ct = default)
+        AclMenuPathListQuery query, CancellationToken ct = default)
     {
-        return await _db.AclMenuPaths
-            .AsNoTracking()
+        var q = _db.AclMenuPaths.AsNoTracking().AsQueryable();
+
+        // 關鍵字篩選（Name / Path）
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = $"%{query.Keyword}%";
+            q = q.Where(p =>
+                (p.Name != null && EF.Functions.Like(p.Name, kw)) ||
+                (p.Path != null && EF.Functions.Like(p.Path, kw)));
+        }
+
+        // 群組篩選
+        if (query.MenuGroupId.HasValue)
+            q = q.Where(p => p.MenuGroupId == query.MenuGroupId.Value);
+
+        // 是否顯示篩選
+        if (!string.IsNullOrWhiteSpace(query.IsShow))
+            q = q.Where(p => p.IsShow == query.IsShow);
+
+        return await q
             .OrderBy(p => p.SortNum)
             .Select(p => new AclMenuPathListItem
             {

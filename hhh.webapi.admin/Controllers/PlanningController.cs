@@ -45,7 +45,7 @@ public class PlanningController : ApiControllerBase
     /// </remarks>
     [HttpGet("youtube/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<YoutubeListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetYoutubeList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetYoutubeList([FromQuery] YoutubeListQuery query, CancellationToken cancellationToken)
     {
         var data = await _youtubeService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<YoutubeListItem>>.Success(data));
@@ -161,7 +161,7 @@ public class PlanningController : ApiControllerBase
     [HttpGet("youtube-groups/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<YoutubeGroupListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetYoutubeGroupList(
-        [FromQuery] ListQuery query,
+        [FromQuery] YoutubeGroupListQuery query,
         CancellationToken cancellationToken)
     {
         var data = await _youtubeManagementService.GetGroupListAsync(query, cancellationToken);
@@ -235,7 +235,7 @@ public class PlanningController : ApiControllerBase
     [HttpGet("youtube-group-details/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<YoutubeGroupDetailListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetYoutubeGroupDetailList(
-        [FromQuery] ListQuery query,
+        [FromQuery] YoutubeGroupDetailListQuery query,
         CancellationToken cancellationToken)
     {
         var data = await _youtubeManagementService.GetGroupDetailListAsync(query, cancellationToken);
@@ -292,11 +292,10 @@ public class PlanningController : ApiControllerBase
     [HttpGet("program-videos/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProgramVideoListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProgramVideoList(
-        [FromQuery] ProgramVideoQuery query,
-        [FromQuery] ListQuery listQuery,
+        [FromQuery] ProgramVideoListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _programVideoService.GetListAsync(query, listQuery, cancellationToken);
+        var data = await _programVideoService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<ProgramVideoListItem>>.Success(data));
     }
 
@@ -389,12 +388,10 @@ public class PlanningController : ApiControllerBase
     [HttpGet("program-list/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProgramListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProgramList(
-        [FromQuery] DateOnly sdate,
-        [FromQuery] DateOnly edate,
-        [FromQuery] ListQuery listQuery,
+        [FromQuery] ProgramListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _programVideoService.GetProgramListAsync(sdate, edate, listQuery, cancellationToken);
+        var data = await _programVideoService.GetProgramListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<ProgramListItem>>.Success(data));
     }
 
@@ -429,7 +426,7 @@ public class PlanningController : ApiControllerBase
     [HttpGet("channels/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ChannelListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetChannelList(
-        [FromQuery] ListQuery query,
+        [FromQuery] ChannelListQuery query,
         CancellationToken cancellationToken)
     {
         var data = await _programVideoService.GetChannelListAsync(query, cancellationToken);

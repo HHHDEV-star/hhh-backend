@@ -50,7 +50,7 @@ public class RssController : ApiControllerBase
     /// <summary>取得 Yahoo RSS 排程列表</summary>
     [HttpGet("yahoo/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssScheduleItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetYahooList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetYahooList([FromQuery] RssScheduleListQuery query, CancellationToken cancellationToken)
     {
         var data = await _yahooService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<RssScheduleItem>>.Success(data));
@@ -91,7 +91,7 @@ public class RssController : ApiControllerBase
     /// <summary>取得 MSN RSS 排程列表</summary>
     [HttpGet("msn/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssScheduleItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetMsnList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetMsnList([FromQuery] RssScheduleListQuery query, CancellationToken cancellationToken)
     {
         var data = await _msnService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<RssScheduleItem>>.Success(data));
@@ -132,7 +132,7 @@ public class RssController : ApiControllerBase
     /// <summary>取得 LineToday RSS 排程列表</summary>
     [HttpGet("line-today/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssLineTodayItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetLineTodayList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetLineTodayList([FromQuery] RssLineTodayListQuery query, CancellationToken cancellationToken)
     {
         var data = await _lineTodayService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<RssLineTodayItem>>.Success(data));
@@ -179,12 +179,10 @@ public class RssController : ApiControllerBase
     [HttpGet("transfer-logs/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<RssTransferLogItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTransferLogList(
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
-        [FromQuery] ListQuery query,
+        [FromQuery] RssTransferLogListQuery query,
         CancellationToken cancellationToken)
     {
-        var data = await _transferService.GetLogsAsync(startDate, endDate, query, cancellationToken);
+        var data = await _transferService.GetLogsAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<RssTransferLogItem>>.Success(data));
     }
 

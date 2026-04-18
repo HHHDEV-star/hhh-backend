@@ -16,10 +16,40 @@ public class PreciseService : IPreciseService
 
     public PreciseService(XoopsContext db) => _db = db;
 
-    public async Task<PagedResponse<PreciseListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<PreciseListItem>> GetListAsync(PreciseListQuery query, CancellationToken cancellationToken = default)
     {
-        return await _db.Precises
-            .AsNoTracking()
+        var q = _db.Precises.AsNoTracking().AsQueryable();
+
+        // 關鍵字搜尋：姓名 / Email / 公司 / 手機
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(p =>
+                EF.Functions.Like(p.Name, like) ||
+                EF.Functions.Like(p.Email, like) ||
+                EF.Functions.Like(p.Company, like) ||
+                EF.Functions.Like(p.Mobile, like));
+        }
+
+        // 身份別篩選
+        if (!string.IsNullOrWhiteSpace(query.Identity))
+        {
+            q = q.Where(p => p.Identity == query.Identity);
+        }
+
+        // 日期區間篩選（建立時間）
+        if (query.DateFrom is { } dateFrom)
+        {
+            var from = dateFrom.ToDateTime(TimeOnly.MinValue);
+            q = q.Where(p => p.CreateTime >= from);
+        }
+        if (query.DateTo is { } dateTo)
+        {
+            var to = dateTo.ToDateTime(TimeOnly.MaxValue);
+            q = q.Where(p => p.CreateTime <= to);
+        }
+
+        return await q
             .OrderByDescending(p => p.Id)
             .Select(p => new PreciseListItem
             {

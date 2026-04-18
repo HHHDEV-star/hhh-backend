@@ -18,24 +18,24 @@ public class TagService : ITagService
     // =========================================================================
 
     public async Task<PagedResponse<TagHcaseItem>> GetHcaseTagsAsync(
-        uint? hdesignerId, string? searchTag, ListQuery query, CancellationToken ct = default)
+        TagHcaseListQuery query, CancellationToken ct = default)
     {
         var q = from c in _db.Hcases.AsNoTracking()
                 join d in _db.Hdesigners.AsNoTracking() on c.HdesignerId equals d.HdesignerId into dj
                 from d in dj.DefaultIfEmpty()
                 select new { c, d };
 
-        if (hdesignerId is { } did && did > 0)
+        if (query.HdesignerId is { } did && did > 0)
             q = q.Where(x => x.c.HdesignerId == did);
 
-        if (!string.IsNullOrWhiteSpace(searchTag))
+        if (!string.IsNullOrWhiteSpace(query.SearchTag))
         {
-            var like = $"%{searchTag.Trim()}%";
+            var like = $"%{query.SearchTag.Trim()}%";
             q = q.Where(x => x.c.Tag != null && EF.Functions.Like(x.c.Tag, like));
         }
 
         // 舊 PHP:禁止無條件全撈
-        if (hdesignerId is null or 0 && string.IsNullOrWhiteSpace(searchTag))
+        if (query.HdesignerId is null or 0 && string.IsNullOrWhiteSpace(query.SearchTag))
             return new PagedResponse<TagHcaseItem> { Page = query.Page, PageSize = query.PageSize };
 
         return await q.OrderByDescending(x => x.c.HcaseId)
@@ -72,34 +72,33 @@ public class TagService : ITagService
     // =========================================================================
 
     public async Task<PagedResponse<TagHcolumnItem>> GetHcolumnTagsAsync(
-        string? ctype, string? ctitle, DateOnly? startDate, DateOnly? endDate,
-        string? searchTag, ListQuery query, CancellationToken ct = default)
+        TagHcolumnListQuery query, CancellationToken ct = default)
     {
         // 舊 PHP:至少要有一個條件才查
-        if (string.IsNullOrWhiteSpace(ctype) && string.IsNullOrWhiteSpace(ctitle)
-            && startDate is null && endDate is null && string.IsNullOrWhiteSpace(searchTag))
+        if (string.IsNullOrWhiteSpace(query.Ctype) && string.IsNullOrWhiteSpace(query.Ctitle)
+            && query.StartDate is null && query.EndDate is null && string.IsNullOrWhiteSpace(query.SearchTag))
             return new PagedResponse<TagHcolumnItem> { Page = query.Page, PageSize = query.PageSize };
 
         var q = _db.Hcolumns.AsNoTracking().AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(ctype))
-            q = q.Where(c => c.Ctype == ctype.Trim());
+        if (!string.IsNullOrWhiteSpace(query.Ctype))
+            q = q.Where(c => c.Ctype == query.Ctype.Trim());
 
-        if (!string.IsNullOrWhiteSpace(ctitle))
+        if (!string.IsNullOrWhiteSpace(query.Ctitle))
         {
-            var like = $"%{ctitle.Trim()}%";
+            var like = $"%{query.Ctitle.Trim()}%";
             q = q.Where(c => EF.Functions.Like(c.Ctitle, like));
         }
 
-        if (startDate is { } sd)
+        if (query.StartDate is { } sd)
             q = q.Where(c => DateOnly.FromDateTime(c.CreatTime) >= sd);
 
-        if (endDate is { } ed)
+        if (query.EndDate is { } ed)
             q = q.Where(c => DateOnly.FromDateTime(c.CreatTime) <= ed);
 
-        if (!string.IsNullOrWhiteSpace(searchTag))
+        if (!string.IsNullOrWhiteSpace(query.SearchTag))
         {
-            var like = $"%{searchTag.Trim()}%";
+            var like = $"%{query.SearchTag.Trim()}%";
             q = q.Where(c => c.Tag != null && EF.Functions.Like(c.Tag, like));
         }
 
@@ -135,33 +134,32 @@ public class TagService : ITagService
     // =========================================================================
 
     public async Task<PagedResponse<TagHvideoItem>> GetHvideoTagsAsync(
-        uint? hdesignerId, string? title, DateOnly? startDate, DateOnly? endDate,
-        string? searchTag, ListQuery query, CancellationToken ct = default)
+        TagHvideoListQuery query, CancellationToken ct = default)
     {
-        if (hdesignerId is null or 0 && string.IsNullOrWhiteSpace(title)
-            && startDate is null && endDate is null && string.IsNullOrWhiteSpace(searchTag))
+        if (query.HdesignerId is null or 0 && string.IsNullOrWhiteSpace(query.Title)
+            && query.StartDate is null && query.EndDate is null && string.IsNullOrWhiteSpace(query.SearchTag))
             return new PagedResponse<TagHvideoItem> { Page = query.Page, PageSize = query.PageSize };
 
         var q = _db.Hvideos.AsNoTracking().AsQueryable();
 
-        if (hdesignerId is { } did && did > 0)
+        if (query.HdesignerId is { } did && did > 0)
             q = q.Where(v => v.HdesignerId == did);
 
-        if (!string.IsNullOrWhiteSpace(title))
+        if (!string.IsNullOrWhiteSpace(query.Title))
         {
-            var like = $"%{title.Trim()}%";
+            var like = $"%{query.Title.Trim()}%";
             q = q.Where(v => EF.Functions.Like(v.Name, like));
         }
 
-        if (startDate is { } sd)
+        if (query.StartDate is { } sd)
             q = q.Where(v => DateOnly.FromDateTime(v.CreatTime) >= sd);
 
-        if (endDate is { } ed)
+        if (query.EndDate is { } ed)
             q = q.Where(v => DateOnly.FromDateTime(v.CreatTime) <= ed);
 
-        if (!string.IsNullOrWhiteSpace(searchTag))
+        if (!string.IsNullOrWhiteSpace(query.SearchTag))
         {
-            var like = $"%{searchTag.Trim()}%";
+            var like = $"%{query.SearchTag.Trim()}%";
             q = q.Where(v => v.Tag != null && EF.Functions.Like(v.Tag, like));
         }
 
@@ -200,9 +198,9 @@ public class TagService : ITagService
     // =========================================================================
 
     public async Task<PagedResponse<TagImageItem>> GetImageTagsAsync(
-        uint? hcaseId, string? searchTag, ListQuery query, CancellationToken ct = default)
+        TagImageListQuery query, CancellationToken ct = default)
     {
-        if (hcaseId is null or 0 && string.IsNullOrWhiteSpace(searchTag))
+        if (query.HcaseId is null or 0 && string.IsNullOrWhiteSpace(query.SearchTag))
             return new PagedResponse<TagImageItem> { Page = query.Page, PageSize = query.PageSize };
 
         var q = from img in _db.HcaseImgs.AsNoTracking()
@@ -210,12 +208,12 @@ public class TagService : ITagService
                 from c in cj.DefaultIfEmpty()
                 select new { img, CaseCaption = c != null ? c.Caption : string.Empty };
 
-        if (hcaseId is { } cid && cid > 0)
+        if (query.HcaseId is { } cid && cid > 0)
             q = q.Where(x => x.img.HcaseId == cid);
 
-        if (!string.IsNullOrWhiteSpace(searchTag))
+        if (!string.IsNullOrWhiteSpace(query.SearchTag))
         {
-            var like = $"%{searchTag.Trim()}%";
+            var like = $"%{query.SearchTag.Trim()}%";
             q = q.Where(x =>
                 (x.img.Tag1 != null && EF.Functions.Like(x.img.Tag1, like)) ||
                 (x.img.Tag2 != null && EF.Functions.Like(x.img.Tag2, like)) ||

@@ -15,7 +15,7 @@ public interface IAclMenuPathService
 {
     /// <summary>取得目錄功能列表（分頁）</summary>
     Task<PagedResponse<AclMenuPathListItem>> GetListAsync(
-        ListQuery query, CancellationToken ct = default);
+        AclMenuPathListQuery query, CancellationToken ct = default);
 
     /// <summary>新增目錄功能</summary>
     Task<OperationResult<int>> CreateAsync(

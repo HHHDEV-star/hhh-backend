@@ -20,7 +20,7 @@ public interface IExecuteFormService
     // ---- 核心 CRUD(已實作) ----
 
     /// <summary>取得執行表單列表(is_delete='N',exf_id DESC)</summary>
-    Task<PagedResponse<ExecuteFormListItem>> GetListAsync(ListQuery query, CancellationToken cancellationToken = default);
+    Task<PagedResponse<ExecuteFormListItem>> GetListAsync(ExecuteFormListQuery query, CancellationToken cancellationToken = default);
 
     /// <summary>取得單一執行表單</summary>
     Task<ExecuteFormListItem?> GetByIdAsync(uint exfId, CancellationToken cancellationToken = default);

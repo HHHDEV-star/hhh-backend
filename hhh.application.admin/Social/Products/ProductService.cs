@@ -13,10 +13,36 @@ public class ProductService : IProductService
 
     public ProductService(XoopsContext db) => _db = db;
 
-    public async Task<PagedResponse<ProductListItem>> GetListAsync(ListQuery query, CancellationToken ct = default)
+    public async Task<PagedResponse<ProductListItem>> GetListAsync(ProductListQuery query, CancellationToken ct = default)
     {
-        return await _db.Hproducts
-            .AsNoTracking()
+        var q = _db.Hproducts.AsNoTracking().AsQueryable();
+
+        // 關鍵字搜尋：產品名稱
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(p => EF.Functions.Like(p.Name, like));
+        }
+
+        // 上線狀態篩選
+        if (query.Onoff is { } onoff)
+        {
+            q = q.Where(p => p.Onoff == (sbyte)onoff);
+        }
+
+        // 分類1篩選
+        if (!string.IsNullOrWhiteSpace(query.Cate1))
+        {
+            q = q.Where(p => p.Cate1 == query.Cate1);
+        }
+
+        // 廠商ID篩選
+        if (query.HbrandId is { } hbrandId)
+        {
+            q = q.Where(p => p.HbrandId == hbrandId);
+        }
+
+        return await q
             .OrderByDescending(p => p.Id)
             .Select(p => new ProductListItem
             {
@@ -49,10 +75,37 @@ public class ProductService : IProductService
         return OperationResult.Ok("產品修改成功");
     }
 
-    public async Task<PagedResponse<ProductSeoItem>> GetSeoListAsync(ListQuery query, CancellationToken ct = default)
+    public async Task<PagedResponse<ProductSeoItem>> GetSeoListAsync(ProductSeoListQuery query, CancellationToken ct = default)
     {
-        return await _db.Hproducts
-            .AsNoTracking()
+        var q = _db.Hproducts.AsNoTracking().AsQueryable();
+
+        // 關鍵字搜尋：產品名稱 / SEO 標題
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(p =>
+                EF.Functions.Like(p.Name, like) ||
+                (p.SeoTitle != null && EF.Functions.Like(p.SeoTitle, like)));
+        }
+
+        // SEO 完成狀態篩選
+        if (!string.IsNullOrWhiteSpace(query.SeoStatus))
+        {
+            if (string.Equals(query.SeoStatus, "complete", StringComparison.OrdinalIgnoreCase))
+            {
+                q = q.Where(p =>
+                    p.SeoTitle != null && p.SeoTitle != "" &&
+                    p.SeoImage != null && p.SeoImage != "");
+            }
+            else if (string.Equals(query.SeoStatus, "incomplete", StringComparison.OrdinalIgnoreCase))
+            {
+                q = q.Where(p =>
+                    p.SeoTitle == null || p.SeoTitle == "" ||
+                    p.SeoImage == null || p.SeoImage == "");
+            }
+        }
+
+        return await q
             .OrderByDescending(p => p.Id)
             .Select(p => new ProductSeoItem
             {
@@ -60,6 +113,10 @@ public class ProductService : IProductService
                 Name = p.Name,
                 SeoTitle = p.SeoTitle,
                 SeoImage = p.SeoImage,
+                Onoff = p.Onoff == 1,
+                Cover = p.Cover,
+                SeoComplete = p.SeoTitle != null && p.SeoTitle != "" &&
+                              p.SeoImage != null && p.SeoImage != "",
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }

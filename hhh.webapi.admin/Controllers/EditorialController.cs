@@ -55,7 +55,7 @@ public class EditorialController : ApiControllerBase
     /// </remarks>
     [HttpGet("cases/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<EditorialCaseListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCaseList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetCaseList([FromQuery] EditorialCaseListQuery query, CancellationToken cancellationToken)
     {
         var data = await _editorialCaseService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<EditorialCaseListItem>>.Success(data));
@@ -142,7 +142,7 @@ public class EditorialController : ApiControllerBase
     /// </remarks>
     [HttpGet("columns/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<EditorialColumnListItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetColumnList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetColumnList([FromQuery] EditorialColumnListQuery query, CancellationToken cancellationToken)
     {
         var data = await _editorialColumnService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<EditorialColumnListItem>>.Success(data));
