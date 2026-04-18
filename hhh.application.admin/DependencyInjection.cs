@@ -87,6 +87,7 @@ public static class DependencyInjection
 
         // Editorial - 編輯部
         services.AddScoped<IEditorialCaseService, EditorialCaseService>();
+        services.AddScoped<ICaseImageService, CaseImageService>();
         services.AddScoped<IEditorialColumnService, EditorialColumnService>();
         services.AddScoped<IHtopicService, HtopicService>();
 

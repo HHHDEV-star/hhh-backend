@@ -30,15 +30,18 @@ namespace hhh.webapi.admin.Controllers;
 public class EditorialController : ApiControllerBase
 {
     private readonly IEditorialCaseService _editorialCaseService;
+    private readonly ICaseImageService _caseImageService;
     private readonly IEditorialColumnService _editorialColumnService;
     private readonly IHtopicService _htopicService;
 
     public EditorialController(
         IEditorialCaseService editorialCaseService,
+        ICaseImageService caseImageService,
         IEditorialColumnService editorialColumnService,
         IHtopicService htopicService)
     {
         _editorialCaseService = editorialCaseService;
+        _caseImageService = caseImageService;
         _editorialColumnService = editorialColumnService;
         _htopicService = htopicService;
     }
@@ -129,6 +132,116 @@ public class EditorialController : ApiControllerBase
             return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
 
         return Ok(ApiResponse<object>.Success(new { id = result.Data }, result.Message));
+    }
+
+    // =========================================================================
+    // 個案圖片 (case-images)
+    // =========================================================================
+
+    /// <summary>取得個案圖片列表</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Cases/image GET → case_model::get_case_imgs()
+    /// 依 order ASC 排序。
+    /// </remarks>
+    [HttpGet("cases/{hcaseId:int}/images/list")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<CaseImageListItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCaseImageList(
+        uint hcaseId, [FromQuery] PagedRequest query, CancellationToken cancellationToken)
+    {
+        var data = await _caseImageService.GetListAsync(hcaseId, query, cancellationToken);
+        return Ok(ApiResponse<PagedResponse<CaseImageListItem>>.Success(data));
+    }
+
+    /// <summary>新增個案圖片</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Cases/image POST → case_model::insert_case_imgs()
+    /// 前端先上傳圖片到圖片伺服器取得 URL，再呼叫此端點建立紀錄。
+    /// </remarks>
+    [HttpPost("cases/{hcaseId:int}/images")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CreateCaseImage(
+        uint hcaseId,
+        [FromBody] CreateCaseImageRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _caseImageService.CreateAsync(hcaseId, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+
+        return StatusCode(StatusCodes.Status201Created,
+            ApiResponse<object>.Created(new { id = result.Data }, result.Message));
+    }
+
+    /// <summary>更新個案圖片資訊</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Cases/image PUT → case_model::update_case_imgs()
+    /// 可更新標題/描述/排序/Tag1-5/平面圖/3D示意圖。
+    /// </remarks>
+    [HttpPut("cases/{hcaseId:int}/images/{imgId:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateCaseImage(
+        uint hcaseId, uint imgId,
+        [FromBody] UpdateCaseImageRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _caseImageService.UpdateAsync(imgId, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+        return Ok(ApiResponse<object>.Success(new { }, result.Message));
+    }
+
+    /// <summary>刪除個案圖片</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Cases/image DELETE
+    /// 硬刪除。
+    /// </remarks>
+    [HttpDelete("cases/{hcaseId:int}/images/{imgId:int}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteCaseImage(
+        uint hcaseId, uint imgId, CancellationToken cancellationToken)
+    {
+        var result = await _caseImageService.DeleteAsync(imgId, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+        return Ok(ApiResponse<object>.Success(new { }, result.Message));
+    }
+
+    /// <summary>設定個案封面圖</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Cases/image PUT (cover)
+    /// 將指定圖片設為封面，同時更新 _hcase.cover 欄位。
+    /// </remarks>
+    [HttpPost("cases/{hcaseId:int}/images/set-cover")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetCaseCover(
+        uint hcaseId,
+        [FromBody] SetCaseCoverRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _caseImageService.SetCoverAsync(hcaseId, request, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+        return Ok(ApiResponse<object>.Success(new { }, result.Message));
+    }
+
+    /// <summary>重新排序個案圖片</summary>
+    /// <remarks>
+    /// 對應舊版 PHP: Cases/image_order PUT
+    /// 依目前 order 排序後，重新編號為連續序號 1, 2, 3...
+    /// </remarks>
+    [HttpPost("cases/{hcaseId:int}/images/reorder")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ReorderCaseImages(
+        uint hcaseId, CancellationToken cancellationToken)
+    {
+        var result = await _caseImageService.ReorderAsync(hcaseId, cancellationToken);
+        if (!result.IsSuccess)
+            return StatusCode(result.Code, ApiResponse.Error(result.Code, result.Message));
+        return Ok(ApiResponse<object>.Success(new { }, result.Message));
     }
 
     // =========================================================================
