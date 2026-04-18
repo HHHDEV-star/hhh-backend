@@ -13,30 +13,79 @@ public class ForumService : IForumService
 
     public ForumService(XoopsContext db) => _db = db;
 
-    public async Task<PagedResponse<ForumArticleBackItem>> GetArticleBackListAsync(ListQuery query, CancellationToken ct = default)
+    public async Task<PagedResponse<ForumArticleBackItem>> GetArticleBackListAsync(ForumArticleListQuery query, CancellationToken ct = default)
     {
         // 對應舊 PHP forum_model::get_article_for_back()
-        // JOIN _users 帶出 uname / email,ORDER BY article_id DESC
-        return await (
-            from a in _db.ForumArticles.AsNoTracking()
-            join u in _db.Users.AsNoTracking() on a.Uid equals (int)u.Uid into uj
-            from u in uj.DefaultIfEmpty()
-            orderby a.ArticleId descending
-            select new ForumArticleBackItem
+        // JOIN _users 帶出 uname / name / email,ORDER BY article_id DESC
+        var q = from a in _db.ForumArticles.AsNoTracking()
+                join u in _db.Users.AsNoTracking() on a.Uid equals (int)u.Uid into uj
+                from u in uj.DefaultIfEmpty()
+                select new { a, u };
+
+        // 關鍵字搜尋：標題 / 發文者帳號 / 發文者 Email
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var like = $"%{query.Keyword.Trim()}%";
+            q = q.Where(x =>
+                EF.Functions.Like(x.a.Title, like) ||
+                (x.u != null && EF.Functions.Like(x.u.Uname, like)) ||
+                (x.u != null && EF.Functions.Like(x.u.Email, like)));
+        }
+
+        // 分類篩選
+        if (query.Category is { } category)
+        {
+            q = q.Where(x => x.a.Category == category);
+        }
+
+        // 置頂篩選
+        if (query.IsTop is { } isTop)
+        {
+            var val = (sbyte)(isTop ? 1 : 0);
+            q = q.Where(x => x.a.IsTop == val);
+        }
+
+        // 刪除狀態篩選
+        if (query.IsDel is { } isDel)
+        {
+            var val = (sbyte)(isDel ? 1 : 0);
+            q = q.Where(x => x.a.IsDel == val);
+        }
+
+        // 日期區間篩選（建立時間）
+        if (query.DateFrom is { } dateFrom)
+        {
+            var from = dateFrom.ToDateTime(TimeOnly.MinValue);
+            q = q.Where(x => x.a.DateAdded >= from);
+        }
+        if (query.DateTo is { } dateTo)
+        {
+            var to = dateTo.ToDateTime(TimeOnly.MaxValue);
+            q = q.Where(x => x.a.DateAdded <= to);
+        }
+
+        return await q
+            .OrderByDescending(x => x.a.ArticleId)
+            .Select(x => new ForumArticleBackItem
             {
-                ArticleId = a.ArticleId,
-                Uid = a.Uid,
-                Uname = u != null ? u.Uname : string.Empty,
-                Email = u != null ? u.Email : string.Empty,
-                Category = a.Category,
-                Title = a.Title,
-                ReplyCount = a.ReplyCount,
-                IsTop = a.IsTop == 1,
-                IsDel = a.IsDel == 1,
-                ReadCount = a.ReadCount,
-                SeoImage = a.SeoImage,
-                DateCreated = a.DateAdded,
-                DateModified = a.DateModified,
+                ArticleId = x.a.ArticleId,
+                Uid = x.a.Uid,
+                Uname = x.u != null ? x.u.Uname : string.Empty,
+                Name = x.u != null ? x.u.Name : string.Empty,
+                Email = x.u != null ? x.u.Email : string.Empty,
+                Category = x.a.Category,
+                Title = x.a.Title,
+                Description = x.a.Description,
+                ReplyCount = x.a.ReplyCount,
+                GoodCount = x.a.GoodCount,
+                BadCount = x.a.BadCount,
+                ReadCount = x.a.ReadCount,
+                IsTop = x.a.IsTop == 1,
+                IsDel = x.a.IsDel == 1,
+                IsHidden = x.a.IsHidden == 1,
+                SeoImage = x.a.SeoImage,
+                DateCreated = x.a.DateAdded,
+                DateModified = x.a.DateModified,
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, ct);
     }

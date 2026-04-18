@@ -13,7 +13,7 @@ namespace hhh.application.admin.Social.Forums;
 /// </remarks>
 public interface IForumService
 {
-    Task<PagedResponse<ForumArticleBackItem>> GetArticleBackListAsync(ListQuery query, CancellationToken ct = default);
+    Task<PagedResponse<ForumArticleBackItem>> GetArticleBackListAsync(ForumArticleListQuery query, CancellationToken ct = default);
     Task<OperationResult> UpdateArticleAsync(int articleId, UpdateForumArticleRequest request, CancellationToken ct = default);
     Task<PagedResponse<ForumReplyBackItem>> GetReplyBackListAsync(int articleId, ListQuery query, CancellationToken ct = default);
     Task<OperationResult> UpdateReplyAsync(int replyId, UpdateForumReplyRequest request, CancellationToken ct = default);

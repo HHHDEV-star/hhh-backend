@@ -142,10 +142,14 @@ public class SocialController : ApiControllerBase
     // =========================================================================
 
     /// <summary>取得後台文章列表</summary>
-    /// <remarks>對應舊版 Forum/article_back_list_get → forum_model::get_article_for_back()。JOIN _users 帶 uname/email。</remarks>
+    /// <remarks>
+    /// 對應舊版 Forum/article_back_list_get → forum_model::get_article_for_back()。
+    /// JOIN _users 帶 uname / name / email。
+    /// 支援：keyword（標題/帳號/Email）、category、isTop、isDel、dateFrom~dateTo 篩選。
+    /// </remarks>
     [HttpGet("forum-articles/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ForumArticleBackItem>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetForumArticleList([FromQuery] ListQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetForumArticleList([FromQuery] ForumArticleListQuery query, CancellationToken cancellationToken)
     {
         var data = await _forumService.GetArticleBackListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<ForumArticleBackItem>>.Success(data));
