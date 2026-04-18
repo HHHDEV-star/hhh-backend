@@ -18,6 +18,6 @@ public interface IForumService
     Task<PagedResponse<ForumReplyBackItem>> GetReplyBackListAsync(int articleId, ListQuery query, CancellationToken ct = default);
     Task<OperationResult> UpdateReplyAsync(int replyId, UpdateForumReplyRequest request, CancellationToken ct = default);
     Task<OperationResult> UpdateSeoImageAsync(int articleId, UpdateForumSeoImageRequest request, CancellationToken ct = default);
-    Task<PagedResponse<ForumBlockItem>> GetBlockListAsync(string? uname, ListQuery query, CancellationToken ct = default);
+    Task<ForumBlockListResponse> GetBlockListAsync(ForumBlockListQuery query, CancellationToken ct = default);
     Task<OperationResult> UpdateBlockAsync(uint uid, UpdateForumBlockRequest request, CancellationToken ct = default);
 }

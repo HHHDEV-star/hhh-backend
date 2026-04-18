@@ -104,27 +104,70 @@ public class ForumService : IForumService
         return OperationResult.Ok("SEO 圖片更新成功");
     }
 
-    public async Task<PagedResponse<ForumBlockItem>> GetBlockListAsync(string? uname, ListQuery query, CancellationToken ct = default)
+    public async Task<ForumBlockListResponse> GetBlockListAsync(ForumBlockListQuery query, CancellationToken ct = default)
     {
         // 對應舊 PHP forum_model::get_block():
-        // 預設只撈 forum_block='Y',若有帶 uname 則額外 LIKE 搜尋
-        var q = _db.Users.AsNoTracking()
-            .Where(u => u.ForumBlock == "Y");
+        // 預設只撈 forum_block='Y',可透過 status 切換全部/黑名單/非黑名單
+        var q = _db.Users.AsNoTracking().AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(uname))
+        // 黑名單狀態篩選（預設只撈黑名單）
+        if (string.Equals(query.Status, "all", StringComparison.OrdinalIgnoreCase))
         {
-            var like = $"%{uname.Trim()}%";
+            // 全部會員，不過濾
+        }
+        else if (string.Equals(query.Status, "N", StringComparison.OrdinalIgnoreCase))
+        {
+            q = q.Where(u => u.ForumBlock == "N");
+        }
+        else
+        {
+            // 預設或 status=Y：只撈黑名單
+            q = q.Where(u => u.ForumBlock == "Y");
+        }
+
+        // 帳號模糊搜尋
+        if (!string.IsNullOrWhiteSpace(query.Uname))
+        {
+            var like = $"%{query.Uname.Trim()}%";
             q = q.Where(u => EF.Functions.Like(u.Uname, like));
         }
 
-        return await q.OrderByDescending(u => u.Uid)
+        // Email 模糊搜尋
+        if (!string.IsNullOrWhiteSpace(query.Email))
+        {
+            var like = $"%{query.Email.Trim()}%";
+            q = q.Where(u => EF.Functions.Like(u.Email, like));
+        }
+
+        var paged = await q.OrderByDescending(u => u.Uid)
             .Select(u => new ForumBlockItem
             {
                 Uid = u.Uid,
                 Name = u.Name,
                 Uname = u.Uname,
                 Email = u.Email,
+                Phone = u.UserIntrest,
+                RegisterDate = u.UserRegdateDatetime,
+                LastLoginDate = u.LastLoginDatetime,
+                Posts = u.Posts,
             }).ToPagedResponseAsync(query.Page, query.PageSize, ct);
+
+        // 全域統計（不受查詢條件影響）
+        var userTotal = await _db.Users.CountAsync(ct);
+        var blockCount = await _db.Users.CountAsync(u => u.ForumBlock == "Y", ct);
+
+        return new ForumBlockListResponse
+        {
+            Items = paged.Items,
+            Total = paged.Total,
+            Page = paged.Page,
+            PageSize = paged.PageSize,
+            Summary = new ForumBlockSummary
+            {
+                UserTotal = userTotal,
+                BlockCount = blockCount,
+            },
+        };
     }
 
     public async Task<OperationResult> UpdateBlockAsync(

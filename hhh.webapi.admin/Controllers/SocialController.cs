@@ -216,14 +216,18 @@ public class SocialController : ApiControllerBase
     // =========================================================================
 
     /// <summary>取得討論區黑名單列表</summary>
-    /// <remarks>對應舊版 Forum/block_get → forum_model::get_block()。可選 uname 模糊搜尋。</remarks>
+    /// <remarks>
+    /// 對應舊版 Forum/block_get → forum_model::get_block()。
+    /// 可選 uname / email 模糊搜尋，status 篩選（all=全部 / Y=黑名單 / N=非黑名單，預設 Y）。
+    /// 回傳包含統計摘要（會員總數 / 黑名單人數）。
+    /// </remarks>
     [HttpGet("forum-blocks/list")]
-    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ForumBlockItem>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<ForumBlockListResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetForumBlockList(
-        [FromQuery] string? uname, [FromQuery] ListQuery query, CancellationToken cancellationToken)
+        [FromQuery] ForumBlockListQuery query, CancellationToken cancellationToken)
     {
-        var data = await _forumService.GetBlockListAsync(uname, query, cancellationToken);
-        return Ok(ApiResponse<PagedResponse<ForumBlockItem>>.Success(data));
+        var data = await _forumService.GetBlockListAsync(query, cancellationToken);
+        return Ok(ApiResponse<ForumBlockListResponse>.Success(data));
     }
 
     /// <summary>設定/解除討論區黑名單</summary>
