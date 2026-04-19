@@ -38,7 +38,7 @@ public class RssMsnService : IRssMsnService
                 EF.Functions.Like(r.Hcase, kw));
         }
 
-        return await q
+        var paged = await q
             .OrderByDescending(r => r.Date)
             .Select(r => new RssScheduleItem
             {
@@ -50,6 +50,9 @@ public class RssMsnService : IRssMsnService
                 UpdateTime = r.UpdateTime,
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
+
+        await RssScheduleEnricher.EnrichAsync(paged.Items, _db, cancellationToken);
+        return paged;
     }
 
     public async Task<OperationResult<uint>> CreateAsync(
