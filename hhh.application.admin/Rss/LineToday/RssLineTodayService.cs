@@ -39,7 +39,7 @@ public class RssLineTodayService : IRssLineTodayService
             q = q.Where(r => EF.Functions.Like(r.Hvideo, kw));
         }
 
-        return await q
+        var paged = await q
             .OrderByDescending(r => r.Date)
             .Select(r => new RssLineTodayItem
             {
@@ -50,6 +50,10 @@ public class RssLineTodayService : IRssLineTodayService
                 UpdateTime = r.UpdateTime,
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
+
+        // 展開 Hvideo CSV 為影音明細列表
+        await EnrichVideosAsync(paged.Items, cancellationToken);
+        return paged;
     }
 
     public async Task<OperationResult<uint>> CreateAsync(
@@ -83,5 +87,53 @@ public class RssLineTodayService : IRssLineTodayService
 
         await _db.SaveChangesAsync(cancellationToken);
         return OperationResult<uint>.Ok(id, "修改成功");
+    }
+
+    private async Task EnrichVideosAsync(IReadOnlyList<RssLineTodayItem> items, CancellationToken ct)
+    {
+        if (items.Count == 0) return;
+
+        var allIds = new HashSet<uint>();
+        foreach (var item in items)
+        {
+            foreach (var id in ParseIds(item.Hvideo))
+                allIds.Add(id);
+        }
+
+        if (allIds.Count == 0) return;
+
+        var videoMap = await _db.Hvideos.AsNoTracking()
+            .Where(v => allIds.Contains(v.HvideoId))
+            .Select(v => new RssLineTodayRefItem
+            {
+                Id = v.HvideoId,
+                Title = v.Title,
+                Name = v.Name,
+                HdesignerId = v.HdesignerId,
+                Onoff = v.Onoff == 1,
+            })
+            .ToDictionaryAsync(v => v.Id, ct);
+
+        foreach (var item in items)
+        {
+            item.Videos = ParseIds(item.Hvideo)
+                .Select(id => videoMap.TryGetValue(id, out var r)
+                    ? r
+                    : new RssLineTodayRefItem { Id = id, Title = $"(找不到 #{id})" })
+                .ToList();
+        }
+    }
+
+    private static List<uint> ParseIds(string? csv)
+    {
+        if (string.IsNullOrWhiteSpace(csv)) return [];
+
+        var result = new List<uint>();
+        foreach (var part in csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (uint.TryParse(part, out var id))
+                result.Add(id);
+        }
+        return result;
     }
 }
