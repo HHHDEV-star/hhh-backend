@@ -265,4 +265,36 @@ public class EditorialCaseService : IEditorialCaseService
 
         return $"{style},{type},{condition}";
     }
+
+    /// <inheritdoc />
+    public async Task<List<CaseSelectItem>> GetSelectListAsync(
+        string? keyword = null,
+        CancellationToken cancellationToken = default)
+    {
+        var q = _db.Hcases.AsNoTracking()
+            .Where(c => c.Onoff == 1);
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var like = $"%{keyword.Trim()}%";
+            q = q.Where(c => EF.Functions.Like(c.Caption, like));
+        }
+
+        return await (
+            from c in q
+            join d in _db.Hdesigners.AsNoTracking() on c.HdesignerId equals d.HdesignerId into dj
+            from d in dj.DefaultIfEmpty()
+            orderby c.Sdate descending, c.HcaseId descending
+            select new CaseSelectItem
+            {
+                HcaseId = c.HcaseId,
+                Caption = c.Caption,
+                Cover = c.Cover,
+                HdesignerId = c.HdesignerId,
+                DesignerTitle = d != null ? d.Title : string.Empty,
+                Onoff = true,
+                Sdate = c.Sdate,
+            })
+            .ToListAsync(cancellationToken);
+    }
 }

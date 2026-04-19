@@ -506,4 +506,19 @@ public class PlanningController : ApiControllerBase
         var data = await _hvideoService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<HvideoListItem>>.Success(data));
     }
+
+    /// <summary>取得影音下拉選單（僅上線中，不分頁）</summary>
+    /// <remarks>
+    /// 供關聯選擇使用（如節目影片設定、首頁區塊等需要選擇影音的場景）。
+    /// 僅回傳 onoff=1 的影音，依 hvideo_id DESC 排序。
+    /// 可選 keyword 做標題即時過濾。
+    /// </remarks>
+    [HttpGet("hvideos/select-list")]
+    [ProducesResponseType(typeof(ApiResponse<List<HvideoSelectItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHvideoSelectList(
+        [FromQuery] string? keyword, CancellationToken cancellationToken)
+    {
+        var data = await _hvideoService.GetSelectListAsync(keyword, cancellationToken);
+        return Ok(ApiResponse<List<HvideoSelectItem>>.Success(data));
+    }
 }

@@ -16,4 +16,13 @@ public interface IHvideoService
     Task<PagedResponse<HvideoListItem>> GetListAsync(
         HvideoListQuery query,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 取得影音精簡列表（不分頁，供下拉選單 / 關聯選擇使用）。
+    /// 僅回傳上線中(onoff=1)的影音，依 hvideo_id DESC 排序。
+    /// 可選 keyword 做標題模糊搜尋以支援前端 combo-box 即時過濾。
+    /// </summary>
+    Task<List<HvideoSelectItem>> GetSelectListAsync(
+        string? keyword = null,
+        CancellationToken cancellationToken = default);
 }

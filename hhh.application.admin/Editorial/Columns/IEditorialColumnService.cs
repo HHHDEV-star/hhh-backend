@@ -44,4 +44,14 @@ public interface IEditorialColumnService
         uint id,
         UpdateEditorialColumnRequest request,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 取得專欄精簡列表（不分頁，供下拉選單 / 關聯選擇使用）。
+    /// 僅回傳上線中(onoff=1)的專欄，依 sdate DESC 排序。
+    /// 可選 keyword 做標題模糊搜尋、ctype 做類別篩選，以支援前端 combo-box 即時過濾。
+    /// </summary>
+    Task<List<ColumnSelectItem>> GetSelectListAsync(
+        string? keyword = null,
+        string? ctype = null,
+        CancellationToken cancellationToken = default);
 }

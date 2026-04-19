@@ -217,4 +217,39 @@ public class EditorialColumnService : IEditorialColumnService
 
         return OperationResult<uint>.Ok(id, "修改成功");
     }
+
+    /// <inheritdoc />
+    public async Task<List<ColumnSelectItem>> GetSelectListAsync(
+        string? keyword = null,
+        string? ctype = null,
+        CancellationToken cancellationToken = default)
+    {
+        var q = _db.Hcolumns.AsNoTracking()
+            .Where(c => c.Onoff == 1);
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var like = $"%{keyword.Trim()}%";
+            q = q.Where(c => EF.Functions.Like(c.Ctitle, like));
+        }
+
+        if (!string.IsNullOrWhiteSpace(ctype))
+        {
+            q = q.Where(c => c.Ctype == ctype.Trim());
+        }
+
+        return await q
+            .OrderByDescending(c => c.Sdate)
+            .ThenByDescending(c => c.HcolumnId)
+            .Select(c => new ColumnSelectItem
+            {
+                HcolumnId = c.HcolumnId,
+                Ctitle = c.Ctitle,
+                Ctype = c.Ctype,
+                Clogo = c.Clogo,
+                Onoff = true,
+                Sdate = c.Sdate,
+            })
+            .ToListAsync(cancellationToken);
+    }
 }

@@ -64,6 +64,21 @@ public class EditorialController : ApiControllerBase
         return Ok(ApiResponse<PagedResponse<EditorialCaseListItem>>.Success(data));
     }
 
+    /// <summary>取得個案下拉選單（僅上線中，不分頁）</summary>
+    /// <remarks>
+    /// 供關聯選擇使用（如首頁區塊設定、RSS 排程、SEO 管理等需要選擇個案的場景）。
+    /// 僅回傳 onoff=1 的個案，依 sdate DESC 排序。
+    /// 可選 keyword 做標題即時過濾（前端 combo-box 輸入時觸發）。
+    /// </remarks>
+    [HttpGet("cases/select-list")]
+    [ProducesResponseType(typeof(ApiResponse<List<CaseSelectItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCaseSelectList(
+        [FromQuery] string? keyword, CancellationToken cancellationToken)
+    {
+        var data = await _editorialCaseService.GetSelectListAsync(keyword, cancellationToken);
+        return Ok(ApiResponse<List<CaseSelectItem>>.Success(data));
+    }
+
     /// <summary>取得單一個案完整資料</summary>
     /// <remarks>
     /// 對應舊版 PHP:Cases.php → index_get(with id) → case_model::get_case_info($id)
@@ -259,6 +274,21 @@ public class EditorialController : ApiControllerBase
     {
         var data = await _editorialColumnService.GetListAsync(query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<EditorialColumnListItem>>.Success(data));
+    }
+
+    /// <summary>取得專欄下拉選單（僅上線中，不分頁）</summary>
+    /// <remarks>
+    /// 供關聯選擇使用（如 RSS 排程、首頁區塊設定等需要選擇專欄的場景）。
+    /// 僅回傳 onoff=1 的專欄，依 sdate DESC 排序。
+    /// 可選 keyword 做標題即時過濾、ctype 做類別篩選。
+    /// </remarks>
+    [HttpGet("columns/select-list")]
+    [ProducesResponseType(typeof(ApiResponse<List<ColumnSelectItem>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetColumnSelectList(
+        [FromQuery] string? keyword, [FromQuery] string? ctype, CancellationToken cancellationToken)
+    {
+        var data = await _editorialColumnService.GetSelectListAsync(keyword, ctype, cancellationToken);
+        return Ok(ApiResponse<List<ColumnSelectItem>>.Success(data));
     }
 
     /// <summary>取得單一專欄完整資料</summary>

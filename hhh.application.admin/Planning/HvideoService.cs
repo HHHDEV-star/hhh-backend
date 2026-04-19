@@ -103,4 +103,35 @@ public class HvideoService : IHvideoService
             })
             .ToPagedResponseAsync(query.Page, query.PageSize, cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<List<HvideoSelectItem>> GetSelectListAsync(
+        string? keyword = null,
+        CancellationToken cancellationToken = default)
+    {
+        var q = _db.Hvideos.AsNoTracking()
+            .Where(v => v.Onoff == 1);
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var like = $"%{keyword.Trim()}%";
+            q = q.Where(v => EF.Functions.Like(v.Title, like) || EF.Functions.Like(v.Name, like));
+        }
+
+        return await (
+            from v in q
+            join d in _db.Hdesigners.AsNoTracking() on v.HdesignerId equals d.HdesignerId into dj
+            from d in dj.DefaultIfEmpty()
+            orderby v.HvideoId descending
+            select new HvideoSelectItem
+            {
+                HvideoId = v.HvideoId,
+                Title = v.Title,
+                Name = v.Name,
+                HdesignerId = v.HdesignerId,
+                DesignerTitle = d != null ? d.Title : string.Empty,
+                Onoff = true,
+            })
+            .ToListAsync(cancellationToken);
+    }
 }
