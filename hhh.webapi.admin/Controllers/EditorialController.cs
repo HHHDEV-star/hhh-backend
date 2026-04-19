@@ -161,7 +161,7 @@ public class EditorialController : ApiControllerBase
     [HttpGet("cases/{hcaseId:int}/images/list")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<CaseImageListItem>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCaseImageList(
-        uint hcaseId, [FromQuery] PagedRequest query, CancellationToken cancellationToken)
+        uint hcaseId, [FromQuery] ListQuery query, CancellationToken cancellationToken)
     {
         var data = await _caseImageService.GetListAsync(hcaseId, query, cancellationToken);
         return Ok(ApiResponse<PagedResponse<CaseImageListItem>>.Success(data));

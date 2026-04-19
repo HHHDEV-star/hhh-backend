@@ -11,7 +11,7 @@ namespace hhh.application.admin.Editorial.Cases;
 public interface ICaseImageService
 {
     /// <summary>取得個案圖片列表</summary>
-    Task<PagedResponse<CaseImageListItem>> GetListAsync(uint hcaseId, PagedRequest query, CancellationToken ct = default);
+    Task<PagedResponse<CaseImageListItem>> GetListAsync(uint hcaseId, ListQuery query, CancellationToken ct = default);
 
     /// <summary>新增個案圖片</summary>
     Task<OperationResult<uint>> CreateAsync(uint hcaseId, CreateCaseImageRequest request, CancellationToken ct = default);

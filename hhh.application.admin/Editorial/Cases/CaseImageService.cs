@@ -16,7 +16,7 @@ public class CaseImageService : ICaseImageService
 
     /// <inheritdoc />
     public async Task<PagedResponse<CaseImageListItem>> GetListAsync(
-        uint hcaseId, PagedRequest query, CancellationToken ct = default)
+        uint hcaseId, ListQuery query, CancellationToken ct = default)
     {
         // 對應舊 PHP case_model::get_case_imgs()
         // ORDER BY order ASC, hcase_img_id ASC
