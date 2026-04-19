@@ -1,3 +1,4 @@
+using Amazon.S3;
 using hhh.infrastructure.Auth;
 using hhh.infrastructure.Context;
 using hhh.infrastructure.Logging;
@@ -45,9 +46,26 @@ public static class DependencyInjection
         // JWT token 產生器（純技術實作，跨 application 層共用）
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
-        // 檔案上傳（本機磁碟實作）
+        // 檔案上傳
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
-        services.AddSingleton<IImageUploadService, LocalImageUploadService>();
+
+        var provider = configuration[$"{StorageOptions.SectionName}:Provider"] ?? "S3";
+        if (string.Equals(provider, "S3", StringComparison.OrdinalIgnoreCase))
+        {
+            // AWS S3 實作
+            services.Configure<S3Options>(configuration.GetSection(S3Options.SectionName));
+            services.AddSingleton<IAmazonS3>(_ =>
+            {
+                var region = configuration["AWS:Region"] ?? "ap-northeast-1";
+                return new AmazonS3Client(Amazon.RegionEndpoint.GetBySystemName(region));
+            });
+            services.AddSingleton<IImageUploadService, S3ImageUploadService>();
+        }
+        else
+        {
+            // 本機磁碟實作（開發環境 fallback）
+            services.AddSingleton<IImageUploadService, LocalImageUploadService>();
+        }
 
         // 操作紀錄寫入（對應舊 PHP 的 _save_log()）
         // 注意：IOperationContextAccessor 由 Web host 層（hhh.webapi.admin）註冊，
